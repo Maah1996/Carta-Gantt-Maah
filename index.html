@@ -1060,7 +1060,6 @@ let fbOnline = false;
 
 function initFirebase(){
   if(!FB_CONFIGURED){
-    console.warn('Firebase no configurado — usando localStorage');
     loadFromLocalStorage();
     return;
   }
@@ -1069,14 +1068,21 @@ function initFirebase(){
     db = firebase.database();
     dbRef = db.ref('gantt_maah/actividades');
 
-    // Indicador de conexión
+    // Timeout: si en 5 seg no conecta, carga localStorage
+    const timeout = setTimeout(()=>{
+      if(!fbOnline){
+        updateStatusBadge(false);
+        loadFromLocalStorage();
+      }
+    }, 5000);
+
     db.ref('.info/connected').on('value', snap=>{
       fbOnline = snap.val() === true;
       updateStatusBadge(fbOnline);
+      if(fbOnline) clearTimeout(timeout);
     });
 
-    // Escuchar cambios en tiempo real
-    fbListener = dbRef.on('value', snap=>{
+    dbRef.on('value', snap=>{
       const data = snap.val();
       if(data){
         acts = Object.values(data).map(a=>({
@@ -1085,20 +1091,23 @@ function initFirebase(){
           obs: (a.obs||'').toUpperCase().trim(),
           fecha: new Date(a.fecha)
         })).sort((a,b)=>a.fecha-b.fecha);
-        // Actualizar nextId
         const maxId = acts.reduce((m,a)=>Math.max(m,a.id||0),0);
         if(maxId >= nextId) nextId = maxId + 1;
       } else {
-        acts = [];
+        // Base de datos vacía — cargar datos iniciales
+        acts = [...DEFAULT_ACTS];
+        DEFAULT_ACTS.forEach(a=> dbRef.child(String(a.id)).set({...a, fecha:a.fecha.toISOString()}));
       }
       rebuildMonthSelect();
       render();
     }, err=>{
-      console.error('Firebase error:', err);
+      console.error('Firebase error:', err.code, err.message);
+      updateStatusBadge(false);
       loadFromLocalStorage();
     });
   }catch(e){
     console.error('Firebase init error:', e);
+    updateStatusBadge(false);
     loadFromLocalStorage();
   }
 }
