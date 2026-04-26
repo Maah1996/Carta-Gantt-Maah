@@ -592,18 +592,22 @@ function rebuildMonthSelect(){
   // Conteo de actividades por mes (para mostrar como info)
   const monthSet = {};
   acts.forEach(a=>{
+    // Validar fecha: si es inválida, ignorar esta actividad
+    if(!(a.fecha instanceof Date) || isNaN(a.fecha.getTime())) return;
     const k = a.fecha.getFullYear()+'-'+a.fecha.getMonth();
     if(!monthSet[k]) monthSet[k]={year:a.fecha.getFullYear(),month:a.fecha.getMonth(),count:0};
     monthSet[k].count++;
   });
-  // Determinar rango: desde 1 año antes de HOY o de la actividad más antigua,
+  // Determinar rango: desde ENERO del año actual (no se muestran años anteriores),
   // hasta 2 años después de HOY o de la actividad más futura.
+  // Cada año nuevo se agrega automáticamente porque el rango se basa en TODAY.
   const todayY = TODAY.getFullYear(), todayM = TODAY.getMonth();
-  let minY = todayY - 1, minM = todayM;
+  let minY = todayY, minM = 0;          // Siempre Enero del año actual
   let maxY = todayY + 2, maxM = todayM;
   acts.forEach(a=>{
     const ay = a.fecha.getFullYear(), am = a.fecha.getMonth();
-    if(ay < minY || (ay===minY && am < minM)){ minY=ay; minM=am; }
+    // Solo extender el rango HACIA EL FUTURO si hay actividades más allá del límite.
+    // No extender hacia atrás: ignorar actividades de años anteriores en el desplegable.
     if(ay > maxY || (ay===maxY && am > maxM)){ maxY=ay; maxM=am; }
   });
 
@@ -975,16 +979,20 @@ function render(){
     d.d.getDate()===TODAY.getDate()
   );
 
-  // ── Filtrar actividades por MES seleccionado (FIX 1: filtro real por mes) ──
+  // ── Filtrar actividades por MES seleccionado ──
+  // Usamos la MISMA fórmula que monthSet (year+'-'+month) para garantizar
+  // que el filtro coincida exactamente con el conteo mostrado en el desplegable.
   let byMonth;
   if(isTodaGantt){
     byMonth = [...acts]; // Toda la Gantt: todas las actividades
   } else {
-    // Solo las del mes visible
-    byMonth = acts.filter(a=>
-      a.fecha.getFullYear()===viewYear &&
-      a.fecha.getMonth()===viewMonth
-    );
+    const targetKey = viewYear+'-'+viewMonth;
+    byMonth = acts.filter(a=>{
+      // Validar que la fecha sea un Date válido (defensa por si vino mal de Firebase)
+      if(!(a.fecha instanceof Date) || isNaN(a.fecha.getTime())) return false;
+      const k = a.fecha.getFullYear()+'-'+a.fecha.getMonth();
+      return k === targetKey;
+    });
   }
 
   // ── Filtro de estado (vencidas, rojo, etc.) sobre las del mes ──
