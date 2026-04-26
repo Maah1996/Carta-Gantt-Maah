@@ -74,6 +74,13 @@ select.month-select:focus{outline:none;border-color:#1a3f6f;}
 .type-btn.active{background:#1a3f6f;color:#fff;border-color:#1a3f6f;}
 .type-btn.t-plazo.active{background:#8B0000;border-color:#8B0000;}
 .type-btn.t-aniv.active{background:#c8960a;border-color:#c8960a;}
+.freq-btn{padding:5px 4px;font-size:10px;border:1px solid #cbd5e0;border-radius:4px;cursor:pointer;text-align:center;background:#f7fafc;color:#4a5568;transition:all .15s;font-weight:500;}
+.freq-btn:hover{background:#eef3fa;border-color:#1a3f6f;}
+.freq-btn.active{background:#1a3f6f;color:#fff;border-color:#1a3f6f;}
+.freq-btn.f-sem.active{background:#0f766e;border-color:#0f766e;}
+.freq-btn.f-men.active{background:#a16207;border-color:#a16207;}
+.freq-btn.f-anu.active{background:#7c2d12;border-color:#7c2d12;}
+.freq-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;}
 .dias-preview{margin-top:5px;padding:6px 8px;border-radius:5px;font-size:10px;font-weight:700;text-align:center;min-height:28px;border:1px solid transparent;transition:all .2s;}
 .prev-neutral{background:#f7fafc;color:#a0aec0;border-color:#e2e8f0;}
 .btn-add{width:100%;padding:8px;font-size:11px;font-weight:700;background:#1a3f6f;color:#fff;border:none;border-radius:5px;cursor:pointer;margin-top:5px;transition:background .15s;}
@@ -123,7 +130,9 @@ table.gantt td.td-del{width:20px;background:#fff;vertical-align:middle;text-alig
 .bar-cell{width:24px;height:24px;vertical-align:middle;text-align:center;padding:0;}
 
 .plazo-badge{background:#8B0000;color:#fff;font-size:7px;padding:1px 3px;border-radius:2px;font-weight:800;}
-.anual-badge{background:#1a3f6f;color:#fff;font-size:7px;padding:1px 3px;border-radius:2px;font-weight:800;letter-spacing:.3px;}
+.anual-badge{background:#7c2d12;color:#fff;font-size:7px;padding:1px 3px;border-radius:2px;font-weight:800;letter-spacing:.3px;}
+.mensual-badge{background:#a16207;color:#fff;font-size:7px;padding:1px 3px;border-radius:2px;font-weight:800;letter-spacing:.3px;}
+.semanal-badge{background:#0f766e;color:#fff;font-size:7px;padding:1px 3px;border-radius:2px;font-weight:800;letter-spacing:.3px;}
 
 /* FIX 1: row-aniv solo colorea columnas de texto, NO la barra pintada */
 table.gantt tr.row-aniv td.td-act,
@@ -277,7 +286,7 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
     <span id="user-badge" style="font-size:11px;padding:4px 12px;border-radius:14px;background:rgba(255,255,255,.18);color:#fff;font-weight:600;display:none;"></span>
     <button id="logout-btn" onclick="doLogout()" style="font-size:10px;padding:4px 10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:5px;cursor:pointer;display:none;" title="Cerrar sesión">↪ Salir</button>
     <!-- FIX 5: botón imprimir -->
-    <button class="btn-print" onclick="openAnualesModal()" title="Ver/editar actividades que se repiten todos los años">&#128197; Anuales</button>
+    <button class="btn-print" onclick="openAnualesModal()" title="Ver/editar actividades que se repiten (anuales, mensuales, semanales)">&#128197; Recurrentes</button>
     <button class="btn-print" onclick="printGantt()">&#128438; Imprimir carta</button>
     <span id="fb-status" style="font-size:10px;padding:3px 10px;border-radius:12px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);">● Iniciando...</span>
     <span class="today-badge" id="today-lbl">HOY: 14/abr/2026</span>
@@ -350,6 +359,15 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
             <div class="type-btn t-plazo" onclick="setType(this,'plazo')">Plazo</div>
             <div class="type-btn t-aniv" onclick="setType(this,'aniversario')">Aniversario</div>
             <div class="type-btn" onclick="setType(this,'otro')">Otro</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Frecuencia</label>
+          <div class="freq-grid">
+            <div class="freq-btn active" id="f-puntual" onclick="setFreq(this,'puntual')" title="Una sola fecha">Puntual</div>
+            <div class="freq-btn f-sem" id="f-semanal" onclick="setFreq(this,'semanal')" title="Repite todas las semanas el mismo día">Semanal</div>
+            <div class="freq-btn f-men" id="f-mensual" onclick="setFreq(this,'mensual')" title="Repite todos los meses ese día">Mensual</div>
+            <div class="freq-btn f-anu" id="f-anual" onclick="setFreq(this,'anual')" title="Repite todos los años en esa fecha">Anual</div>
           </div>
         </div>
         <div class="form-group">
@@ -460,6 +478,15 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
         </div>
       </div>
       <div class="form-group">
+        <label>Frecuencia</label>
+        <div class="freq-grid">
+          <div class="freq-btn active" id="ef-puntual" onclick="setEditFreq(this,'puntual')" title="Una sola fecha">Puntual</div>
+          <div class="freq-btn f-sem" id="ef-semanal" onclick="setEditFreq(this,'semanal')" title="Repite todas las semanas el mismo día">Semanal</div>
+          <div class="freq-btn f-men" id="ef-mensual" onclick="setEditFreq(this,'mensual')" title="Repite todos los meses ese día">Mensual</div>
+          <div class="freq-btn f-anu" id="ef-anual" onclick="setEditFreq(this,'anual')" title="Repite todos los años en esa fecha">Anual</div>
+        </div>
+      </div>
+      <div class="form-group">
         <label>Descripción de la actividad</label>
         <textarea id="edit-act"></textarea>
       </div>
@@ -480,11 +507,11 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
   </div>
 </div>
 
-<!-- MODAL ACTIVIDADES ANUALES -->
+<!-- MODAL ACTIVIDADES RECURRENTES (Anuales / Mensuales / Semanales) -->
 <div class="modal-overlay" id="modal-anuales-overlay">
-  <div class="modal-edit" style="max-width:640px;width:95vw;">
-    <h3>📅 Actividades anuales</h3>
-    <p class="subtitle">Estas actividades se repiten todos los años en la fecha indicada. Cambiar la fecha o borrar afecta a TODOS los años.</p>
+  <div class="modal-edit" style="max-width:680px;width:95vw;">
+    <h3>📅 Actividades recurrentes</h3>
+    <p class="subtitle">Estas actividades se repiten automáticamente según su frecuencia. Cambiar la fecha o borrar afecta a TODAS las repeticiones.</p>
     <div id="anuales-list" style="max-height:55vh;overflow-y:auto;border:1px solid #e2e8f0;border-radius:6px;background:#f7fafc;"></div>
     <div class="modal-btns" style="margin-top:14px;">
       <button class="btn-confirm" style="background:#1a3f6f;" onclick="closeAnualesModal()">Cerrar</button>
@@ -499,6 +526,8 @@ TODAY.setHours(0,0,0,0);
 
 let acts = [];
 let cType = 'revision';
+let cFreq = 'puntual';     // frecuencia para nueva actividad
+let editFreq = 'puntual';  // frecuencia en modal editar
 let nextId = 200;
 let currentFilter = 'all';
 let currentMonthKey = 'current';
@@ -611,7 +640,8 @@ function rebuildMonthSelect(){
   const todayY_count = TODAY.getFullYear();
   const yMaxRange_count = todayY_count + 5; // amplio para no quedar corto
   acts.forEach(a=>{
-    if(a.anual){
+    const fr = getFrecuencia(a);
+    if(fr==='anual'){
       if(typeof a.mes !== 'number' || a.mes<0 || a.mes>11) return;
       for(let y=todayY_count; y<=yMaxRange_count; y++){
         const k = y+'-'+a.mes;
@@ -620,22 +650,35 @@ function rebuildMonthSelect(){
       }
       return;
     }
-    // Validar fecha: si es inválida, ignorar esta actividad
+    if(fr==='mensual' || fr==='semanal'){
+      // Contar 1 por cada mes del rango [año actual .. yMaxRange_count]
+      for(let y=todayY_count; y<=yMaxRange_count; y++){
+        for(let m=0; m<12; m++){
+          const k = y+'-'+m;
+          if(!monthSet[k]) monthSet[k]={year:y,month:m,count:0};
+          monthSet[k].count++;
+        }
+      }
+      return;
+    }
+    // Puntual: validar fecha real
     if(!(a.fecha instanceof Date) || isNaN(a.fecha.getTime())) return;
     const k = a.fecha.getFullYear()+'-'+a.fecha.getMonth();
     if(!monthSet[k]) monthSet[k]={year:a.fecha.getFullYear(),month:a.fecha.getMonth(),count:0};
     monthSet[k].count++;
   });
   // Determinar rango: desde ENERO del año actual (no se muestran años anteriores),
-  // hasta 2 años después de HOY o de la actividad más futura.
-  // Cada año nuevo se agrega automáticamente porque el rango se basa en TODAY.
+  // hasta 2 años después de HOY o de la actividad PUNTUAL más futura.
+  // Las actividades recurrentes no influyen en el rango — siempre se proyectan
+  // dentro del rango calculado.
   const todayY = TODAY.getFullYear(), todayM = TODAY.getMonth();
   let minY = todayY, minM = 0;          // Siempre Enero del año actual
   let maxY = todayY + 2, maxM = todayM;
   acts.forEach(a=>{
+    const fr = getFrecuencia(a);
+    if(fr !== 'puntual') return;
+    if(!(a.fecha instanceof Date) || isNaN(a.fecha.getTime())) return;
     const ay = a.fecha.getFullYear(), am = a.fecha.getMonth();
-    // Solo extender el rango HACIA EL FUTURO si hay actividades más allá del límite.
-    // No extender hacia atrás: ignorar actividades de años anteriores en el desplegable.
     if(ay > maxY || (ay===maxY && am > maxM)){ maxY=ay; maxM=am; }
   });
 
@@ -685,6 +728,21 @@ function setType(el,type){
   el.classList.add('active');
   cType=type;
 }
+// Frecuencia en formulario "+ Nueva actividad" (sidebar)
+function setFreq(el,freq){
+  // Limitamos al contenedor del formulario para no afectar el modal
+  const wrap = document.getElementById('add-form-body');
+  if(wrap){ wrap.querySelectorAll('.freq-btn').forEach(b=>b.classList.remove('active')); }
+  el.classList.add('active');
+  cFreq=freq;
+}
+// Frecuencia en modal "Editar actividad"
+function setEditFreq(el,freq){
+  const wrap = document.getElementById('edit-step-form');
+  if(wrap){ wrap.querySelectorAll('.freq-btn').forEach(b=>b.classList.remove('active')); }
+  el.classList.add('active');
+  editFreq=freq;
+}
 function previewDias(){
   const v=document.getElementById('f-fecha').value;
   const p=document.getElementById('dias-preview');
@@ -727,6 +785,10 @@ function addActivity(){
   const [yr,mo,da]=fv.split('-').map(Number);
   const fecha=new Date(yr,mo-1,da);
   const newAct={act,obs,fecha,type:cType,id:nextId++};
+  // Si tiene frecuencia recurrente, marcarlo como tal con la metadata necesaria.
+  // Compat: para 'anual' seguimos usando los campos que ya entendía la lógica anterior
+  // (anual:true, dia, mes). Para semanal/mensual usamos freq + dia/dow.
+  aplicarFrecuenciaACto(newAct, cFreq, fecha);
   acts.push(newAct);
   acts.sort((a,b)=>a.fecha-b.fecha);
   document.getElementById('f-act').value='';
@@ -734,7 +796,45 @@ function addActivity(){
   document.getElementById('f-fecha').value='';
   resetPreview();
   saveActToFB(newAct);
+  // Resetear selector de frecuencia a "Puntual" para la próxima
+  resetFreqSelector();
   if(!FB_CONFIGURED){ rebuildMonthSelect(); render(); }
+}
+
+// Aplica los campos de recurrencia al objeto act según la frecuencia elegida.
+// 'puntual' es el caso normal — no agrega nada.
+function aplicarFrecuenciaACto(act, freq, fechaBase){
+  // Limpiar metadata previa para que el cambio en una edición sea consistente
+  delete act.anual; delete act.mensual; delete act.semanal;
+  delete act.dia;   delete act.mes;     delete act.dow;
+  delete act.freq;
+  if(!freq || freq==='puntual'){
+    act.freq='puntual';
+    return;
+  }
+  if(freq==='anual'){
+    act.freq='anual';
+    act.anual=true;                       // compatibilidad con la lógica previa
+    act.dia=fechaBase.getDate();          // 1-31
+    act.mes=fechaBase.getMonth();         // 0-11
+  } else if(freq==='mensual'){
+    act.freq='mensual';
+    act.mensual=true;
+    act.dia=fechaBase.getDate();          // 1-31
+  } else if(freq==='semanal'){
+    act.freq='semanal';
+    act.semanal=true;
+    act.dow=fechaBase.getDay();           // 0=dom..6=sáb
+  }
+}
+
+function resetFreqSelector(){
+  const wrap = document.getElementById('add-form-body');
+  if(!wrap) return;
+  wrap.querySelectorAll('.freq-btn').forEach(b=>b.classList.remove('active'));
+  const def = document.getElementById('f-puntual');
+  if(def) def.classList.add('active');
+  cFreq='puntual';
 }
 function delAct(id){
   showModal('¿Eliminar esta actividad de la Carta Gantt?',()=>{
@@ -806,7 +906,14 @@ function fillEditForm(id){
   // Rellenar formulario
   document.getElementById('edit-act').value   = act.act;
   document.getElementById('edit-obs').value   = act.obs||'';
-  const f = act.fecha;
+  // Para recurrentes: la "fecha" en el campo es la próxima ocurrencia o
+  // la fecha base. Para anual/mensual reconstruimos a partir de dia/mes.
+  // Si llegamos sin fecha válida, usamos hoy.
+  let fechaParaInput = act.fecha;
+  if(!(fechaParaInput instanceof Date) || isNaN(fechaParaInput.getTime())){
+    fechaParaInput = new Date();
+  }
+  const f = fechaParaInput;
   document.getElementById('edit-fecha').value =
     f.getFullYear()+'-'+String(f.getMonth()+1).padStart(2,'0')+'-'+String(f.getDate()).padStart(2,'0');
 
@@ -815,6 +922,21 @@ function fillEditForm(id){
   ['revision','plazo','aniversario','otro'].forEach(t=>{
     const map={revision:'et-revision',plazo:'et-plazo',aniversario:'et-aniv',otro:'et-otro'};
     document.getElementById(map[t]).classList.toggle('active', t===editType);
+  });
+
+  // Frecuencia: leer de freq, o inferir de los flags antiguos
+  let freqActual = act.freq;
+  if(!freqActual){
+    if(act.anual)         freqActual='anual';
+    else if(act.mensual)  freqActual='mensual';
+    else if(act.semanal)  freqActual='semanal';
+    else                  freqActual='puntual';
+  }
+  editFreq = freqActual;
+  ['puntual','semanal','mensual','anual'].forEach(fr=>{
+    const map={puntual:'ef-puntual',semanal:'ef-semanal',mensual:'ef-mensual',anual:'ef-anual'};
+    const el = document.getElementById(map[fr]);
+    if(el) el.classList.toggle('active', fr===freqActual);
   });
 
   updateEditPreview();
@@ -854,12 +976,19 @@ function saveEdit(){
   const idx=acts.findIndex(a=>a.id===editingId);
   if(idx===-1){closeEditModal();return;}
 
-  const mesAnterior = acts[idx].fecha.getMonth();
-  const anioAnterior= acts[idx].fecha.getFullYear();
-  acts[idx]={...acts[idx], act:actTxt, obs:obsTxt, fecha:nuevaFecha, type:editType};
+  const mesAnterior = acts[idx].fecha instanceof Date ? acts[idx].fecha.getMonth() : -1;
+  const anioAnterior= acts[idx].fecha instanceof Date ? acts[idx].fecha.getFullYear() : -1;
+  // Combinamos los datos básicos
+  const merged = {...acts[idx], act:actTxt, obs:obsTxt, fecha:nuevaFecha, type:editType};
+  // Aplicamos la frecuencia (limpia campos viejos y pone los correctos)
+  aplicarFrecuenciaACto(merged, editFreq, nuevaFecha);
+  acts[idx] = merged;
   acts.sort((a,b)=>a.fecha-b.fecha);
 
   closeEditModal();
+  // Para Firebase queremos que se REEMPLACEN los campos opcionales (no que queden basura
+  // de la versión anterior). saveActToFB usa .set(...) sobre el id, así que lo enviado
+  // pisa el registro completo — perfecto.
   saveActToFB(acts.find(a=>a.id===editingId)||acts[idx]);
 
   const nuevoMes  = nuevaFecha.getMonth();
@@ -977,12 +1106,27 @@ function printGantt(){
 }
 
 // ── RENDER ───────────────────────────────────────────────────
-// ── ACTIVIDADES ANUALES ──────────────────────────────────────
-// Una actividad anual se guarda UNA SOLA VEZ en Firebase con anual:true,
-// dia (1-31) y mes (0-11). Para mostrarse en la Gantt cada año, generamos
-// una "ocurrencia" virtual que tiene una fecha real para el año que se
-// está viendo. La ocurrencia conserva una referencia al original (parentAnualId)
-// para impedir editar/borrar desde la fila normal.
+// ── ACTIVIDADES RECURRENTES ──────────────────────────────────
+// Una actividad recurrente se guarda UNA SOLA VEZ en Firebase. Para
+// mostrarse repetida en la Gantt, generamos "ocurrencias" virtuales con
+// fechas reales calculadas al vuelo según la vista que el usuario abra.
+//
+// Frecuencias soportadas:
+//   - anual:   {anual:true, dia(1-31), mes(0-11)}  → 1 ocurrencia por año
+//   - mensual: {mensual:true, dia(1-31)}           → 1 ocurrencia por mes
+//   - semanal: {semanal:true, dow(0=dom..6=sáb)}   → 1 ocurrencia por semana
+// Cada ocurrencia conserva parentAnualId/isVirtualAnual para que la fila
+// no permita editar/borrar individualmente — eso se hace desde el modal
+// "Recurrentes" sobre el registro original.
+
+function getFrecuencia(act){
+  if(act.freq) return act.freq;
+  if(act.anual)   return 'anual';
+  if(act.mensual) return 'mensual';
+  if(act.semanal) return 'semanal';
+  return 'puntual';
+}
+
 function makeAnualOcurrencia(orig, year){
   const dia = Math.min(Math.max(parseInt(orig.dia,10)||1,1),31);
   const mes = Math.min(Math.max(parseInt(orig.mes,10)||0,0),11);
@@ -995,11 +1139,50 @@ function makeAnualOcurrencia(orig, year){
     ...orig,
     fecha: fecha,
     type: orig.type || 'aniversario',
-    parentAnualId: orig.id,         // marca que es virtual
+    parentAnualId: orig.id,
     isVirtualAnual: true,
-    // id compuesto único para no chocar con normales ni con otras ocurrencias
     id: 'A'+orig.id+'_'+year
   };
+}
+
+function makeMensualOcurrencia(orig, year, month){
+  const dia = Math.min(Math.max(parseInt(orig.dia,10)||1,1),31);
+  const ultimoDia = new Date(year, month+1, 0).getDate();
+  const diaSeguro = Math.min(dia, ultimoDia);
+  const fecha = new Date(year, month, diaSeguro, 12, 0, 0);
+  return {
+    ...orig,
+    fecha: fecha,
+    type: orig.type || 'revision',
+    parentAnualId: orig.id,
+    isVirtualAnual: true,
+    id: 'M'+orig.id+'_'+year+'_'+month
+  };
+}
+
+// Genera todas las ocurrencias semanales que caen dentro del rango
+// [startDate, endDate] (inclusive) para una actividad semanal.
+function makeSemanalOcurrencias(orig, startDate, endDate){
+  const dow = Math.min(Math.max(parseInt(orig.dow,10)||0,0),6);
+  const out = [];
+  // Avanzamos al primer día con el dow correcto a partir de startDate
+  const cur = new Date(startDate);
+  cur.setHours(12,0,0,0);
+  const diff = (dow - cur.getDay() + 7) % 7;
+  cur.setDate(cur.getDate() + diff);
+  while(cur <= endDate){
+    const occ = new Date(cur);
+    out.push({
+      ...orig,
+      fecha: occ,
+      type: orig.type || 'revision',
+      parentAnualId: orig.id,
+      isVirtualAnual: true,
+      id: 'S'+orig.id+'_'+occ.getFullYear()+'_'+occ.getMonth()+'_'+occ.getDate()
+    });
+    cur.setDate(cur.getDate() + 7);
+  }
+  return out;
 }
 
 // ── MODAL ACTIVIDADES ANUALES ────────────────────────────────
@@ -1016,81 +1199,145 @@ function closeAnualesModal(){
 function renderAnualesList(){
   const cont = document.getElementById('anuales-list');
   if(!cont) return;
-  const anuales = acts.filter(a=> a.anual);
-  if(!anuales.length){
-    cont.innerHTML = '<div style="padding:20px;text-align:center;color:#718096;font-size:13px;">No tienes actividades anuales.<br><br>Crea una desde la <strong>Agenda</strong> marcando la casilla <strong>ANUAL</strong> al ingresar una actividad.</div>';
+  // Recurrentes = todas las que tienen freq distinto de puntual (o flags antiguos)
+  const recurrentes = acts.filter(a=> {
+    const fr = getFrecuencia(a);
+    return fr==='anual' || fr==='mensual' || fr==='semanal';
+  });
+  if(!recurrentes.length){
+    cont.innerHTML = '<div style="padding:20px;text-align:center;color:#718096;font-size:13px;">No tienes actividades recurrentes.<br><br>Crea una desde el formulario <strong>+ Nueva actividad</strong> de la Carta Gantt eligiendo una frecuencia (Semanal/Mensual/Anual), o desde la <strong>Agenda</strong> marcando la casilla ANUAL al ingresar una actividad.</div>';
     return;
   }
-  // Ordenar por mes y día
-  anuales.sort((a,b)=>{
-    if(a.mes!==b.mes) return (a.mes||0)-(b.mes||0);
-    return (a.dia||0)-(b.dia||0);
+  // Ordenar: anuales primero (por mes/día), luego mensuales (por día), luego semanales (por dow)
+  const ord = {anual:1, mensual:2, semanal:3};
+  const DOW_NAMES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  recurrentes.sort((a,b)=>{
+    const fa=getFrecuencia(a), fb=getFrecuencia(b);
+    if(ord[fa]!==ord[fb]) return ord[fa]-ord[fb];
+    if(fa==='anual'){
+      if(a.mes!==b.mes) return (a.mes||0)-(b.mes||0);
+      return (a.dia||0)-(b.dia||0);
+    }
+    if(fa==='mensual') return (a.dia||0)-(b.dia||0);
+    if(fa==='semanal') return (a.dow||0)-(b.dow||0);
+    return 0;
   });
   let html = '<table style="width:100%;border-collapse:collapse;">';
   html += '<thead><tr style="background:#1a3f6f;color:#fff;">';
   html += '<th style="padding:8px 10px;text-align:left;font-size:11px;">ACTIVIDAD</th>';
-  html += '<th style="padding:8px 10px;text-align:center;font-size:11px;width:90px;">DÍA / MES</th>';
-  html += '<th style="padding:8px 10px;text-align:center;font-size:11px;width:130px;">ACCIONES</th>';
+  html += '<th style="padding:8px 10px;text-align:center;font-size:11px;width:80px;">FRECUENCIA</th>';
+  html += '<th style="padding:8px 10px;text-align:center;font-size:11px;width:120px;">CUÁNDO</th>';
+  html += '<th style="padding:8px 10px;text-align:center;font-size:11px;width:140px;">ACCIONES</th>';
   html += '</tr></thead><tbody>';
-  anuales.forEach(a=>{
-    const dia = String(a.dia||1).padStart(2,'0');
-    const mes = MNAMES[a.mes||0]||'?';
+  recurrentes.forEach(a=>{
+    const fr = getFrecuencia(a);
+    let badgeCls, badgeTxt, cuando;
+    if(fr==='anual'){
+      badgeCls='anual-badge'; badgeTxt='ANUAL';
+      cuando = String(a.dia||1).padStart(2,'0')+' / '+(MNAMES[a.mes||0]||'?');
+    } else if(fr==='mensual'){
+      badgeCls='mensual-badge'; badgeTxt='MENSUAL';
+      cuando = 'Día '+String(a.dia||1).padStart(2,'0')+' de cada mes';
+    } else {
+      badgeCls='semanal-badge'; badgeTxt='SEMANAL';
+      cuando = 'Cada '+(DOW_NAMES[a.dow||0]||'—');
+    }
+    // Escapamos posibles ' en ids/textos
+    const safeId = JSON.stringify(a.id); // funciona para number y string
     html += '<tr style="border-bottom:1px solid #e2e8f0;">';
-    html += '<td style="padding:8px 10px;font-size:12px;color:#2d3748;">'+(a.act||'')+'</td>';
-    html += '<td style="padding:8px 10px;font-size:12px;color:#1a3f6f;text-align:center;font-weight:700;">'+dia+' / '+mes+'</td>';
+    html += '<td style="padding:8px 10px;font-size:12px;color:#2d3748;">'+(a.act||'')+(a.obs?' <span style="color:#718096;font-size:10px;">('+a.obs+')</span>':'')+'</td>';
+    html += '<td style="padding:8px 10px;text-align:center;"><span class="'+badgeCls+'" style="font-size:8px;padding:2px 6px;">'+badgeTxt+'</span></td>';
+    html += '<td style="padding:8px 10px;font-size:11px;color:#1a3f6f;text-align:center;font-weight:600;">'+cuando+'</td>';
     html += '<td style="padding:8px 10px;text-align:center;">';
-    html += '<button onclick="editarAnual('+a.id+')" style="background:#1a3f6f;color:#fff;border:none;padding:5px 10px;border-radius:4px;font-size:11px;cursor:pointer;margin-right:4px;">&#9998; Cambiar</button>';
-    html += '<button onclick="borrarAnual('+a.id+')" style="background:#c62828;color:#fff;border:none;padding:5px 10px;border-radius:4px;font-size:11px;cursor:pointer;">&#10005; Borrar</button>';
+    html += '<button onclick="editarRecurrente('+safeId+')" style="background:#1a3f6f;color:#fff;border:none;padding:5px 10px;border-radius:4px;font-size:11px;cursor:pointer;margin-right:4px;">&#9998; Cambiar</button>';
+    html += '<button onclick="borrarRecurrente('+safeId+')" style="background:#c62828;color:#fff;border:none;padding:5px 10px;border-radius:4px;font-size:11px;cursor:pointer;">&#10005; Borrar</button>';
     html += '</td></tr>';
   });
   html += '</tbody></table>';
   cont.innerHTML = html;
 }
-function editarAnual(id){
-  const orig = acts.find(a=> a.id===id && a.anual);
-  if(!orig){ alert('No se encontró la actividad anual.'); return; }
-  // Pedir nueva fecha (día/mes)
-  const diaActual = String(orig.dia||1).padStart(2,'0');
-  const mesActual = String((orig.mes||0)+1).padStart(2,'0');
-  const inputStr = prompt('Editar actividad anual:\n\n'+(orig.act||'')+'\n\nIngrese la nueva fecha (DD/MM):', diaActual+'/'+mesActual);
-  if(!inputStr) return;
-  const m = inputStr.trim().match(/^(\d{1,2})\s*[\/\-\.]\s*(\d{1,2})$/);
-  if(!m){ alert('Formato inválido. Use DD/MM (por ejemplo: 21/04).'); return; }
-  const nDia = parseInt(m[1],10);
-  const nMes = parseInt(m[2],10);
-  if(nDia<1||nDia>31||nMes<1||nMes>12){ alert('Día o mes fuera de rango.'); return; }
-  // Persistir en Firebase
+// Acepta id numérico o string (los recurrentes guardados desde la agenda
+// usan id numérico; comparamos con doble igual flexible).
+function _findActById(id){
+  return acts.find(a=> a.id===id || String(a.id)===String(id));
+}
+
+function editarRecurrente(id){
+  const orig = _findActById(id);
+  if(!orig){ alert('No se encontró la actividad recurrente.'); return; }
+  const fr = getFrecuencia(orig);
+  if(fr==='puntual'){ alert('Esta actividad no es recurrente.'); return; }
+  const DOW_NAMES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+  let updates = null;
+  if(fr==='anual'){
+    const diaActual = String(orig.dia||1).padStart(2,'0');
+    const mesActual = String((orig.mes||0)+1).padStart(2,'0');
+    const inputStr = prompt('Editar actividad ANUAL:\n\n'+(orig.act||'')+'\n\nIngrese la nueva fecha (DD/MM):', diaActual+'/'+mesActual);
+    if(!inputStr) return;
+    const m = inputStr.trim().match(/^(\d{1,2})\s*[\/\-\.]\s*(\d{1,2})$/);
+    if(!m){ alert('Formato inválido. Use DD/MM (por ejemplo: 21/04).'); return; }
+    const nDia = parseInt(m[1],10);
+    const nMes = parseInt(m[2],10);
+    if(nDia<1||nDia>31||nMes<1||nMes>12){ alert('Día o mes fuera de rango.'); return; }
+    updates = {dia:nDia, mes:nMes-1};
+  } else if(fr==='mensual'){
+    const diaActual = String(orig.dia||1);
+    const inputStr = prompt('Editar actividad MENSUAL:\n\n'+(orig.act||'')+'\n\nIngrese el nuevo día del mes (1-31):', diaActual);
+    if(!inputStr) return;
+    const nDia = parseInt(inputStr.trim(),10);
+    if(isNaN(nDia)||nDia<1||nDia>31){ alert('Día fuera de rango (1-31).'); return; }
+    updates = {dia:nDia};
+  } else if(fr==='semanal'){
+    const dowActual = String(orig.dow||0);
+    const lista = DOW_NAMES.map((n,i)=>i+'='+n).join('\n');
+    const inputStr = prompt('Editar actividad SEMANAL:\n\n'+(orig.act||'')+'\n\nIngrese el día de la semana (0-6):\n'+lista, dowActual);
+    if(!inputStr) return;
+    const nDow = parseInt(inputStr.trim(),10);
+    if(isNaN(nDow)||nDow<0||nDow>6){ alert('Día de la semana fuera de rango (0-6).'); return; }
+    updates = {dow:nDow};
+  }
+  if(!updates) return;
+
+  // Persistir
   if(!FB_CONFIGURED || !dbRef){
-    // Modo local
-    orig.dia = nDia;
-    orig.mes = nMes-1;
+    Object.assign(orig, updates);
     renderAnualesList();
     rebuildMonthSelect();
     render();
     return;
   }
-  dbRef.child(id).update({dia:nDia, mes:nMes-1}, err=>{
+  dbRef.child(String(orig.id)).update(updates, err=>{
     if(err){ alert('No se pudo guardar: '+err.message); return; }
-    // El listener .on('value') refrescará acts y renderAnualesList se vuelve a abrir tras el render.
     setTimeout(()=>{ if(document.getElementById('modal-anuales-overlay').classList.contains('open')) renderAnualesList(); }, 300);
   });
 }
-function borrarAnual(id){
-  const orig = acts.find(a=> a.id===id && a.anual);
-  if(!orig){ alert('No se encontró la actividad anual.'); return; }
-  if(!confirm('¿Borrar la actividad anual "'+(orig.act||'')+'"?\n\nDejará de aparecer en TODOS los años de la Carta Gantt.\nEsta acción no se puede deshacer.')) return;
+
+function borrarRecurrente(id){
+  const orig = _findActById(id);
+  if(!orig){ alert('No se encontró la actividad recurrente.'); return; }
+  const fr = getFrecuencia(orig);
+  const frTxt = fr==='anual'?'anual':(fr==='mensual'?'mensual':(fr==='semanal'?'semanal':''));
+  const aviso = fr==='anual'?'Dejará de aparecer en TODOS los años.'
+              :fr==='mensual'?'Dejará de aparecer en TODOS los meses.'
+              :'Dejará de aparecer en TODAS las semanas.';
+  if(!confirm('¿Borrar la actividad '+frTxt+' "'+(orig.act||'')+'"?\n\n'+aviso+'\nEsta acción no se puede deshacer.')) return;
   if(!FB_CONFIGURED || !dbRef){
-    acts = acts.filter(a=> a.id!==id);
+    acts = acts.filter(a=> !(a.id===orig.id || String(a.id)===String(orig.id)));
     renderAnualesList();
     rebuildMonthSelect();
     render();
     return;
   }
-  dbRef.child(id).remove(err=>{
+  dbRef.child(String(orig.id)).remove(err=>{
     if(err){ alert('No se pudo borrar: '+err.message); return; }
     setTimeout(()=>{ if(document.getElementById('modal-anuales-overlay').classList.contains('open')) renderAnualesList(); }, 300);
   });
 }
+
+// Aliases retro-compatibles por si algo del HTML viejo los llama
+function editarAnual(id){ return editarRecurrente(id); }
+function borrarAnual(id){ return borrarRecurrente(id); }
 
 function render(){
   // ── Determinar modo de vista ──
@@ -1123,36 +1370,81 @@ function render(){
   );
 
   // ── Filtrar actividades por MES seleccionado ──
-  // Las actividades NORMALES tienen fecha real y se filtran por año/mes.
-  // Las actividades ANUALES (anual:true, dia, mes) se EXPANDEN al vuelo:
-  //   - Vista de un mes específico: se incluyen las anuales cuyo mes==viewMonth,
-  //     con la fecha calculada para viewYear.
-  //   - "Toda la Gantt": se expanden a [año actual .. año actual + 2] para que
-  //     se vean en pantalla pero no en cantidad infinita.
+  // - Puntuales: usan fecha real, se filtran por año/mes.
+  // - Anuales: se expanden 1 ocurrencia al año, en su día/mes.
+  // - Mensuales: 1 ocurrencia al mes, en su día.
+  // - Semanales: 1 ocurrencia por semana, en su día de la semana.
+  // En "Toda la Gantt" las recurrentes se proyectan desde el año actual + 2 años.
   let byMonth;
+
+  // Helpers locales: rango de fechas a expandir según el modo de vista.
+  function rangoVista(){
+    if(isTodaGantt){
+      const yIni = TODAY.getFullYear();
+      return {ini: new Date(yIni,0,1,0,0,0), fin: new Date(yIni+2,11,31,23,59,59)};
+    }
+    // Mes específico: expandir un poco más allá para cubrir las 5 columnas
+    // extra de allDays que dibuja la tabla.
+    const ini = new Date(viewYear, viewMonth, 1, 0, 0, 0);
+    const fin = new Date(viewYear, viewMonth+1, 7, 23, 59, 59); // hasta 7 días del mes siguiente
+    // También retroceder para cubrir días de la semana anterior visibles
+    ini.setDate(ini.getDate()-7);
+    return {ini, fin};
+  }
+
   if(isTodaGantt){
-    const normales = acts.filter(a=> !a.anual && a.fecha instanceof Date && !isNaN(a.fecha.getTime()));
-    const anuales = acts.filter(a=> a.anual);
+    const normales = acts.filter(a=>{
+      const fr = getFrecuencia(a);
+      return fr==='puntual' && a.fecha instanceof Date && !isNaN(a.fecha.getTime());
+    });
     const expandidas = [];
-    const yIni = TODAY.getFullYear();
-    const yFin = yIni + 2;
-    anuales.forEach(a=>{
-      for(let y=yIni; y<=yFin; y++){
-        expandidas.push(makeAnualOcurrencia(a, y));
+    const {ini: rIni, fin: rFin} = rangoVista();
+    acts.forEach(a=>{
+      const fr = getFrecuencia(a);
+      if(fr==='anual'){
+        for(let y=rIni.getFullYear(); y<=rFin.getFullYear(); y++){
+          expandidas.push(makeAnualOcurrencia(a, y));
+        }
+      } else if(fr==='mensual'){
+        for(let y=rIni.getFullYear(); y<=rFin.getFullYear(); y++){
+          for(let m=0; m<12; m++){
+            expandidas.push(makeMensualOcurrencia(a, y, m));
+          }
+        }
+      } else if(fr==='semanal'){
+        const occ = makeSemanalOcurrencias(a, rIni, rFin);
+        occ.forEach(o=>expandidas.push(o));
       }
     });
     byMonth = [...normales, ...expandidas].sort((a,b)=>a.fecha-b.fecha);
   } else {
     const targetKey = viewYear+'-'+viewMonth;
     const normales = acts.filter(a=>{
-      if(a.anual) return false;
+      const fr = getFrecuencia(a);
+      if(fr!=='puntual') return false;
       if(!(a.fecha instanceof Date) || isNaN(a.fecha.getTime())) return false;
       const k = a.fecha.getFullYear()+'-'+a.fecha.getMonth();
       return k === targetKey;
     });
-    const anuales = acts.filter(a=> a.anual && a.mes===viewMonth)
-                         .map(a=> makeAnualOcurrencia(a, viewYear));
-    byMonth = [...normales, ...anuales].sort((a,b)=>a.fecha-b.fecha);
+    const expandidas = [];
+    acts.forEach(a=>{
+      const fr = getFrecuencia(a);
+      if(fr==='anual' && a.mes===viewMonth){
+        expandidas.push(makeAnualOcurrencia(a, viewYear));
+      } else if(fr==='mensual'){
+        expandidas.push(makeMensualOcurrencia(a, viewYear, viewMonth));
+      } else if(fr==='semanal'){
+        const {ini: rIni, fin: rFin} = rangoVista();
+        const occ = makeSemanalOcurrencias(a, rIni, rFin);
+        occ.forEach(o=>{
+          // Solo dejar las que caen en el mes visible (y un margen de días vecinos)
+          // El propio render filtra por fecha vs allDays, así que aceptamos todas
+          // las del rango (el bar-cell solo aparece si la fecha matchea allDays).
+          expandidas.push(o);
+        });
+      }
+    });
+    byMonth = [...normales, ...expandidas].sort((a,b)=>a.fecha-b.fecha);
   }
 
   // ── Filtro de estado (vencidas, rojo, etc.) sobre las del mes ──
@@ -1241,16 +1533,21 @@ function render(){
       html+='<td class="td-obs"><span class="plazo-badge">PLAZO</span></td>';
     } else if(r.isVirtualAnual){
       const obsTxt = r.obs ? (r.obs+' ') : '';
-      html+='<td class="td-obs">'+obsTxt+'<span class="anual-badge" title="Se repite todos los años">ANUAL</span></td>';
+      const fr = getFrecuencia(r);
+      let badge='';
+      if(fr==='anual')        badge='<span class="anual-badge" title="Se repite todos los años">ANUAL</span>';
+      else if(fr==='mensual') badge='<span class="mensual-badge" title="Se repite todos los meses">MENSUAL</span>';
+      else if(fr==='semanal') badge='<span class="semanal-badge" title="Se repite todas las semanas">SEMANAL</span>';
+      html+='<td class="td-obs">'+obsTxt+badge+'</td>';
     } else {
       html+='<td class="td-obs">'+(r.obs||'')+'</td>';
     }
     html+='<td class="td-term">'+fmtDate(r.fecha)+'</td>';
     html+='<td class="td-d" style="background:'+col.bg+';color:'+col.fg+';'+(col.hideNum?'border:1px solid #7AB034;':'')+'" title="'+(col.hideNum?'Vencido':dl)+'">'+(col.hideNum?'':dl)+'</td>';
     if(r.isVirtualAnual){
-      // Fila virtual: editar/borrar va al modal de anuales (un único punto de control)
-      html+='<td class="td-del"><button class="edit-btn" onclick="openAnualesModal()" title="Actividad ANUAL — editar desde el panel de anuales" style="background:#1a3f6f;color:#fff;">&#128197;</button></td>';
-      html+='<td class="td-del"><button class="del-btn" onclick="openAnualesModal()" title="Actividad ANUAL — borrar desde el panel de anuales">&#10005;</button></td>';
+      // Fila virtual: editar/borrar va al modal de recurrentes
+      html+='<td class="td-del"><button class="edit-btn" onclick="openAnualesModal()" title="Actividad recurrente — editar desde el panel" style="background:#1a3f6f;color:#fff;">&#128197;</button></td>';
+      html+='<td class="td-del"><button class="del-btn" onclick="openAnualesModal()" title="Actividad recurrente — borrar desde el panel">&#10005;</button></td>';
     } else {
       // Botón editar (FIX 2&3)
       html+='<td class="td-del"><button class="edit-btn" onclick="requestEdit('+r.id+')" title="Editar">&#9998;</button></td>';
@@ -1432,11 +1729,14 @@ function iniciarGanttDelUsuario(){
     const data = snap.val();
     if(data){
       acts = Object.values(data).map(a=>{
-        // Para anuales, la "fecha real" en Firebase es solo histórica;
-        // lo que importa son a.dia y a.mes. Igual la parseamos para que
-        // el sort no rompa, pero en render se usa makeAnualOcurrencia.
+        // Para recurrentes (anual/mensual/semanal), la "fecha real" en Firebase
+        // es solo histórica; lo que importa son los campos dia/mes/dow/freq.
+        // Igual la parseamos para que el sort no rompa, pero en render se usa
+        // makeAnualOcurrencia / makeMensualOcurrencia / makeSemanalOcurrencias.
         let f = new Date(a.fecha);
-        if(a.anual && (isNaN(f.getTime()) || !a.fecha)){
+        const esRecurrente = !!(a.anual || a.mensual || a.semanal ||
+                                (a.freq && a.freq!=='puntual'));
+        if(esRecurrente && (isNaN(f.getTime()) || !a.fecha)){
           // fecha de respaldo: hoy (no se usará para mostrar)
           f = new Date();
         }
@@ -1447,7 +1747,10 @@ function iniciarGanttDelUsuario(){
           fecha: f
         };
       }).sort((a,b)=>a.fecha-b.fecha);
-      const maxId = acts.reduce((m,a)=>Math.max(m,a.id||0),0);
+      const maxId = acts.reduce((m,a)=>{
+        const n = Number(a.id);
+        return (Number.isFinite(n) && n>m) ? n : m;
+      },0);
       if(maxId >= nextId) nextId = maxId + 1;
       rebuildMonthSelect();
       render();
