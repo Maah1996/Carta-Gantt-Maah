@@ -38,10 +38,10 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#eef2f7;min-height:100vh
 .stat-card .val{font-size:15px;font-weight:800;line-height:1.1;}
 .stat-card .lbl{font-size:8px;color:rgba(255,255,255,.6);margin-top:1px;text-transform:uppercase;letter-spacing:.3px;text-align:center;}
 .stat-total .val{color:#fff;}
-.stat-venc .val{color:#ff6b6b;}
-.stat-rojo .val{color:#ff8a65;}
-.stat-naranja .val{color:#ffcc02;}
-.stat-amarillo .val{color:#fff176;}
+.stat-venc .val{color:#9DCB47;}
+.stat-rojo .val{color:#FF0000;}
+.stat-naranja .val{color:#FFB400;}
+.stat-amarillo .val{color:#FFEB00;}
 .stat-aniv .val{color:#ffe082;}
 .stat-divider{width:1px;height:30px;background:rgba(255,255,255,.15);margin:0 2px;}
 .filter-clear{font-size:10px;color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:2px 8px;cursor:pointer;align-self:center;}
@@ -246,10 +246,35 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
 </head>
 <body>
 
+<!-- ══ MODAL DE LOGIN (overlay completo, bloquea TODA la app) ══ -->
+<div id="login-overlay" style="position:fixed;inset:0;background:#1a3f6f;z-index:99999;display:flex;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:32px 28px;width:340px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.4);">
+    <div style="text-align:center;margin-bottom:18px;">
+      <div style="font-size:22px;font-weight:700;color:#1a3f6f;">📊 Carta Gantt MAAH</div>
+      <div style="font-size:11px;color:#718096;margin-top:4px;">Ingresa con tu usuario y clave</div>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="display:block;font-size:11px;font-weight:600;color:#4a5568;margin-bottom:4px;">Usuario</label>
+      <select id="login-usuario" style="width:100%;font-size:13px;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;background:#fff;">
+        <option value="">Cargando usuarios...</option>
+      </select>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:11px;font-weight:600;color:#4a5568;margin-bottom:4px;">Clave</label>
+      <input type="password" id="login-clave" placeholder="••••" maxlength="20" style="width:100%;font-size:14px;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;letter-spacing:2px;text-align:center;" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div id="login-error" style="display:none;color:#c0392b;font-size:11px;background:#ffebee;border:1px solid #ffcdd2;border-radius:5px;padding:6px 9px;margin-bottom:10px;text-align:center;"></div>
+    <button onclick="doLogin()" style="width:100%;padding:10px;font-size:13px;font-weight:700;background:#1a3f6f;color:#fff;border:none;border-radius:6px;cursor:pointer;">Ingresar a mi Gantt</button>
+    <p style="font-size:10px;color:#a0aec0;text-align:center;margin-top:12px;line-height:1.5;">Cada usuario tiene su propia carta Gantt privada.<br>Usa la misma clave de la Agenda MAAH.</p>
+  </div>
+</div>
+
 <!-- ══ HEADER ══ -->
 <div class="app-header">
   <h1>■&nbsp; CARTA GANTT MAAH</h1>
   <div class="header-right">
+    <span id="user-badge" style="font-size:11px;padding:4px 12px;border-radius:14px;background:rgba(255,255,255,.18);color:#fff;font-weight:600;display:none;"></span>
+    <button id="logout-btn" onclick="doLogout()" style="font-size:10px;padding:4px 10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:5px;cursor:pointer;display:none;" title="Cerrar sesión">↪ Salir</button>
     <!-- FIX 5: botón imprimir -->
     <button class="btn-print" onclick="printGantt()">&#128438; Imprimir carta</button>
     <span id="fb-status" style="font-size:10px;padding:3px 10px;border-radius:12px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);">● Iniciando...</span>
@@ -295,6 +320,11 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
   <select class="month-select" id="month-select" onchange="onMonthChange()"><option value="all">— Toda la Gantt —</option><option value="current">Mes actual (Abril 2026)</option><option value="2026-3">Abril 2026 (3 act.)</option></select>
   <div class="toolbar-divider"></div>
   <span class="view-info" id="view-info">Mostrando todas las actividades</span>
+  <div class="toolbar-divider"></div>
+  <div id="feriados-panel" style="flex:1;min-width:280px;background:#fffbe6;border:1px solid #ffd966;border-radius:6px;padding:6px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:11px;">
+    <strong style="color:#854f0b;font-size:10px;letter-spacing:.3px;">FERIADOS DEL MES:</strong>
+    <span id="feriados-list" style="color:#5a4000;">—</span>
+  </div>
 </div>
 
 <!-- ══ MAIN ══ -->
@@ -342,10 +372,10 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
     <div class="sidebar-section">
       <div class="sidebar-title">Leyenda</div>
       <div class="legend-grid">
-        <div class="legend-item"><div class="legend-dot" style="background:#F9C400;"></div>10 – 365 días</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#E65100;"></div>5 – 10 días</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#C62828;"></div>0 – 5 días</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#8B0000;"></div>Vencido</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FFEB00;"></div>10 – 365 días</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FFB400;"></div>5 – 10 días</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FF0000;"></div>0 – 5 días</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#9DCB47;"></div>Vencido</div>
         <div class="legend-item"><div class="legend-dot" style="background:#c8960a;"></div>Aniversario</div>
         <div class="legend-item"><div class="legend-dot" style="background:#e8ecf2;border:1px solid #b8c4d6;"></div><span style="color:#718096;">Fin de semana</span></div>
         <div class="legend-item" style="margin-top:2px;">
@@ -470,12 +500,16 @@ function diasRest(fecha){
   return Math.round((t - TODAY) / 86400000);
 }
 function getColor(diff, isAniv){
-  if(isAniv)    return {bg:'#c8960a',fg:'#fff'};
-  if(diff < 0)  return {bg:'#8B0000',fg:'#fff'};
-  if(diff <= 5) return {bg:'#C62828',fg:'#fff'};
-  if(diff <= 10)return {bg:'#E65100',fg:'#fff'};
-  if(diff<=365) return {bg:'#F9C400',fg:'#5a4000'};
-  return              {bg:'#2e7d32',fg:'#fff'};
+  if(isAniv)    return {bg:'#c8960a',fg:'#fff', hideNum:false};
+  // Vencidos: verde claro y SIN número visible
+  if(diff < 0)  return {bg:'#9DCB47',fg:'#9DCB47', hideNum:true};
+  // 0–5 días: rojo + número blanco
+  if(diff <= 5) return {bg:'#FF0000',fg:'#fff', hideNum:false};
+  // 5–10 días: naranja + número negro
+  if(diff <= 10)return {bg:'#FFB400',fg:'#000', hideNum:false};
+  // 10–365 días: amarillo + número negro
+  if(diff<=365) return {bg:'#FFEB00',fg:'#000', hideNum:false};
+  return              {bg:'#2e7d32',fg:'#fff', hideNum:false};
 }
 function filterGroup(diff, isAniv){
   // Los aniversarios van al grupo 'aniv' SOLO cuando el filtro 'aniv' está activo.
@@ -555,20 +589,55 @@ function getViewMonthYear(){
 function rebuildMonthSelect(){
   const sel = document.getElementById('month-select');
   const prev = sel.value;
+  // Conteo de actividades por mes (para mostrar como info)
   const monthSet = {};
   acts.forEach(a=>{
     const k = a.fecha.getFullYear()+'-'+a.fecha.getMonth();
     if(!monthSet[k]) monthSet[k]={year:a.fecha.getFullYear(),month:a.fecha.getMonth(),count:0};
     monthSet[k].count++;
   });
-  const sorted = Object.values(monthSet).sort((a,b)=>a.year!==b.year?a.year-b.year:a.month-b.month);
-  // Opciones: Toda la Gantt + Mes actual + meses con actividades
-  sel.innerHTML = '<option value="all">— Toda la Gantt —</option>';
-  sel.innerHTML += '<option value="current">Mes actual ('+MNAMES[TODAY.getMonth()]+' '+TODAY.getFullYear()+')</option>';
-  sorted.forEach(m=>{
-    const k = m.year+'-'+m.month;
-    sel.innerHTML += '<option value="'+k+'">'+MNAMES[m.month]+' '+m.year+' ('+m.count+' act.)</option>';
+  // Determinar rango: desde 1 año antes de HOY o de la actividad más antigua,
+  // hasta 2 años después de HOY o de la actividad más futura.
+  const todayY = TODAY.getFullYear(), todayM = TODAY.getMonth();
+  let minY = todayY - 1, minM = todayM;
+  let maxY = todayY + 2, maxM = todayM;
+  acts.forEach(a=>{
+    const ay = a.fecha.getFullYear(), am = a.fecha.getMonth();
+    if(ay < minY || (ay===minY && am < minM)){ minY=ay; minM=am; }
+    if(ay > maxY || (ay===maxY && am > maxM)){ maxY=ay; maxM=am; }
   });
+
+  // Construir lista de TODOS los meses entre minY/minM y maxY/maxM
+  const allMonths=[];
+  let curY=minY, curM=minM;
+  while(curY < maxY || (curY===maxY && curM <= maxM)){
+    allMonths.push({year:curY, month:curM});
+    curM++;
+    if(curM>11){ curM=0; curY++; }
+  }
+
+  // Renderizar
+  sel.innerHTML = '<option value="all">— Toda la Gantt —</option>';
+  sel.innerHTML += '<option value="current">Mes actual ('+MNAMES[todayM]+' '+todayY+')</option>';
+
+  // Agrupar por año para mejor lectura
+  let lastYear=null;
+  allMonths.forEach(m=>{
+    const k = m.year+'-'+m.month;
+    const info = monthSet[k];
+    const sufijo = info ? ' ('+info.count+' act.)' : '';
+    const isHoy = (m.year===todayY && m.month===todayM) ? ' ← HOY' : '';
+    if(m.year !== lastYear){
+      sel.innerHTML += '<optgroup label="'+m.year+'">';
+      lastYear = m.year;
+    }
+    sel.innerHTML += '<option value="'+k+'">'+MNAMES[m.month]+' '+m.year+sufijo+isHoy+'</option>';
+  });
+  // Cerrar el último optgroup si abrimos alguno
+  if(lastYear !== null){
+    // Los optgroup no necesitan cierre explícito en innerHTML, el navegador los infiere
+  }
+
   if([...sel.options].some(o=>o.value===prev)) sel.value=prev;
   else sel.value='current';
   currentMonthKey=sel.value;
@@ -661,12 +730,22 @@ function showModal(msg,cb){
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
 
 // ── EDICIÓN CON CONTRASEÑA (FIX 2 & 3) ───────────────────────
+// Al estar logueado, NO se vuelve a pedir clave: ya está autenticado.
+// EDIT_PWD se mantiene como fallback para modo sin login (Firebase no configurado).
 const EDIT_PWD = '1996';
 let editingId = null;
 let editType  = 'revision';
 
 function requestEdit(id){
   editingId = id;
+  // Si ya está logueado, saltar paso de pwd e ir directo al formulario
+  if(currentUser){
+    document.getElementById('edit-step-pwd').style.display='none';
+    document.getElementById('edit-step-form').style.display='block';
+    document.getElementById('modal-edit-overlay').classList.add('open');
+    fillEditForm(id);
+    return;
+  }
   // Resetear modal al estado inicial (paso contraseña)
   document.getElementById('edit-step-pwd').style.display='block';
   document.getElementById('edit-step-form').style.display='none';
@@ -685,7 +764,11 @@ function verifyPwd(){
     return;
   }
   // Contraseña correcta → cargar datos de la actividad
-  const act = acts.find(a=>a.id===editingId);
+  fillEditForm(editingId);
+}
+
+function fillEditForm(id){
+  const act = acts.find(a=>a.id===id);
   if(!act){closeEditModal();return;}
 
   // Rellenar formulario
@@ -917,6 +1000,9 @@ function render(){
   else infoTxt = 'Mostrando '+MNAMES[viewMonth]+' '+viewYear+' ('+byMonth.length+' actividades)';
   document.getElementById('view-info').textContent = infoTxt;
 
+  // Actualizar panel de feriados del mes visible
+  renderFeriadosPanel(viewYear, viewMonth, isTodaGantt);
+
   const NCOLS=6+allDays.length;
   let html='<table class="gantt"><colgroup>';
   html+='<col style="width:155px;"><col style="width:40px;"><col style="width:62px;"><col style="width:36px;"><col style="width:20px;"><col style="width:20px;">';
@@ -987,7 +1073,7 @@ function render(){
       ?'<td class="td-obs"><span class="plazo-badge">PLAZO</span></td>'
       :'<td class="td-obs">'+(r.obs||'')+'</td>';
     html+='<td class="td-term">'+fmtDate(r.fecha)+'</td>';
-    html+='<td class="td-d" style="background:'+col.bg+';color:'+col.fg+';">'+dl+'</td>';
+    html+='<td class="td-d" style="background:'+col.bg+';color:'+col.fg+';'+(col.hideNum?'border:1px solid #7AB034;':'')+'" title="'+(col.hideNum?'Vencido':dl)+'">'+(col.hideNum?'':dl)+'</td>';
     // Botón editar (FIX 2&3)
     html+='<td class="td-del"><button class="edit-btn" onclick="requestEdit('+r.id+')" title="Editar">&#9998;</button></td>';
     html+='<td class="td-del"><button class="del-btn" onclick="delAct('+r.id+')" title="Eliminar">&#10005;</button></td>';
@@ -1054,58 +1140,195 @@ let dbRef = null;
 let fbListener = null;
 let fbOnline = false;
 
+// Usuario actualmente logueado (se setea desde login)
+let currentUser = null;
+let usuariosCache = []; // Lista cargada desde la agenda
+
 function initFirebase(){
   if(!FB_CONFIGURED){
+    // Sin Firebase: caemos a un modo demo con localStorage genérico
     loadFromLocalStorage();
+    showLoginOverlay(); // Aún así pedimos login con un usuario "DEMO"
     return;
   }
   try{
     if(!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
     db = firebase.database();
-    dbRef = db.ref('gantt_maah/actividades');
-
-    // Timeout: si en 5 seg no conecta, carga localStorage
-    const timeout = setTimeout(()=>{
-      if(!fbOnline){
-        updateStatusBadge(false);
-        loadFromLocalStorage();
-      }
-    }, 5000);
 
     db.ref('.info/connected').on('value', snap=>{
       fbOnline = snap.val() === true;
       updateStatusBadge(fbOnline);
-      if(fbOnline) clearTimeout(timeout);
     });
 
-    dbRef.on('value', snap=>{
-      const data = snap.val();
-      if(data){
-        acts = Object.values(data).map(a=>({
-          ...a,
-          act: (a.act||'').toUpperCase().trim(),
-          obs: (a.obs||'').toUpperCase().trim(),
-          fecha: new Date(a.fecha)
-        })).sort((a,b)=>a.fecha-b.fecha);
-        const maxId = acts.reduce((m,a)=>Math.max(m,a.id||0),0);
-        if(maxId >= nextId) nextId = maxId + 1;
-      } else {
-        // Base de datos vacía — cargar datos iniciales
-        acts = [...DEFAULT_ACTS];
-        DEFAULT_ACTS.forEach(a=> dbRef.child(String(a.id)).set({...a, fecha:a.fecha.toISOString()}));
-      }
-      rebuildMonthSelect();
-      render();
-    }, err=>{
-      console.error('Firebase error:', err.code, err.message);
-      updateStatusBadge(false);
-      loadFromLocalStorage();
-    });
+    // Cargar lista de usuarios de la AGENDA (compartida)
+    cargarUsuariosAgenda();
   }catch(e){
     console.error('Firebase init error:', e);
     updateStatusBadge(false);
     loadFromLocalStorage();
   }
+}
+
+// Cargar usuarios desde la base de la agenda
+function cargarUsuariosAgenda(){
+  const sel=document.getElementById('login-usuario');
+  // Intentar cargar desde maah_usuarios (la BD de la agenda)
+  // Como la Gantt y la Agenda comparten el mismo proyecto Firebase,
+  // accedemos al mismo árbol.
+  db.ref('maah_usuarios').once('value', snap=>{
+    const data=snap.val();
+    if(!data){
+      sel.innerHTML='<option value="">No hay usuarios. Crea uno primero en la Agenda.</option>';
+      return;
+    }
+    usuariosCache=Object.entries(data).map(([id,u])=>({
+      id, nombre:u.nombre||id, pass:u.pass||'', rol:u.rol||'user'
+    })).sort((a,b)=>a.nombre.localeCompare(b.nombre));
+    sel.innerHTML='<option value="">— Selecciona tu usuario —</option>'+
+      usuariosCache.map(u=>'<option value="'+u.id+'">'+u.nombre+(u.rol==='admin'?' ★':'')+'</option>').join('');
+  }, err=>{
+    console.error('Error cargando usuarios:', err);
+    sel.innerHTML='<option value="">Error de conexión. Reintenta.</option>';
+  });
+}
+
+function showLoginOverlay(){
+  document.getElementById('login-overlay').style.display='flex';
+}
+function hideLoginOverlay(){
+  document.getElementById('login-overlay').style.display='none';
+}
+
+function doLogin(){
+  const userId=document.getElementById('login-usuario').value;
+  const clave=document.getElementById('login-clave').value.trim();
+  const errBox=document.getElementById('login-error');
+  errBox.style.display='none';
+
+  if(!userId){ errBox.textContent='Selecciona un usuario.';errBox.style.display='block';return; }
+  if(!clave){ errBox.textContent='Ingresa tu clave.';errBox.style.display='block';return; }
+
+  const u=usuariosCache.find(x=>x.id===userId);
+  if(!u){ errBox.textContent='Usuario no encontrado.';errBox.style.display='block';return; }
+  if(String(u.pass)!==clave){
+    errBox.textContent='Clave incorrecta.';errBox.style.display='block';
+    document.getElementById('login-clave').value='';
+    document.getElementById('login-clave').focus();
+    return;
+  }
+
+  // Login OK
+  currentUser=u;
+  // Recordar en sessionStorage para no pedir clave de nuevo si recarga
+  try{ sessionStorage.setItem('gantt_user', JSON.stringify({id:u.id,nombre:u.nombre,pass:u.pass,rol:u.rol})); }catch(e){}
+  iniciarGanttDelUsuario();
+}
+
+function doLogout(){
+  try{ sessionStorage.removeItem('gantt_user'); }catch(e){}
+  currentUser=null;
+  // Limpiar listeners y estado
+  if(dbRef){ try{ dbRef.off(); }catch(e){} }
+  acts=[];
+  // Recargar para empezar de cero
+  location.reload();
+}
+
+function iniciarGanttDelUsuario(){
+  // Mostrar UI del usuario en el header
+  const badge=document.getElementById('user-badge');
+  badge.textContent='👤 '+currentUser.nombre+(currentUser.rol==='admin'?' ★':'');
+  badge.style.display='inline-block';
+  document.getElementById('logout-btn').style.display='inline-block';
+
+  hideLoginOverlay();
+
+  // Conectar a la ruta de ESTE usuario (cada uno tiene la suya)
+  dbRef = db.ref('gantt_maah/actividades_por_usuario/'+currentUser.id);
+
+  // Bandera para hacer la migración solo una vez
+  let migracionIntentada = false;
+
+  dbRef.on('value', snap=>{
+    const data = snap.val();
+    if(data){
+      acts = Object.values(data).map(a=>({
+        ...a,
+        act: (a.act||'').toUpperCase().trim(),
+        obs: (a.obs||'').toUpperCase().trim(),
+        fecha: new Date(a.fecha)
+      })).sort((a,b)=>a.fecha-b.fecha);
+      const maxId = acts.reduce((m,a)=>Math.max(m,a.id||0),0);
+      if(maxId >= nextId) nextId = maxId + 1;
+      rebuildMonthSelect();
+      render();
+    } else {
+      // Sin datos en la ruta personal del usuario.
+      // Si es MAAH (admin con ese nombre), intentar recuperar los datos viejos
+      // de la ruta compartida UNA SOLA VEZ.
+      const esMAAH = currentUser.nombre &&
+                     currentUser.nombre.toUpperCase().trim()==='MAAH' &&
+                     currentUser.rol==='admin';
+      if(esMAAH && !migracionIntentada){
+        migracionIntentada = true;
+        migrarDatosViejosAMaah();
+        return; // Esperamos a que la migración escriba en dbRef y reactive este listener
+      }
+      // Usuario nuevo cualquiera: gantt VACÍA
+      acts = [];
+      rebuildMonthSelect();
+      render();
+    }
+  }, err=>{
+    console.error('Firebase error:', err.code, err.message);
+    updateStatusBadge(false);
+  });
+}
+
+// Migración: copia los datos viejos de gantt_maah/actividades a la ruta personal de MAAH.
+// Solo se ejecuta cuando MAAH entra a una gantt vacía.
+function migrarDatosViejosAMaah(){
+  console.log('[MAAH] Detectada gantt vacía. Buscando datos viejos para migrar...');
+  db.ref('gantt_maah/actividades').once('value', snap=>{
+    const viejos = snap.val();
+    if(!viejos){
+      console.log('[MAAH] No hay datos viejos. Gantt vacía.');
+      acts = [];
+      rebuildMonthSelect();
+      render();
+      return;
+    }
+    console.log('[MAAH] Datos viejos encontrados. Copiando a tu ruta personal...');
+    // Copiar cada actividad a la ruta personal de MAAH
+    const updates = {};
+    Object.entries(viejos).forEach(([id, act])=>{
+      updates[id] = act;
+    });
+    dbRef.update(updates, err=>{
+      if(err){
+        console.error('[MAAH] Error en migración:', err);
+        alert('No se pudieron recuperar los datos viejos. Revisa la consola.');
+        return;
+      }
+      console.log('[MAAH] ✓ Datos migrados correctamente.');
+      // El listener dbRef.on('value') se reactivará automáticamente y los cargará.
+    });
+  }, err=>{
+    console.error('[MAAH] Error leyendo datos viejos:', err);
+  });
+}
+
+// Restaurar sesión si ya estaba logueado
+function intentarRestaurarSesion(){
+  try{
+    const raw=sessionStorage.getItem('gantt_user');
+    if(!raw)return false;
+    const u=JSON.parse(raw);
+    if(!u||!u.id)return false;
+    currentUser=u;
+    iniciarGanttDelUsuario();
+    return true;
+  }catch(e){ return false; }
 }
 
 function updateStatusBadge(online){
@@ -1182,6 +1405,12 @@ function saveToStorage(){ saveToLocalStorage(); }
 let addPwdVerified=false;
 
 function openAddPwdModal(){
+  // Si está logueado, saltar el modal de contraseña
+  if(currentUser){
+    addPwdVerified=true;
+    showAddForm();
+    return;
+  }
   // Si ya está autenticado en esta sesión, no pedir clave de nuevo
   if(addPwdVerified){ showAddForm(); return; }
   document.getElementById('addpwd-input').value='';
@@ -1275,6 +1504,36 @@ function feriadoKey(d){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
+// Panel de feriados del mes visible
+function renderFeriadosPanel(year, month, isTodaGantt){
+  const list=document.getElementById('feriados-list');
+  if(!list)return;
+  if(isTodaGantt){
+    list.innerHTML='<span style="color:#888;font-style:italic;">Selecciona un mes específico para ver sus feriados</span>';
+    return;
+  }
+  const fmap=getFeriados(year);
+  const dnames=['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
+  const feriadosMes=[];
+  for(const key in fmap){
+    const [y,m,d]=key.split('-').map(Number);
+    if(y===year && (m-1)===month){
+      const dt=new Date(y,m-1,d);
+      feriadosMes.push({dia:d, nombreDia:dnames[dt.getDay()], motivo:fmap[key]});
+    }
+  }
+  feriadosMes.sort((a,b)=>a.dia-b.dia);
+  if(!feriadosMes.length){
+    list.innerHTML='<span style="color:#888;font-style:italic;">No hay feriados este mes</span>';
+    return;
+  }
+  list.innerHTML=feriadosMes.map(f=>
+    '<span style="background:#fff;border:1px solid #ffd966;border-radius:4px;padding:2px 8px;font-size:10px;color:#5a4000;display:inline-block;">'+
+    '<strong style="color:#854f0b;">'+f.nombreDia+' '+String(f.dia).padStart(2,'0')+'</strong> · '+f.motivo+
+    '</span>'
+  ).join(' ');
+}
+
 // Tooltip de feriados
 const tooltip=document.getElementById('feriado-tooltip');
 function showFeriadoTip(el,nombre){
@@ -1293,7 +1552,37 @@ document.getElementById('today-lbl').textContent=
   'HOY: '+String(td2.getDate()).padStart(2,'0')+'/'+MSHORT[td2.getMonth()]+'/'+td2.getFullYear();
 
 setFilter('all');
-initFirebase(); // Arranca Firebase (o localStorage si no está configurado)
+
+// Inicializar firebase y cargar usuarios; mostrar login (o restaurar sesión)
+initFirebase();
+
+// Una vez cargados los usuarios, intentar restaurar sesión; si no, mostrar login
+function bootstrapSession(){
+  if(!FB_CONFIGURED){
+    // Modo demo sin Firebase
+    return;
+  }
+  // Esperar a que se carguen los usuarios
+  const wait=setInterval(()=>{
+    if(usuariosCache.length>0 || document.getElementById('login-usuario').options.length>1){
+      clearInterval(wait);
+      // Intentar restaurar sesión
+      const restaurada=intentarRestaurarSesion();
+      if(!restaurada){
+        showLoginOverlay();
+        setTimeout(()=>document.getElementById('login-clave').focus(),100);
+      }
+    }
+  },200);
+  // Timeout de 8s: si no carga la lista, igual mostrar el modal con error
+  setTimeout(()=>{
+    clearInterval(wait);
+    if(!currentUser){
+      showLoginOverlay();
+    }
+  },8000);
+}
+bootstrapSession();
 
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){closeModal();closeEditModal();closeAddPwdModal();}
