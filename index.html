@@ -123,6 +123,7 @@ table.gantt td.td-del{width:20px;background:#fff;vertical-align:middle;text-alig
 .bar-cell{width:24px;height:24px;vertical-align:middle;text-align:center;padding:0;}
 
 .plazo-badge{background:#8B0000;color:#fff;font-size:7px;padding:1px 3px;border-radius:2px;font-weight:800;}
+.anual-badge{background:#1a3f6f;color:#fff;font-size:7px;padding:1px 3px;border-radius:2px;font-weight:800;letter-spacing:.3px;}
 
 /* FIX 1: row-aniv solo colorea columnas de texto, NO la barra pintada */
 table.gantt tr.row-aniv td.td-act,
@@ -276,6 +277,7 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
     <span id="user-badge" style="font-size:11px;padding:4px 12px;border-radius:14px;background:rgba(255,255,255,.18);color:#fff;font-weight:600;display:none;"></span>
     <button id="logout-btn" onclick="doLogout()" style="font-size:10px;padding:4px 10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:5px;cursor:pointer;display:none;" title="Cerrar sesión">↪ Salir</button>
     <!-- FIX 5: botón imprimir -->
+    <button class="btn-print" onclick="openAnualesModal()" title="Ver/editar actividades que se repiten todos los años">&#128197; Anuales</button>
     <button class="btn-print" onclick="printGantt()">&#128438; Imprimir carta</button>
     <span id="fb-status" style="font-size:10px;padding:3px 10px;border-radius:12px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);">● Iniciando...</span>
     <span class="today-badge" id="today-lbl">HOY: 14/abr/2026</span>
@@ -478,6 +480,18 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
   </div>
 </div>
 
+<!-- MODAL ACTIVIDADES ANUALES -->
+<div class="modal-overlay" id="modal-anuales-overlay">
+  <div class="modal-edit" style="max-width:640px;width:95vw;">
+    <h3>📅 Actividades anuales</h3>
+    <p class="subtitle">Estas actividades se repiten todos los años en la fecha indicada. Cambiar la fecha o borrar afecta a TODOS los años.</p>
+    <div id="anuales-list" style="max-height:55vh;overflow-y:auto;border:1px solid #e2e8f0;border-radius:6px;background:#f7fafc;"></div>
+    <div class="modal-btns" style="margin-top:14px;">
+      <button class="btn-confirm" style="background:#1a3f6f;" onclick="closeAnualesModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── ESTADO ───────────────────────────────────────────────────
 const TODAY = new Date();
@@ -589,9 +603,23 @@ function getViewMonthYear(){
 function rebuildMonthSelect(){
   const sel = document.getElementById('month-select');
   const prev = sel.value;
-  // Conteo de actividades por mes (para mostrar como info)
+  // Conteo de actividades por mes (para mostrar como info en el desplegable)
+  // - Actividades normales: se cuenta el mes/año real de la fecha.
+  // - Actividades anuales: se cuentan en su mes para CADA año dentro del
+  //   rango visible del desplegable (desde el año actual en adelante).
   const monthSet = {};
+  const todayY_count = TODAY.getFullYear();
+  const yMaxRange_count = todayY_count + 5; // amplio para no quedar corto
   acts.forEach(a=>{
+    if(a.anual){
+      if(typeof a.mes !== 'number' || a.mes<0 || a.mes>11) return;
+      for(let y=todayY_count; y<=yMaxRange_count; y++){
+        const k = y+'-'+a.mes;
+        if(!monthSet[k]) monthSet[k]={year:y,month:a.mes,count:0};
+        monthSet[k].count++;
+      }
+      return;
+    }
     // Validar fecha: si es inválida, ignorar esta actividad
     if(!(a.fecha instanceof Date) || isNaN(a.fecha.getTime())) return;
     const k = a.fecha.getFullYear()+'-'+a.fecha.getMonth();
@@ -949,6 +977,121 @@ function printGantt(){
 }
 
 // ── RENDER ───────────────────────────────────────────────────
+// ── ACTIVIDADES ANUALES ──────────────────────────────────────
+// Una actividad anual se guarda UNA SOLA VEZ en Firebase con anual:true,
+// dia (1-31) y mes (0-11). Para mostrarse en la Gantt cada año, generamos
+// una "ocurrencia" virtual que tiene una fecha real para el año que se
+// está viendo. La ocurrencia conserva una referencia al original (parentAnualId)
+// para impedir editar/borrar desde la fila normal.
+function makeAnualOcurrencia(orig, year){
+  const dia = Math.min(Math.max(parseInt(orig.dia,10)||1,1),31);
+  const mes = Math.min(Math.max(parseInt(orig.mes,10)||0,0),11);
+  // Si el día no existe en ese mes (ej: 29-feb en año no bisiesto),
+  // JS lo "rebota" al mes siguiente. Lo limitamos al último día válido.
+  const ultimoDia = new Date(year, mes+1, 0).getDate();
+  const diaSeguro = Math.min(dia, ultimoDia);
+  const fecha = new Date(year, mes, diaSeguro, 12, 0, 0);
+  return {
+    ...orig,
+    fecha: fecha,
+    type: orig.type || 'aniversario',
+    parentAnualId: orig.id,         // marca que es virtual
+    isVirtualAnual: true,
+    // id compuesto único para no chocar con normales ni con otras ocurrencias
+    id: 'A'+orig.id+'_'+year
+  };
+}
+
+// ── MODAL ACTIVIDADES ANUALES ────────────────────────────────
+function openAnualesModal(){
+  const overlay = document.getElementById('modal-anuales-overlay');
+  if(!overlay){ return; }
+  renderAnualesList();
+  overlay.classList.add('open');
+}
+function closeAnualesModal(){
+  const overlay = document.getElementById('modal-anuales-overlay');
+  if(overlay) overlay.classList.remove('open');
+}
+function renderAnualesList(){
+  const cont = document.getElementById('anuales-list');
+  if(!cont) return;
+  const anuales = acts.filter(a=> a.anual);
+  if(!anuales.length){
+    cont.innerHTML = '<div style="padding:20px;text-align:center;color:#718096;font-size:13px;">No tienes actividades anuales.<br><br>Crea una desde la <strong>Agenda</strong> marcando la casilla <strong>ANUAL</strong> al ingresar una actividad.</div>';
+    return;
+  }
+  // Ordenar por mes y día
+  anuales.sort((a,b)=>{
+    if(a.mes!==b.mes) return (a.mes||0)-(b.mes||0);
+    return (a.dia||0)-(b.dia||0);
+  });
+  let html = '<table style="width:100%;border-collapse:collapse;">';
+  html += '<thead><tr style="background:#1a3f6f;color:#fff;">';
+  html += '<th style="padding:8px 10px;text-align:left;font-size:11px;">ACTIVIDAD</th>';
+  html += '<th style="padding:8px 10px;text-align:center;font-size:11px;width:90px;">DÍA / MES</th>';
+  html += '<th style="padding:8px 10px;text-align:center;font-size:11px;width:130px;">ACCIONES</th>';
+  html += '</tr></thead><tbody>';
+  anuales.forEach(a=>{
+    const dia = String(a.dia||1).padStart(2,'0');
+    const mes = MNAMES[a.mes||0]||'?';
+    html += '<tr style="border-bottom:1px solid #e2e8f0;">';
+    html += '<td style="padding:8px 10px;font-size:12px;color:#2d3748;">'+(a.act||'')+'</td>';
+    html += '<td style="padding:8px 10px;font-size:12px;color:#1a3f6f;text-align:center;font-weight:700;">'+dia+' / '+mes+'</td>';
+    html += '<td style="padding:8px 10px;text-align:center;">';
+    html += '<button onclick="editarAnual('+a.id+')" style="background:#1a3f6f;color:#fff;border:none;padding:5px 10px;border-radius:4px;font-size:11px;cursor:pointer;margin-right:4px;">&#9998; Cambiar</button>';
+    html += '<button onclick="borrarAnual('+a.id+')" style="background:#c62828;color:#fff;border:none;padding:5px 10px;border-radius:4px;font-size:11px;cursor:pointer;">&#10005; Borrar</button>';
+    html += '</td></tr>';
+  });
+  html += '</tbody></table>';
+  cont.innerHTML = html;
+}
+function editarAnual(id){
+  const orig = acts.find(a=> a.id===id && a.anual);
+  if(!orig){ alert('No se encontró la actividad anual.'); return; }
+  // Pedir nueva fecha (día/mes)
+  const diaActual = String(orig.dia||1).padStart(2,'0');
+  const mesActual = String((orig.mes||0)+1).padStart(2,'0');
+  const inputStr = prompt('Editar actividad anual:\n\n'+(orig.act||'')+'\n\nIngrese la nueva fecha (DD/MM):', diaActual+'/'+mesActual);
+  if(!inputStr) return;
+  const m = inputStr.trim().match(/^(\d{1,2})\s*[\/\-\.]\s*(\d{1,2})$/);
+  if(!m){ alert('Formato inválido. Use DD/MM (por ejemplo: 21/04).'); return; }
+  const nDia = parseInt(m[1],10);
+  const nMes = parseInt(m[2],10);
+  if(nDia<1||nDia>31||nMes<1||nMes>12){ alert('Día o mes fuera de rango.'); return; }
+  // Persistir en Firebase
+  if(!FB_CONFIGURED || !dbRef){
+    // Modo local
+    orig.dia = nDia;
+    orig.mes = nMes-1;
+    renderAnualesList();
+    rebuildMonthSelect();
+    render();
+    return;
+  }
+  dbRef.child(id).update({dia:nDia, mes:nMes-1}, err=>{
+    if(err){ alert('No se pudo guardar: '+err.message); return; }
+    // El listener .on('value') refrescará acts y renderAnualesList se vuelve a abrir tras el render.
+    setTimeout(()=>{ if(document.getElementById('modal-anuales-overlay').classList.contains('open')) renderAnualesList(); }, 300);
+  });
+}
+function borrarAnual(id){
+  const orig = acts.find(a=> a.id===id && a.anual);
+  if(!orig){ alert('No se encontró la actividad anual.'); return; }
+  if(!confirm('¿Borrar la actividad anual "'+(orig.act||'')+'"?\n\nDejará de aparecer en TODOS los años de la Carta Gantt.\nEsta acción no se puede deshacer.')) return;
+  if(!FB_CONFIGURED || !dbRef){
+    acts = acts.filter(a=> a.id!==id);
+    renderAnualesList();
+    rebuildMonthSelect();
+    render();
+    return;
+  }
+  dbRef.child(id).remove(err=>{
+    if(err){ alert('No se pudo borrar: '+err.message); return; }
+    setTimeout(()=>{ if(document.getElementById('modal-anuales-overlay').classList.contains('open')) renderAnualesList(); }, 300);
+  });
+}
+
 function render(){
   // ── Determinar modo de vista ──
   const isTodaGantt = currentMonthKey === 'all';
@@ -980,19 +1123,36 @@ function render(){
   );
 
   // ── Filtrar actividades por MES seleccionado ──
-  // Usamos la MISMA fórmula que monthSet (year+'-'+month) para garantizar
-  // que el filtro coincida exactamente con el conteo mostrado en el desplegable.
+  // Las actividades NORMALES tienen fecha real y se filtran por año/mes.
+  // Las actividades ANUALES (anual:true, dia, mes) se EXPANDEN al vuelo:
+  //   - Vista de un mes específico: se incluyen las anuales cuyo mes==viewMonth,
+  //     con la fecha calculada para viewYear.
+  //   - "Toda la Gantt": se expanden a [año actual .. año actual + 2] para que
+  //     se vean en pantalla pero no en cantidad infinita.
   let byMonth;
   if(isTodaGantt){
-    byMonth = [...acts]; // Toda la Gantt: todas las actividades
+    const normales = acts.filter(a=> !a.anual && a.fecha instanceof Date && !isNaN(a.fecha.getTime()));
+    const anuales = acts.filter(a=> a.anual);
+    const expandidas = [];
+    const yIni = TODAY.getFullYear();
+    const yFin = yIni + 2;
+    anuales.forEach(a=>{
+      for(let y=yIni; y<=yFin; y++){
+        expandidas.push(makeAnualOcurrencia(a, y));
+      }
+    });
+    byMonth = [...normales, ...expandidas].sort((a,b)=>a.fecha-b.fecha);
   } else {
     const targetKey = viewYear+'-'+viewMonth;
-    byMonth = acts.filter(a=>{
-      // Validar que la fecha sea un Date válido (defensa por si vino mal de Firebase)
+    const normales = acts.filter(a=>{
+      if(a.anual) return false;
       if(!(a.fecha instanceof Date) || isNaN(a.fecha.getTime())) return false;
       const k = a.fecha.getFullYear()+'-'+a.fecha.getMonth();
       return k === targetKey;
     });
+    const anuales = acts.filter(a=> a.anual && a.mes===viewMonth)
+                         .map(a=> makeAnualOcurrencia(a, viewYear));
+    byMonth = [...normales, ...anuales].sort((a,b)=>a.fecha-b.fecha);
   }
 
   // ── Filtro de estado (vencidas, rojo, etc.) sobre las del mes ──
@@ -1077,14 +1237,25 @@ function render(){
 
     html+='<tr class="'+(isAniv?'row-aniv':'')+'">';
     html+='<td class="td-act">'+r.act+'</td>';
-    html+=isPlazo
-      ?'<td class="td-obs"><span class="plazo-badge">PLAZO</span></td>'
-      :'<td class="td-obs">'+(r.obs||'')+'</td>';
+    if(isPlazo){
+      html+='<td class="td-obs"><span class="plazo-badge">PLAZO</span></td>';
+    } else if(r.isVirtualAnual){
+      const obsTxt = r.obs ? (r.obs+' ') : '';
+      html+='<td class="td-obs">'+obsTxt+'<span class="anual-badge" title="Se repite todos los años">ANUAL</span></td>';
+    } else {
+      html+='<td class="td-obs">'+(r.obs||'')+'</td>';
+    }
     html+='<td class="td-term">'+fmtDate(r.fecha)+'</td>';
     html+='<td class="td-d" style="background:'+col.bg+';color:'+col.fg+';'+(col.hideNum?'border:1px solid #7AB034;':'')+'" title="'+(col.hideNum?'Vencido':dl)+'">'+(col.hideNum?'':dl)+'</td>';
-    // Botón editar (FIX 2&3)
-    html+='<td class="td-del"><button class="edit-btn" onclick="requestEdit('+r.id+')" title="Editar">&#9998;</button></td>';
-    html+='<td class="td-del"><button class="del-btn" onclick="delAct('+r.id+')" title="Eliminar">&#10005;</button></td>';
+    if(r.isVirtualAnual){
+      // Fila virtual: editar/borrar va al modal de anuales (un único punto de control)
+      html+='<td class="td-del"><button class="edit-btn" onclick="openAnualesModal()" title="Actividad ANUAL — editar desde el panel de anuales" style="background:#1a3f6f;color:#fff;">&#128197;</button></td>';
+      html+='<td class="td-del"><button class="del-btn" onclick="openAnualesModal()" title="Actividad ANUAL — borrar desde el panel de anuales">&#10005;</button></td>';
+    } else {
+      // Botón editar (FIX 2&3)
+      html+='<td class="td-del"><button class="edit-btn" onclick="requestEdit('+r.id+')" title="Editar">&#9998;</button></td>';
+      html+='<td class="td-del"><button class="del-btn" onclick="delAct('+r.id+')" title="Eliminar">&#10005;</button></td>';
+    }
 
     allDays.forEach((_,i)=>{
       const isToday=i===todayIdx;
@@ -1260,12 +1431,22 @@ function iniciarGanttDelUsuario(){
   dbRef.on('value', snap=>{
     const data = snap.val();
     if(data){
-      acts = Object.values(data).map(a=>({
-        ...a,
-        act: (a.act||'').toUpperCase().trim(),
-        obs: (a.obs||'').toUpperCase().trim(),
-        fecha: new Date(a.fecha)
-      })).sort((a,b)=>a.fecha-b.fecha);
+      acts = Object.values(data).map(a=>{
+        // Para anuales, la "fecha real" en Firebase es solo histórica;
+        // lo que importa son a.dia y a.mes. Igual la parseamos para que
+        // el sort no rompa, pero en render se usa makeAnualOcurrencia.
+        let f = new Date(a.fecha);
+        if(a.anual && (isNaN(f.getTime()) || !a.fecha)){
+          // fecha de respaldo: hoy (no se usará para mostrar)
+          f = new Date();
+        }
+        return {
+          ...a,
+          act: (a.act||'').toUpperCase().trim(),
+          obs: (a.obs||'').toUpperCase().trim(),
+          fecha: f
+        };
+      }).sort((a,b)=>a.fecha-b.fecha);
       const maxId = acts.reduce((m,a)=>Math.max(m,a.id||0),0);
       if(maxId >= nextId) nextId = maxId + 1;
       rebuildMonthSelect();
