@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0045)file:///C:/Users/gladi/Downloads/index_6.html -->
+<!-- saved from url=(0045)file:///C:/Users/gladi/Downloads/index_9.html -->
 <html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
@@ -278,7 +278,7 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
 </div>
 
 <!-- ══ HEADER ══ -->
-<div class="app-header">
+<div class="app-header" id="app-header" style="">
   <h1>■&nbsp; CARTA GANTT MAAH</h1>
   <div class="header-right">
     <span id="user-badge" style="font-size: 11px; padding: 4px 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.18); color: rgb(255, 255, 255); font-weight: 600; display: inline-block;">👤 ADMIN ★</span>
@@ -292,7 +292,7 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
 </div>
 
 <!-- ══ STATS BAR ══ -->
-<div class="stats-bar">
+<div class="stats-bar" id="app-stats-bar" style="">
   <span class="filter-label">Filtrar:</span>
   <div class="stat-card stat-total active-filter" onclick="setFilter(&#39;all&#39;)" title="Ver todas">
     <span class="val" id="s-total">6</span>
@@ -324,7 +324,7 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
 </div>
 
 <!-- ══ TOOLBAR ══ -->
-<div class="toolbar">
+<div class="toolbar" id="app-toolbar" style="">
   <span class="toolbar-label">Año:</span>
   <select class="month-select" id="year-select" onchange="onYearChange()" style="min-width:130px;"><option value="all">— Toda la Gantt —</option><option value="current">Año actual (2026)</option><option value="2026">2026 (6 act.) ← HOY</option><option value="2027">2027 (5 act.)</option><option value="2028">2028 (5 act.)</option></select>
   <span class="toolbar-label" id="month-select-label" style="">Mes:</span>
@@ -339,7 +339,7 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
 </div>
 
 <!-- ══ MAIN ══ -->
-<div class="main-layout">
+<div class="main-layout" id="app-main" style="">
 
   <!-- SIDEBAR -->
   <div class="sidebar">
@@ -413,7 +413,7 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
     <!-- FIX 5: área de impresión -->
     <div id="print-area">
       <div class="print-title" id="print-title" style="display: none;">CARTA GANTT</div>
-      <div id="gantt-wrap"><table class="gantt"><colgroup><col style="width:155px;"><col style="width:40px;"><col style="width:62px;"><col style="width:36px;"><col style="width:20px;"><col style="width:20px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"></colgroup><thead><tr><th class="th-title" colspan="6">CARTA GANTT MAAH — MAYO 2026</th><th class="th-week" colspan="7">lun, 27-abr-26</th><th class="th-week" colspan="7">lun, 04-may-26</th><th class="th-week" colspan="7">lun, 11-may-26</th><th class="th-week" colspan="7">lun, 18-may-26</th><th class="th-week" colspan="7">lun, 25-may-26</th><th class="th-week" colspan="5">lun, 01-jun-26</th></tr><tr><th class="th-col-act">ACTIVIDAD</th><th class="th-col-obs">OBS</th><th class="th-col-term">TÉRMINO</th><th class="th-col-dias">DÍAS</th><th class="th-col-del"></th><th class="th-col-del"></th><th class="th-daynum othermonth today-col"><span class="today-th-label">HOY</span></th><th class="th-daynum othermonth">28</th><th class="th-daynum othermonth">29</th><th class="th-daynum othermonth">30</th><th class="th-daynum">01</th><th class="th-daynum wknd">02</th><th class="th-daynum wknd">03</th><th class="th-daynum">04</th><th class="th-daynum">05</th><th class="th-daynum">06</th><th class="th-daynum">07</th><th class="th-daynum">08</th><th class="th-daynum wknd">09</th><th class="th-daynum wknd">10</th><th class="th-daynum">11</th><th class="th-daynum">12</th><th class="th-daynum">13</th><th class="th-daynum">14</th><th class="th-daynum">15</th><th class="th-daynum wknd">16</th><th class="th-daynum wknd">17</th><th class="th-daynum">18</th><th class="th-daynum">19</th><th class="th-daynum">20</th><th class="th-daynum">21</th><th class="th-daynum">22</th><th class="th-daynum wknd">23</th><th class="th-daynum wknd">24</th><th class="th-daynum">25</th><th class="th-daynum">26</th><th class="th-daynum">27</th><th class="th-daynum">28</th><th class="th-daynum">29</th><th class="th-daynum wknd">30</th><th class="th-daynum wknd">31</th><th class="th-daynum othermonth">01</th><th class="th-daynum othermonth">02</th><th class="th-daynum othermonth">03</th><th class="th-daynum othermonth">04</th><th class="th-daynum othermonth">05</th></tr><tr><td class="th-col-act" style="background:#2c5282;"></td><td class="th-col-obs" style="background:#2c5282;"></td><td class="th-col-term" style="background:#2c5282;"></td><td class="th-col-dias" style="background:#2c5282;"></td><td class="th-col-del" style="background:#2c5282;"></td><td class="th-col-del" style="background:#2c5282;"></td><th class="th-dayname othermonth today-col">LUN</th><th class="th-dayname othermonth">MAR</th><th class="th-dayname othermonth">MIÉ</th><th class="th-dayname othermonth">JUE</th><th class="th-dayname">VIE</th><th class="th-dayname wknd">SÁB</th><th class="th-dayname wknd">DOM</th><th class="th-dayname">LUN</th><th class="th-dayname">MAR</th><th class="th-dayname">MIÉ</th><th class="th-dayname">JUE</th><th class="th-dayname">VIE</th><th class="th-dayname wknd">SÁB</th><th class="th-dayname wknd">DOM</th><th class="th-dayname">LUN</th><th class="th-dayname">MAR</th><th class="th-dayname">MIÉ</th><th class="th-dayname">JUE</th><th class="th-dayname">VIE</th><th class="th-dayname wknd">SÁB</th><th class="th-dayname wknd">DOM</th><th class="th-dayname">LUN</th><th class="th-dayname">MAR</th><th class="th-dayname">MIÉ</th><th class="th-dayname">JUE</th><th class="th-dayname">VIE</th><th class="th-dayname wknd">SÁB</th><th class="th-dayname wknd">DOM</th><th class="th-dayname">LUN</th><th class="th-dayname">MAR</th><th class="th-dayname">MIÉ</th><th class="th-dayname">JUE</th><th class="th-dayname">VIE</th><th class="th-dayname wknd">SÁB</th><th class="th-dayname wknd">DOM</th><th class="th-dayname othermonth">LUN</th><th class="th-dayname othermonth">MAR</th><th class="th-dayname othermonth">MIÉ</th><th class="th-dayname othermonth">JUE</th><th class="th-dayname othermonth">VIE</th></tr></thead><tbody><tr class=""><td class="td-act">VIAJE COL</td><td class="td-obs">ESPOSA</td><td class="td-term">06/may/26</td><td class="td-d" style="background:#FFB400;color:#000;" title="+9d">+9d</td><td class="td-del"><button class="edit-btn" onclick="requestEdit(208)" title="Editar">✎</button></td><td class="td-del"><button class="del-btn" onclick="delAct(208)" title="Eliminar">✕</button></td><td class="td-day othermonth today-col" style="border-left:2.5px solid #e53935;"></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día del Trabajo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día del Trabajo&#39;)"></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="bar-cell" style="background:#FFB400 !important;"></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día de las Glorias Navales&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día de las Glorias Navales&#39;)"></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td></tr><tr class="row-aniv"><td class="td-act">CUMBLE JAVI</td><td class="td-obs">HIJO BB <span class="anual-badge" title="Se repite todos los años">ANUAL</span></td><td class="td-term">13/may/26</td><td class="td-d" style="background:#c8960a;color:#fff;" title="+16d">+16d</td><td class="td-del"><button class="edit-btn" onclick="openAnualesModal()" title="Actividad recurrente — editar desde el panel" style="background:#1a3f6f;color:#fff;">📅</button></td><td class="td-del"><button class="del-btn" onclick="openAnualesModal()" title="Actividad recurrente — borrar desde el panel">✕</button></td><td class="td-day othermonth today-col" style="border-left:2.5px solid #e53935;"></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día del Trabajo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día del Trabajo&#39;)"></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="bar-cell" style="background:#c8960a !important;"></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día de las Glorias Navales&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día de las Glorias Navales&#39;)"></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td></tr></tbody></table></div>
+      <div id="gantt-wrap"><table class="gantt"><colgroup><col style="width:155px;"><col style="width:40px;"><col style="width:62px;"><col style="width:36px;"><col style="width:20px;"><col style="width:20px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"></colgroup><thead><tr><th class="th-title" colspan="6">CARTA GANTT MAAH — MAYO 2026</th><th class="th-week" colspan="7">lun, 27-abr-26</th><th class="th-week" colspan="7">lun, 04-may-26</th><th class="th-week" colspan="7">lun, 11-may-26</th><th class="th-week" colspan="7">lun, 18-may-26</th><th class="th-week" colspan="7">lun, 25-may-26</th><th class="th-week" colspan="5">lun, 01-jun-26</th></tr><tr><th class="th-col-act">ACTIVIDAD</th><th class="th-col-obs">OBS</th><th class="th-col-term">TÉRMINO</th><th class="th-col-dias">DÍAS</th><th class="th-col-del"></th><th class="th-col-del"></th><th class="th-daynum othermonth today-col"><span class="today-th-label">HOY</span></th><th class="th-daynum othermonth">28</th><th class="th-daynum othermonth">29</th><th class="th-daynum othermonth">30</th><th class="th-daynum">01</th><th class="th-daynum wknd">02</th><th class="th-daynum wknd">03</th><th class="th-daynum">04</th><th class="th-daynum">05</th><th class="th-daynum">06</th><th class="th-daynum">07</th><th class="th-daynum">08</th><th class="th-daynum wknd">09</th><th class="th-daynum wknd">10</th><th class="th-daynum">11</th><th class="th-daynum">12</th><th class="th-daynum">13</th><th class="th-daynum">14</th><th class="th-daynum">15</th><th class="th-daynum wknd">16</th><th class="th-daynum wknd">17</th><th class="th-daynum">18</th><th class="th-daynum">19</th><th class="th-daynum">20</th><th class="th-daynum">21</th><th class="th-daynum">22</th><th class="th-daynum wknd">23</th><th class="th-daynum wknd">24</th><th class="th-daynum">25</th><th class="th-daynum">26</th><th class="th-daynum">27</th><th class="th-daynum">28</th><th class="th-daynum">29</th><th class="th-daynum wknd">30</th><th class="th-daynum wknd">31</th><th class="th-daynum othermonth">01</th><th class="th-daynum othermonth">02</th><th class="th-daynum othermonth">03</th><th class="th-daynum othermonth">04</th><th class="th-daynum othermonth">05</th></tr><tr><td class="th-col-act" style="background:#2c5282;"></td><td class="th-col-obs" style="background:#2c5282;"></td><td class="th-col-term" style="background:#2c5282;"></td><td class="th-col-dias" style="background:#2c5282;"></td><td class="th-col-del" style="background:#2c5282;"></td><td class="th-col-del" style="background:#2c5282;"></td><th class="th-dayname othermonth today-col">LUN</th><th class="th-dayname othermonth">MAR</th><th class="th-dayname othermonth">MIÉ</th><th class="th-dayname othermonth">JUE</th><th class="th-dayname">VIE</th><th class="th-dayname wknd">SÁB</th><th class="th-dayname wknd">DOM</th><th class="th-dayname">LUN</th><th class="th-dayname">MAR</th><th class="th-dayname">MIÉ</th><th class="th-dayname">JUE</th><th class="th-dayname">VIE</th><th class="th-dayname wknd">SÁB</th><th class="th-dayname wknd">DOM</th><th class="th-dayname">LUN</th><th class="th-dayname">MAR</th><th class="th-dayname">MIÉ</th><th class="th-dayname">JUE</th><th class="th-dayname">VIE</th><th class="th-dayname wknd">SÁB</th><th class="th-dayname wknd">DOM</th><th class="th-dayname">LUN</th><th class="th-dayname">MAR</th><th class="th-dayname">MIÉ</th><th class="th-dayname">JUE</th><th class="th-dayname">VIE</th><th class="th-dayname wknd">SÁB</th><th class="th-dayname wknd">DOM</th><th class="th-dayname">LUN</th><th class="th-dayname">MAR</th><th class="th-dayname">MIÉ</th><th class="th-dayname">JUE</th><th class="th-dayname">VIE</th><th class="th-dayname wknd">SÁB</th><th class="th-dayname wknd">DOM</th><th class="th-dayname othermonth">LUN</th><th class="th-dayname othermonth">MAR</th><th class="th-dayname othermonth">MIÉ</th><th class="th-dayname othermonth">JUE</th><th class="th-dayname othermonth">VIE</th></tr></thead><tbody><tr class=""><td class="td-act">VIAJE COL 09:00</td><td class="td-obs">ESPOSA</td><td class="td-term">06/may/26</td><td class="td-d" style="background:#FFB400;color:#000;" title="+9d">+9d</td><td class="td-del"><button class="edit-btn" onclick="requestEdit(208)" title="Editar">✎</button></td><td class="td-del"><button class="del-btn" onclick="delAct(208)" title="Eliminar">✕</button></td><td class="td-day othermonth today-col" style="border-left:2.5px solid #e53935;"></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día del Trabajo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día del Trabajo&#39;)"></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="bar-cell" style="background:#FFB400 !important;"></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día de las Glorias Navales&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día de las Glorias Navales&#39;)"></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td></tr><tr class="row-aniv"><td class="td-act">CUMBLE JAVI</td><td class="td-obs">HIJO BB <span class="anual-badge" title="Se repite todos los años">ANUAL</span></td><td class="td-term">13/may/26</td><td class="td-d" style="background:#c8960a;color:#fff;" title="+16d">+16d</td><td class="td-del"><button class="edit-btn" onclick="openAnualesModal()" title="Actividad recurrente — editar desde el panel" style="background:#1a3f6f;color:#fff;">📅</button></td><td class="td-del"><button class="del-btn" onclick="openAnualesModal()" title="Actividad recurrente — borrar desde el panel">✕</button></td><td class="td-day othermonth today-col" style="border-left:2.5px solid #e53935;"></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día del Trabajo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día del Trabajo&#39;)"></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="bar-cell" style="background:#c8960a !important;"></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día de las Glorias Navales&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día de las Glorias Navales&#39;)"></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td></tr></tbody></table></div>
     </div>
   </div>
 </div>
@@ -474,7 +474,7 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
           <div class="type-btn" id="et-revision" onclick="setEditType(this,&#39;revision&#39;)">Revisión</div>
           <div class="type-btn t-plazo" id="et-plazo" onclick="setEditType(this,&#39;plazo&#39;)">Plazo</div>
           <div class="type-btn t-aniv" id="et-aniv" onclick="setEditType(this,&#39;aniversario&#39;)">Aniversario</div>
-          <div class="type-btn" id="et-otro" onclick="setEditType(this,&#39;otro&#39;)">Otro</div>
+          <div class="type-btn active" id="et-otro" onclick="setEditType(this,&#39;otro&#39;)">Otro</div>
         </div>
       </div>
       <div class="form-group">
@@ -498,7 +498,7 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
         <label>Fecha de término</label>
         <input type="date" id="edit-fecha" oninput="updateEditPreview()">
       </div>
-      <div class="edit-preview" id="edit-preview" style="background: rgb(200, 150, 10); color: rgb(255, 255, 255); border-color: rgb(200, 150, 10);">Faltan 38 días para el término</div>
+      <div class="edit-preview" id="edit-preview" style="background: rgb(255, 180, 0); color: rgb(0, 0, 0); border-color: rgb(255, 180, 0);">Faltan 9 días para el término</div>
       <div class="modal-btns" style="margin-top:12px;">
         <button class="btn-cancel" onclick="closeEditModal()">Cancelar</button>
         <button class="btn-confirm" style="background:#1a3f6f;" onclick="saveEdit()">Guardar cambios</button>
@@ -1788,6 +1788,7 @@ function cargarUsuariosAgenda(){
     sel.disabled=false;
     if(!data){
       sel.innerHTML='<option value="">Sin usuarios registrados en la Agenda.</option>';
+      bootstrapSession(); // igual intentamos restaurar sesión
       return;
     }
     usuariosCache=Object.entries(data).map(([id,u])=>({
@@ -1801,14 +1802,18 @@ function cargarUsuariosAgenda(){
       usuariosCache.map(u=>
         '<option value="'+u.id+'">'+u.nombre+(u.rol==='admin'?' ★':'')+'</option>'
       ).join('');
+
+    // CLAVE: solo AHORA que los usuarios cargaron, intentar restaurar sesión
+    bootstrapSession();
+
   }, err=>{
     console.error('Error cargando usuarios:', err);
     sel.disabled=false;
-    sel.innerHTML='<option value="">⚠ Error de conexión</option>';
-    // Botón para reintentar visible en el error box
+    sel.innerHTML='<option value="">⚠ Error de conexion</option>';
     const errBox=document.getElementById('login-error');
-    errBox.textContent='No se pudo cargar la lista de usuarios. Verifica tu conexión y recarga la página.';
+    errBox.textContent='No se pudo cargar usuarios. Verifica tu conexion y recarga la pagina.';
     errBox.style.display='block';
+    showLoginOverlay(); // mostrar login de todas formas
   });
 }
 
@@ -1867,6 +1872,12 @@ function doLogout(){
 }
 
 function iniciarGanttDelUsuario(){
+  // Mostrar toda la app (estaba oculta hasta autenticarse)
+  ['app-header','app-stats-bar','app-toolbar','app-main'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display='';
+  });
+
   // Mostrar UI del usuario en el header
   const badge=document.getElementById('user-badge');
   badge.textContent='👤 '+currentUser.nombre+(currentUser.rol==='admin'?' ★':'');
@@ -1963,28 +1974,31 @@ function migrarDatosViejosAMaah(){
   });
 }
 
-// Restaurar sesión si ya estaba logueado
+// Restaurar sesión — se llama SOLO cuando usuariosCache ya está cargado
 function intentarRestaurarSesion(){
   try{
     const raw=sessionStorage.getItem('gantt_user');
-    if(!raw)return false;
+    if(!raw) return false;
     const u=JSON.parse(raw);
-    if(!u||!u.id)return false;
-    // Si los usuarios ya cargaron, revalidar la clave guardada
-    if(usuariosCache.length){
-      const vivo=usuariosCache.find(x=>x.id===u.id);
-      if(!vivo||String(vivo.pass||'').trim()!==String(u.pass||'').trim()){
-        sessionStorage.removeItem('gantt_user');
-        return false;
-      }
-      currentUser=vivo;
-    } else {
-      // Usuarios aún no cargaron → confiar en sessionStorage por ahora
-      currentUser=u;
+    if(!u||!u.id) return false;
+    // Siempre revalidar contra usuariosCache (ya está cargado al llegar aquí)
+    const vivo=usuariosCache.find(x=>x.id===u.id);
+    if(!vivo){
+      sessionStorage.removeItem('gantt_user');
+      return false;
     }
+    // Verificar que la clave sigue siendo correcta
+    if(String(vivo.pass||'').trim() !== String(u.pass||'').trim()){
+      sessionStorage.removeItem('gantt_user');
+      return false;
+    }
+    currentUser=vivo;
     iniciarGanttDelUsuario();
     return true;
-  }catch(e){ return false; }
+  }catch(e){
+    sessionStorage.removeItem('gantt_user');
+    return false;
+  }
 }
 
 function updateStatusBadge(online){
@@ -2212,33 +2226,20 @@ setFilter('all');
 // Inicializar firebase y cargar usuarios; mostrar login (o restaurar sesión)
 initFirebase();
 
-// Una vez cargados los usuarios, intentar restaurar sesión; si no, mostrar login
+// bootstrapSession: se llama desde cargarUsuariosAgenda cuando los usuarios ya cargaron.
+// NO usa setInterval — se ejecuta síncronamente una vez que usuariosCache está listo.
 function bootstrapSession(){
-  if(!FB_CONFIGURED){
-    // Modo demo sin Firebase
-    return;
+  if(currentUser) return; // ya logueado (evitar doble ejecución)
+  const restaurada = intentarRestaurarSesion();
+  if(!restaurada){
+    showLoginOverlay();
+    setTimeout(()=>{
+      const cl = document.getElementById('login-clave');
+      if(cl) cl.focus();
+    }, 150);
   }
-  // Esperar a que se carguen los usuarios
-  const wait=setInterval(()=>{
-    if(usuariosCache.length>0){
-      clearInterval(wait);
-      // Intentar restaurar sesión
-      const restaurada=intentarRestaurarSesion();
-      if(!restaurada){
-        showLoginOverlay();
-        setTimeout(()=>document.getElementById('login-clave').focus(),100);
-      }
-    }
-  },200);
-  // Timeout de 8s: si no carga la lista, igual mostrar el modal con error
-  setTimeout(()=>{
-    clearInterval(wait);
-    if(!currentUser){
-      showLoginOverlay();
-    }
-  },8000);
 }
-bootstrapSession();
+// NO llamar bootstrapSession aquí — se llama desde cargarUsuariosAgenda al terminar
 
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){closeModal();closeEditModal();closeAddPwdModal();}
