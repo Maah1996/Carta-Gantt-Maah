@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
+<!-- saved from url=(0046)file:///C:/Users/gladi/Downloads/index_21.html -->
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 <title>Carta Gantt — MAAH</title>
 <link rel="icon" type="image/x-icon" href="https://maah1996.github.io/Carta-Gantt-Maah/favicon.ico">
@@ -9,8 +9,8 @@
 <link rel="apple-touch-icon" href="https://maah1996.github.io/Carta-Gantt-Maah/apple-touch-icon.png">
 <link rel="manifest" href="https://maah1996.github.io/Carta-Gantt-Maah/site.webmanifest">
 <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="file:///C:/Users/gladi/Downloads/index_files/firebase-app-compat.js.descarga"></script>
+<script src="file:///C:/Users/gladi/Downloads/index_files/firebase-database-compat.js.descarga"></script>
 <meta name="theme-color" content="#1a3f6f">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -31,6 +31,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#eef2f7;min-height:100vh
 /* ── STATS BAR ── */
 .stats-bar{background:#15325a;padding:6px 20px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
 .filter-label{font-size:10px;color:rgba(255,255,255,.45);margin-right:2px;align-self:center;}
+/* FIX 1: stat-card más pequeños */
 .stat-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:4px 10px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:center;min-width:58px;}
 .stat-card:hover{background:rgba(255,255,255,.18);transform:translateY(-1px);}
 .stat-card.active-filter{outline:2px solid #fff;background:rgba(255,255,255,.22);}
@@ -55,6 +56,7 @@ select.month-select:focus{outline:none;border-color:#1a3f6f;}
 .view-info{font-size:10px;color:#718096;background:#f7fafc;border:1px solid #e2e8f0;padding:4px 10px;border-radius:5px;}
 
 /* ── MAIN ── */
+/* FIX 4: sidebar más angosto para dar protagonismo a la carta */
 .main-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 160px);}
 
 /* ── SIDEBAR ── */
@@ -66,14 +68,17 @@ select.month-select:focus{outline:none;border-color:#1a3f6f;}
 .form-group input,.form-group select,.form-group textarea{width:100%;font-size:11px;padding:5px 8px;border:1px solid #cbd5e0;border-radius:5px;background:#fff;color:#2d3748;transition:border-color .15s;}
 .form-group textarea{height:42px;resize:none;}
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#1a3f6f;box-shadow:0 0 0 2px rgba(26,63,111,.1);}
+/* SELECT estilizado para Tipo y Frecuencia */
 .form-group select.select-tipo,.form-group select.select-freq{appearance:none;-webkit-appearance:none;-moz-appearance:none;background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%234a5568' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:22px;font-weight:600;cursor:pointer;}
 .form-group select.select-tipo option[value="__add__"],.form-group select.select-freq option[value="__add__"]{color:#0f766e;font-weight:700;background:#f0fdf4;}
+/* Bloque de fecha de inicio (resaltado para recurrentes) */
 .fecha-inicio-block{display:none;margin-bottom:8px;padding:8px;background:#f0fdf4;border-left:3px solid #16a34a;border-radius:4px;}
 .fecha-inicio-block.visible{display:block;}
 .fecha-inicio-block label{display:block;font-size:10px;color:#15803d;margin-bottom:3px;font-weight:700;}
 .fecha-inicio-block input{width:100%;font-size:11px;padding:5px 8px;border:1px solid #86efac;border-radius:5px;background:#fff;color:#2d3748;}
 .fecha-inicio-block input:focus{outline:none;border-color:#16a34a;box-shadow:0 0 0 2px rgba(22,163,74,.15);}
 .fecha-inicio-block .hint{font-size:9px;color:#15803d;margin-top:3px;line-height:1.3;}
+/* Modal pequeño para agregar nueva categoría de tipo */
 .tipo-add-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:none;align-items:center;justify-content:center;}
 .tipo-add-overlay.open{display:flex;}
 .tipo-add-modal{background:#fff;border-radius:10px;padding:20px;width:300px;max-width:90vw;box-shadow:0 12px 40px rgba(0,0,0,.3);}
@@ -87,6 +92,7 @@ select.month-select:focus{outline:none;border-color:#1a3f6f;}
 .tipo-add-modal .hint{font-size:10px;color:#718096;margin-top:8px;text-align:center;}
 .tipo-add-modal .err{color:#c0392b;font-size:11px;margin-top:-6px;margin-bottom:8px;display:none;}
 .tipo-add-modal .err.visible{display:block;}
+/* Texto de observación + badge en línea separada (más ordenado) */
 .td-obs .obs-text{display:block;line-height:1.25;}
 .td-obs .obs-badge-row{display:block;margin-top:2px;}
 .type-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
@@ -116,6 +122,7 @@ select.month-select:focus{outline:none;border-color:#1a3f6f;}
 
 /* ── GANTT ── */
 .gantt-area{overflow:auto;background:#f0f4f8;}
+/* FIX 3: celdas cuadradas — width = height = 24px fijo */
 table.gantt{border-collapse:collapse;font-size:9px;white-space:nowrap;table-layout:fixed;}
 table.gantt th,table.gantt td{border:0.5px solid #c8d0e0;padding:0;text-align:center;}
 
@@ -127,6 +134,7 @@ table.gantt th,table.gantt td{border:0.5px solid #c8d0e0;padding:0;text-align:ce
 .th-col-dias{background:#1a3f6f;color:#fff;font-size:9px;font-weight:600;padding:5px 4px;width:36px;}
 .th-col-del{background:#1a3f6f;width:20px;}
 
+/* FIX 3: columnas de día estrictamente 24×24 */
 .th-daynum{background:#2c5282;color:#c8d8f0;font-size:8px;padding:0;width:24px;height:24px;line-height:24px;}
 .th-daynum.wknd{background:#1e3a5f;color:#7888aa;opacity:.75;}
 .th-daynum.othermonth{opacity:.35;}
@@ -136,12 +144,16 @@ table.gantt th,table.gantt td{border:0.5px solid #c8d0e0;padding:0;text-align:ce
 .th-dayname.othermonth{opacity:.35;}
 .th-dayname.today-col{border-left:2.5px solid #e53935 !important;background:#2a1010;}
 
+/* ── CELDAS DE TEXTO — alineación izquierda con alta especificidad ── */
 table.gantt td.td-act{text-align:left !important;padding:3px 7px;font-size:9px;color:#2d3748;background:#fff;width:155px;max-width:155px;white-space:normal;line-height:1.3;vertical-align:middle;font-weight:500;text-transform:uppercase;}
 table.gantt td.td-obs{width:40px;font-size:8px;background:#fff;color:#4a5568;vertical-align:middle;padding:2px 4px;text-align:left !important;text-transform:uppercase;}
 table.gantt td.td-term{width:62px;font-size:8px;background:#fff;color:#2d3748;vertical-align:middle;padding:2px 4px;font-weight:500;text-align:left !important;}
 table.gantt td.td-d{width:36px;font-size:9px;font-weight:800;vertical-align:middle;padding:2px;text-align:center !important;}
 table.gantt td.td-del{width:20px;background:#fff;vertical-align:middle;text-align:center !important;}
 
+/* td-day definido arriba junto al fix de row-aniv */
+
+/* FIX 1 & 3: barra pintada cuadrada, solo color */
 .bar-cell{width:24px;height:24px;vertical-align:middle;text-align:center;padding:0;}
 
 .plazo-badge{background:#8B0000;color:#fff;font-size:7px;padding:1px 3px;border-radius:2px;font-weight:800;}
@@ -149,6 +161,7 @@ table.gantt td.td-del{width:20px;background:#fff;vertical-align:middle;text-alig
 .mensual-badge{background:#a16207;color:#fff;font-size:7px;padding:1px 3px;border-radius:2px;font-weight:800;letter-spacing:.3px;}
 .semanal-badge{background:#0f766e;color:#fff;font-size:7px;padding:1px 3px;border-radius:2px;font-weight:800;letter-spacing:.3px;}
 
+/* FIX 1: row-aniv solo colorea columnas de texto, NO la barra pintada */
 table.gantt tr.row-aniv td.td-act,
 table.gantt tr.row-aniv td.td-obs,
 table.gantt tr.row-aniv td.td-term,
@@ -157,7 +170,9 @@ table.gantt tr.row-aniv td.td-del{background:#fffde7;}
 table.gantt tr.row-aniv td.td-day{background:#fffde7;}
 table.gantt tr.row-aniv td.td-day.wknd{background:#f0ead0;}
 table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:600;text-align:left !important;}
+/* bar-cell NUNCA recibe el amarillo de aniv — su bg inline tiene prioridad al no usar !important */
 
+/* FIX 2: fondo gris claro en todas las celdas de día para días normales */
 .td-day{width:24px;height:24px;background:#e8ecf0;vertical-align:middle;padding:0;}
 .td-day.wknd{background:#d0d5dd;}
 .td-day.othermonth{background:#cdd2da;opacity:.6;}
@@ -197,14 +212,34 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
 .btn-cancel{background:#e2e8f0;color:#4a5568;}
 .btn-confirm{background:#c0392b;color:#fff;}
 
+/* ── PRINT: se maneja por JS abriendo ventana nueva, no por @media print ── */
 @media print{ body{ display:none !important; } }
 
 /* ── RESPONSIVE ── */
+/* Tablet y móvil: sidebar arriba, Gantt abajo con scroll */
 @media(max-width:900px){
-  .main-layout{display:flex;flex-direction:column;min-height:auto;}
-  .sidebar{width:100%;border-right:none;border-bottom:2px solid #dde3ed;padding:12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .main-layout{
+    display:flex;
+    flex-direction:column;
+    min-height:auto;
+  }
+  .sidebar{
+    width:100%;
+    border-right:none;
+    border-bottom:2px solid #dde3ed;
+    padding:12px 16px;
+    /* En pantalla pequeña el sidebar queda compacto */
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
   .sidebar-section{margin-bottom:0;}
-  .gantt-area{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;flex:1;}
+  .gantt-area{
+    width:100%;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    flex:1;
+  }
   .app-header{padding:8px 14px;}
   .app-header h1{font-size:12px;}
   .stats-bar{padding:5px 12px;gap:5px;}
@@ -215,7 +250,9 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
 }
 
 @media(max-width:600px){
-  .sidebar{grid-template-columns:1fr;}
+  .sidebar{
+    grid-template-columns:1fr;
+  }
   .app-header{flex-direction:column;gap:5px;align-items:flex-start;padding:8px 12px;}
   .header-right{width:100%;justify-content:space-between;}
   .stats-bar{padding:4px 8px;gap:3px;overflow-x:auto;flex-wrap:nowrap;}
@@ -228,22 +265,34 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
   .toolbar-divider{display:none;}
   .view-info{width:100%;}
 }
+/* Feriados */
 .td-day.feriado,.bar-cell.feriado{position:relative;cursor:pointer;}
 .td-day.feriado::after{content:'';position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:4px;height:4px;background:#c8960a;border-radius:50%;}
 .feriado-tooltip{position:fixed;background:#2d3748;color:#fff;font-size:10px;padding:5px 9px;border-radius:5px;z-index:9999;max-width:180px;line-height:1.4;pointer-events:none;display:none;box-shadow:0 4px 12px rgba(0,0,0,.3);}
+/* Modal clave nueva actividad */
 .modal-addpwd{background:#fff;border-radius:10px;padding:22px;width:320px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.3);}
 .modal-addpwd h3{font-size:13px;font-weight:700;color:#1a3f6f;margin-bottom:10px;}
 .modal-addpwd p{font-size:11px;color:#4a5568;margin-bottom:10px;}
 .modal-addpwd input{width:100%;font-size:16px;padding:8px 10px;border:1px solid #cbd5e0;border-radius:5px;letter-spacing:6px;text-align:center;margin-bottom:6px;}
 .modal-addpwd .pwd-error{color:#c0392b;font-size:10px;display:none;margin-bottom:6px;}
+/* Botones del sidebar */
 .btn-locked{background:#2d6a9f !important;}
 .btn-lock{width:100%;padding:6px;font-size:10px;background:transparent;color:#c0392b;border:1px solid #fc8181;border-radius:5px;cursor:pointer;margin-top:8px;transition:all .15s;font-weight:600;}
 .btn-lock:hover{background:#fff5f5;}
+
+/* ── MENÚ CONTEXTUAL LÁPIZ ── */
+.ctx-menu{position:fixed;z-index:9998;background:#fff;border:0.5px solid #c8d0e0;border-radius:8px;box-shadow:0 4px 18px rgba(0,0,0,.15);padding:5px 0;min-width:170px;display:none;}
+.ctx-menu.open{display:block;}
+.ctx-item{padding:8px 14px;font-size:11px;color:#2d3748;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;}
+.ctx-item:hover{background:#f0f4f8;}
+.ctx-item.danger{color:#c0392b;}
+.ctx-item.danger:hover{background:#fff5f5;}
+.ctx-divider{height:0.5px;background:#e2e8f0;margin:3px 0;}
 </style>
 </head>
 <body>
 
-<!-- ══ MODAL DE LOGIN ══ -->
+<!-- ══ MODAL DE LOGIN (overlay completo, bloquea TODA la app) ══ -->
 <div id="login-overlay" style="position: fixed; inset: 0px; background: rgb(26, 63, 111); z-index: 99999; display: none; align-items: center; justify-content: center;">
   <div style="background:#fff;border-radius:12px;padding:32px 28px;width:340px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.4);">
     <div style="text-align:center;margin-bottom:18px;">
@@ -256,7 +305,7 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
     </div>
     <div style="margin-bottom:14px;">
       <label style="display:block;font-size:11px;font-weight:600;color:#4a5568;margin-bottom:4px;">Clave</label>
-      <input type="password" id="login-clave" placeholder="••••" maxlength="20" style="width:100%;font-size:14px;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;letter-spacing:2px;text-align:center;" onkeydown="if(event.key==='Enter')doLogin()">
+      <input type="password" id="login-clave" placeholder="••••" maxlength="20" style="width:100%;font-size:14px;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;letter-spacing:2px;text-align:center;" onkeydown="if(event.key===&#39;Enter&#39;)doLogin()">
     </div>
     <div id="login-error" style="display:none;color:#c0392b;font-size:11px;background:#ffebee;border:1px solid #ffcdd2;border-radius:5px;padding:6px 9px;margin-bottom:10px;text-align:center;"></div>
     <button onclick="doLogin()" style="width:100%;padding:10px;font-size:13px;font-weight:700;background:#1a3f6f;color:#fff;border:none;border-radius:6px;cursor:pointer;">Ingresar a mi Gantt</button>
@@ -270,9 +319,10 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
   <div class="header-right">
     <span id="user-badge" style="font-size: 11px; padding: 4px 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.18); color: rgb(255, 255, 255); font-weight: 600; display: inline-block;">👤 ADMIN ★</span>
     <button id="logout-btn" onclick="doLogout()" style="font-size: 10px; padding: 4px 10px; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.3); color: rgb(255, 255, 255); border-radius: 5px; cursor: pointer; display: inline-block;" title="Cerrar sesión">↪ Salir</button>
-    <button class="btn-print" onclick="openAnualesModal()" title="Ver/editar actividades que se repiten">📅 Recurrentes</button>
+    <!-- FIX 5: botón imprimir -->
+    <button class="btn-print" onclick="openAnualesModal()" title="Ver/editar actividades que se repiten (anuales, mensuales, semanales)">📅 Recurrentes</button>
     <button class="btn-print" onclick="printGantt()">🖶 Imprimir carta</button>
-    <span id="fb-status" style="font-size: 10px; padding: 3px 10px; border-radius: 12px; background: rgba(46, 125, 50, 0.3); color: rgb(165, 214, 167);">● En línea</span>
+    <span id="fb-status" style="font-size: 10px; padding: 3px 10px; border-radius: 12px; background: rgba(183, 28, 28, 0.3); color: rgb(239, 154, 154);">● Sin conexión</span>
     <span class="today-badge" id="today-lbl">HOY: 29/abr/2026</span>
   </div>
 </div>
@@ -280,43 +330,43 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
 <!-- ══ STATS BAR ══ -->
 <div class="stats-bar" id="app-stats-bar" style="">
   <span class="filter-label">Filtrar:</span>
-  <div class="stat-card stat-total active-filter" onclick="setFilter('all')" title="Ver todas">
-    <span class="val" id="s-total">10</span>
+  <div class="stat-card stat-total active-filter" onclick="setFilter(&#39;all&#39;)" title="Ver todas">
+    <span class="val" id="s-total">3</span>
     <span class="lbl">Total</span>
   </div>
   <div class="stat-divider"></div>
-  <div class="stat-card stat-venc" onclick="setFilter('venc')" title="Vencidas">
-    <span class="val" id="s-venc">2</span>
+  <div class="stat-card stat-venc" onclick="setFilter(&#39;venc&#39;)" title="Vencidas">
+    <span class="val" id="s-venc">1</span>
     <span class="lbl">Vencidas</span>
   </div>
-  <div class="stat-card stat-rojo" onclick="setFilter('rojo')" title="0–5 días">
+  <div class="stat-card stat-rojo" onclick="setFilter(&#39;rojo&#39;)" title="0–5 días">
     <span class="val" id="s-rojo">0</span>
     <span class="lbl">0–5 días</span>
   </div>
-  <div class="stat-card stat-naranja" onclick="setFilter('naranja')" title="5–10 días">
-    <span class="val" id="s-naranja">1</span>
+  <div class="stat-card stat-naranja" onclick="setFilter(&#39;naranja&#39;)" title="5–10 días">
+    <span class="val" id="s-naranja">0</span>
     <span class="lbl">5–10 días</span>
   </div>
-  <div class="stat-card stat-amarillo" onclick="setFilter('amarillo')" title="10–365 días">
-    <span class="val" id="s-amarillo">7</span>
+  <div class="stat-card stat-amarillo" onclick="setFilter(&#39;amarillo&#39;)" title="10–365 días">
+    <span class="val" id="s-amarillo">1</span>
     <span class="lbl">10–365 d</span>
   </div>
   <div class="stat-divider"></div>
-  <div class="stat-card stat-aniv" onclick="setFilter('aniv')" title="Aniversarios">
-    <span class="val" id="s-anivs">5</span>
+  <div class="stat-card stat-aniv" onclick="setFilter(&#39;aniv&#39;)" title="Aniversarios">
+    <span class="val" id="s-anivs">1</span>
     <span class="lbl">Aniversarios</span>
   </div>
-  <button class="filter-clear" id="filter-clear-btn" onclick="setFilter('all')" style="display: none;">✕ Quitar filtro</button>
+  <button class="filter-clear" id="filter-clear-btn" onclick="setFilter(&#39;all&#39;)" style="display: none;">✕ Quitar filtro</button>
 </div>
 
 <!-- ══ TOOLBAR ══ -->
 <div class="toolbar" id="app-toolbar" style="">
   <span class="toolbar-label">Año:</span>
-  <select class="month-select" id="year-select" onchange="onYearChange()" style="min-width:130px;"><option value="all">— Toda la Gantt —</option><option value="current">Año actual (2026)</option><option value="2026">2026 (21 act.) ← HOY</option><option value="2027">2027 (18 act.)</option><option value="2028">2028 (18 act.)</option></select>
+  <select class="month-select" id="year-select" onchange="onYearChange()" style="min-width:130px;"><option value="all">— Toda la Gantt —</option><option value="current">Año actual (2026)</option><option value="2026">2026 (14 act.) ← HOY</option><option value="2027">2027 (13 act.)</option><option value="2028">2028 (13 act.)</option></select>
   <span class="toolbar-label" id="month-select-label" style="">Mes:</span>
-  <select class="month-select" id="month-select" onchange="onMonthChange()" style="min-width: 160px;"><option value="year-2026" style="font-weight: bold;">📅 Todo el año 2026</option><option value="2026-0">Enero 2026 (1 act.)</option><option value="2026-1">Febrero 2026 (1 act.)</option><option value="2026-2">Marzo 2026 (1 act.)</option><option value="2026-3">Abril 2026 (3 act.) ← HOY</option><option value="2026-4">Mayo 2026 (4 act.)</option><option value="2026-5">Junio 2026 (3 act.)</option><option value="2026-6">Julio 2026 (1 act.)</option><option value="2026-7">Agosto 2026 (2 act.)</option><option value="2026-8">Septiembre 2026 (1 act.)</option><option value="2026-9">Octubre 2026 (2 act.)</option><option value="2026-10">Noviembre 2026 (1 act.)</option><option value="2026-11">Diciembre 2026 (1 act.)</option></select>
+  <select class="month-select" id="month-select" onchange="onMonthChange()" style="min-width: 160px;"><option value="year-2026" style="font-weight: bold;">📅 Todo el año 2026</option><option value="2026-0">Enero 2026 (1 act.)</option><option value="2026-1">Febrero 2026 (1 act.)</option><option value="2026-2">Marzo 2026 (1 act.)</option><option value="2026-3">Abril 2026 (3 act.) ← HOY</option><option value="2026-4">Mayo 2026 (1 act.)</option><option value="2026-5">Junio 2026 (1 act.)</option><option value="2026-6">Julio 2026 (1 act.)</option><option value="2026-7">Agosto 2026 (1 act.)</option><option value="2026-8">Septiembre 2026 (1 act.)</option><option value="2026-9">Octubre 2026 (1 act.)</option><option value="2026-10">Noviembre 2026 (1 act.)</option><option value="2026-11">Diciembre 2026 (1 act.)</option></select>
   <div class="toolbar-divider"></div>
-  <span class="view-info" id="view-info">Mostrando todo el año 2026 (21 actividades)</span>
+  <span class="view-info" id="view-info">Mostrando todo el año 2026 (13 actividades)</span>
   <div class="toolbar-divider"></div>
   <div id="feriados-panel" style="flex:1;min-width:280px;background:#fffbe6;border:1px solid #ffd966;border-radius:6px;padding:6px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:11px;">
     <strong style="color:#854f0b;font-size:10px;letter-spacing:.3px;">FERIADOS DEL MES:</strong>
@@ -340,11 +390,11 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
       <div id="add-form-body" style="display: block;">
         <div class="form-group">
           <label>Tipo</label>
-          <select id="f-tipo" class="select-tipo" onchange="onTipoSelectChange(this,'add')"><option value="revision" selected="">Revisión</option><option value="plazo">Plazo</option><option value="aniversario">Aniversario</option><option value="clases">Clases</option><option value="otro">Otro</option><option value="__add__">+ Agregar nueva opción...</option></select>
+          <select id="f-tipo" class="select-tipo" onchange="onTipoSelectChange(this,&#39;add&#39;)"><option value="revision" selected="">Revisión</option><option value="plazo">Plazo</option><option value="aniversario">Aniversario</option><option value="clases">Clases</option><option value="otro">Otro</option><option value="__add__">+ Agregar nueva opción...</option></select>
         </div>
         <div class="form-group">
           <label>Frecuencia</label>
-          <select id="f-freq" class="select-freq" onchange="onFreqSelectChange(this,'add')">
+          <select id="f-freq" class="select-freq" onchange="onFreqSelectChange(this,&#39;add&#39;)">
             <option value="puntual" selected="">Puntual</option>
             <option value="semanal">Semanal</option>
             <option value="mensual">Mensual</option>
@@ -359,10 +409,10 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
           <label>Observaciones</label>
           <input type="text" id="f-obs" placeholder="Ej: martes 20:15...">
         </div>
-        <div class="fecha-inicio-block" id="f-inicio-block">
+        <div class="fecha-inicio-block visible" id="f-inicio-block" style="display:block;">
           <label>Fecha de inicio</label>
           <input type="date" id="f-inicio">
-          <div class="hint">La actividad comenzará a repetirse desde esta fecha en adelante.</div>
+          <div class="hint">Fecha desde la que aparece la actividad en la carta Gantt.</div>
         </div>
         <div class="form-group">
           <label>Fecha de término</label>
@@ -396,11 +446,19 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
 
   <!-- GANTT -->
   <div class="gantt-area">
+    <!-- FIX 5: área de impresión -->
     <div id="print-area">
       <div class="print-title" id="print-title" style="display: none;">CARTA GANTT</div>
-      <div id="gantt-wrap"></div>
+      <div id="gantt-wrap"><table class="gantt"><colgroup><col style="width:155px;"><col style="width:40px;"><col style="width:62px;"><col style="width:36px;"><col style="width:22px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"><col style="width:24px;"></colgroup><thead><tr><th class="th-title" colspan="5">CARTA GANTT MAAH — AÑO 2026 — TODAS LAS ACTIVIDADES</th><th class="th-week" colspan="7">lun, 30-mar-26</th><th class="th-week" colspan="7">lun, 06-abr-26</th><th class="th-week" colspan="7">lun, 13-abr-26</th><th class="th-week" colspan="7">lun, 20-abr-26</th><th class="th-week" colspan="7">lun, 27-abr-26</th><th class="th-week" colspan="2">lun, 04-may-26</th></tr><tr><th class="th-col-act">ACTIVIDAD</th><th class="th-col-obs">OBS</th><th class="th-col-term">TÉRMINO</th><th class="th-col-dias">DÍAS</th><th class="th-col-del"></th><th class="th-daynum othermonth">30</th><th class="th-daynum othermonth">31</th><th class="th-daynum">01</th><th class="th-daynum">02</th><th class="th-daynum">03</th><th class="th-daynum wknd">04</th><th class="th-daynum wknd">05</th><th class="th-daynum">06</th><th class="th-daynum">07</th><th class="th-daynum">08</th><th class="th-daynum">09</th><th class="th-daynum">10</th><th class="th-daynum wknd">11</th><th class="th-daynum wknd">12</th><th class="th-daynum">13</th><th class="th-daynum">14</th><th class="th-daynum">15</th><th class="th-daynum">16</th><th class="th-daynum">17</th><th class="th-daynum wknd">18</th><th class="th-daynum wknd">19</th><th class="th-daynum">20</th><th class="th-daynum">21</th><th class="th-daynum">22</th><th class="th-daynum">23</th><th class="th-daynum">24</th><th class="th-daynum wknd">25</th><th class="th-daynum wknd">26</th><th class="th-daynum">27</th><th class="th-daynum">28</th><th class="th-daynum today-col"><span class="today-th-label">HOY</span></th><th class="th-daynum">30</th><th class="th-daynum othermonth">01</th><th class="th-daynum wknd othermonth">02</th><th class="th-daynum wknd othermonth">03</th><th class="th-daynum othermonth">04</th><th class="th-daynum othermonth">05</th></tr><tr><td class="th-col-act" style="background:#2c5282;"></td><td class="th-col-obs" style="background:#2c5282;"></td><td class="th-col-term" style="background:#2c5282;"></td><td class="th-col-dias" style="background:#2c5282;"></td><td class="th-col-del" style="background:#2c5282;"></td><th class="th-dayname othermonth">LUN</th><th class="th-dayname othermonth">MAR</th><th class="th-dayname">MIÉ</th><th class="th-dayname">JUE</th><th class="th-dayname">VIE</th><th class="th-dayname wknd">SÁB</th><th class="th-dayname wknd">DOM</th><th class="th-dayname">LUN</th><th class="th-dayname">MAR</th><th class="th-dayname">MIÉ</th><th class="th-dayname">JUE</th><th class="th-dayname">VIE</th><th class="th-dayname wknd">SÁB</th><th class="th-dayname wknd">DOM</th><th class="th-dayname">LUN</th><th class="th-dayname">MAR</th><th class="th-dayname">MIÉ</th><th class="th-dayname">JUE</th><th class="th-dayname">VIE</th><th class="th-dayname wknd">SÁB</th><th class="th-dayname wknd">DOM</th><th class="th-dayname">LUN</th><th class="th-dayname">MAR</th><th class="th-dayname">MIÉ</th><th class="th-dayname">JUE</th><th class="th-dayname">VIE</th><th class="th-dayname wknd">SÁB</th><th class="th-dayname wknd">DOM</th><th class="th-dayname">LUN</th><th class="th-dayname">MAR</th><th class="th-dayname today-col">MIÉ</th><th class="th-dayname">JUE</th><th class="th-dayname othermonth">VIE</th><th class="th-dayname wknd othermonth">SÁB</th><th class="th-dayname wknd othermonth">DOM</th><th class="th-dayname othermonth">LUN</th><th class="th-dayname othermonth">MAR</th></tr></thead><tbody><tr class=""><td class="td-act">REVISIÓN ARCHIVADORES PROCES.</td><td class="td-obs">DEPTO I</td><td class="td-term">27/abr/26</td><td class="td-d" style="background:#9DCB47;color:#9DCB47;border:1px solid #7AB034;" title="Vencido"></td><td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,&#39;4&#39;,false)" title="Opciones">✎</button></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Jueves Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Jueves Santo&#39;)"></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Viernes Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Viernes Santo&#39;)"></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="bar-cell" style="background:#9DCB47 !important;"></td><td class="td-day" style=""></td><td class="td-day today-col" style="border-left:2.5px solid #e53935;"></td><td class="td-day" style=""></td><td class="td-day othermonth feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día del Trabajo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día del Trabajo&#39;)"></td><td class="td-day wknd othermonth" style=""></td><td class="td-day wknd othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td></tr><tr class="row-aniv"><td class="td-act">ANIVERSARIO · CARABINEROS</td><td class="td-obs"><span class="obs-text">CARABINEROS</span><span class="obs-badge-row"><span class="anual-badge" title="Se repite todos los años">ANUAL</span></span></td><td class="td-term">27/abr/26</td><td class="td-d" style="background:#9DCB47;color:#9DCB47;border:1px solid #7AB034;" title="Vencido"></td><td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,&#39;3&#39;,true)" title="Opciones">✎</button></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Jueves Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Jueves Santo&#39;)"></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Viernes Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Viernes Santo&#39;)"></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="bar-cell" style="background:#9DCB47 !important;"></td><td class="td-day" style=""></td><td class="td-day today-col" style="border-left:2.5px solid #e53935;"></td><td class="td-day" style=""></td><td class="td-day othermonth feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día del Trabajo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día del Trabajo&#39;)"></td><td class="td-day wknd othermonth" style=""></td><td class="td-day wknd othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td></tr><tr class=""><td class="td-act">TALLER PREV. DE RIESGOS Y CONTROL DE EMERGENCIAS</td><td class="td-obs"><span class="obs-text">19:15 A 20:45</span><span class="obs-badge-row"><span class="semanal-badge" title="Se repite todas las semanas">SEMANAL</span></span></td><td class="td-term">28/abr/26</td><td class="td-d" style="background:#9DCB47;color:#9DCB47;border:1px solid #7AB034;" title="Vencido"></td><td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,&#39;1&#39;,true)" title="Opciones">✎</button></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Jueves Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Jueves Santo&#39;)"></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Viernes Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Viernes Santo&#39;)"></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="bar-cell" style="background:#9DCB47 !important;"></td><td class="td-day today-col" style="border-left:2.5px solid #e53935;"></td><td class="td-day" style=""></td><td class="td-day othermonth feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día del Trabajo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día del Trabajo&#39;)"></td><td class="td-day wknd othermonth" style=""></td><td class="td-day wknd othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td></tr><tr class=""><td class="td-act">TALLER PREV. DE RIESGOS Y CONTROL DE EMERGENCIAS</td><td class="td-obs"><span class="obs-text">19:15 A 20:45</span><span class="obs-badge-row"><span class="semanal-badge" title="Se repite todas las semanas">SEMANAL</span></span></td><td class="td-term">05/may/26</td><td class="td-d" style="background:#FFB400;color:#000;" title="+6d">+6d</td><td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,&#39;1&#39;,true)" title="Opciones">✎</button></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Jueves Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Jueves Santo&#39;)"></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Viernes Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Viernes Santo&#39;)"></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day today-col" style="border-left:2.5px solid #e53935;"></td><td class="td-day" style=""></td><td class="td-day othermonth feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día del Trabajo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día del Trabajo&#39;)"></td><td class="td-day wknd othermonth" style=""></td><td class="td-day wknd othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="bar-cell" style="background:#FFB400 !important;"></td></tr><tr class=""><td class="td-act">TALLER PREV. DE RIESGOS Y CONTROL DE EMERGENCIAS</td><td class="td-obs"><span class="obs-text">19:15 A 20:45</span><span class="obs-badge-row"><span class="semanal-badge" title="Se repite todas las semanas">SEMANAL</span></span></td><td class="td-term">12/may/26</td><td class="td-d" style="background:#FFEB00;color:#000;" title="+13d">+13d</td><td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,&#39;1&#39;,true)" title="Opciones">✎</button></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Jueves Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Jueves Santo&#39;)"></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Viernes Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Viernes Santo&#39;)"></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day today-col" style="border-left:2.5px solid #e53935;"></td><td class="td-day" style=""></td><td class="td-day othermonth feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día del Trabajo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día del Trabajo&#39;)"></td><td class="td-day wknd othermonth" style=""></td><td class="td-day wknd othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td></tr><tr class=""><td class="td-act">TALLER PREV. DE RIESGOS Y CONTROL DE EMERGENCIAS</td><td class="td-obs"><span class="obs-text">19:15 A 20:45</span><span class="obs-badge-row"><span class="semanal-badge" title="Se repite todas las semanas">SEMANAL</span></span></td><td class="td-term">19/may/26</td><td class="td-d" style="background:#FFEB00;color:#000;" title="+20d">+20d</td><td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,&#39;1&#39;,true)" title="Opciones">✎</button></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Jueves Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Jueves Santo&#39;)"></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Viernes Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Viernes Santo&#39;)"></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day today-col" style="border-left:2.5px solid #e53935;"></td><td class="td-day" style=""></td><td class="td-day othermonth feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día del Trabajo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día del Trabajo&#39;)"></td><td class="td-day wknd othermonth" style=""></td><td class="td-day wknd othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td></tr><tr class=""><td class="td-act">TALLER PREV. DE RIESGOS Y CONTROL DE EMERGENCIAS</td><td class="td-obs"><span class="obs-text">19:15 A 20:45</span><span class="obs-badge-row"><span class="semanal-badge" title="Se repite todas las semanas">SEMANAL</span></span></td><td class="td-term">26/may/26</td><td class="td-d" style="background:#FFEB00;color:#000;" title="+27d">+27d</td><td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,&#39;1&#39;,true)" title="Opciones">✎</button></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Jueves Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Jueves Santo&#39;)"></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Viernes Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Viernes Santo&#39;)"></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day today-col" style="border-left:2.5px solid #e53935;"></td><td class="td-day" style=""></td><td class="td-day othermonth feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día del Trabajo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día del Trabajo&#39;)"></td><td class="td-day wknd othermonth" style=""></td><td class="td-day wknd othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td></tr><tr class=""><td class="td-act">TALLER PREV. DE RIESGOS Y CONTROL DE EMERGENCIAS</td><td class="td-obs"><span class="obs-text">19:15 A 20:45</span><span class="obs-badge-row"><span class="semanal-badge" title="Se repite todas las semanas">SEMANAL</span></span></td><td class="td-term">02/jun/26</td><td class="td-d" style="background:#FFEB00;color:#000;" title="+34d">+34d</td><td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,&#39;1&#39;,true)" title="Opciones">✎</button></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Jueves Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Jueves Santo&#39;)"></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Viernes Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Viernes Santo&#39;)"></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day today-col" style="border-left:2.5px solid #e53935;"></td><td class="td-day" style=""></td><td class="td-day othermonth feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día del Trabajo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día del Trabajo&#39;)"></td><td class="td-day wknd othermonth" style=""></td><td class="td-day wknd othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td></tr><tr class=""><td class="td-act">TALLER PREV. DE RIESGOS Y CONTROL DE EMERGENCIAS</td><td class="td-obs"><span class="obs-text">19:15 A 20:45</span><span class="obs-badge-row"><span class="semanal-badge" title="Se repite todas las semanas">SEMANAL</span></span></td><td class="td-term">09/jun/26</td><td class="td-d" style="background:#FFEB00;color:#000;" title="+41d">+41d</td><td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,&#39;1&#39;,true)" title="Opciones">✎</button></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Jueves Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Jueves Santo&#39;)"></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Viernes Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Viernes Santo&#39;)"></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day today-col" style="border-left:2.5px solid #e53935;"></td><td class="td-day" style=""></td><td class="td-day othermonth feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día del Trabajo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día del Trabajo&#39;)"></td><td class="td-day wknd othermonth" style=""></td><td class="td-day wknd othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td></tr><tr class=""><td class="td-act">TALLER PREV. DE RIESGOS Y CONTROL DE EMERGENCIAS</td><td class="td-obs"><span class="obs-text">19:15 A 20:45</span><span class="obs-badge-row"><span class="semanal-badge" title="Se repite todas las semanas">SEMANAL</span></span></td><td class="td-term">16/jun/26</td><td class="td-d" style="background:#FFEB00;color:#000;" title="+48d">+48d</td><td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,&#39;1&#39;,true)" title="Opciones">✎</button></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Jueves Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Jueves Santo&#39;)"></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Viernes Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Viernes Santo&#39;)"></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day today-col" style="border-left:2.5px solid #e53935;"></td><td class="td-day" style=""></td><td class="td-day othermonth feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día del Trabajo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día del Trabajo&#39;)"></td><td class="td-day wknd othermonth" style=""></td><td class="td-day wknd othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td></tr><tr class=""><td class="td-act">TALLER PREV. DE RIESGOS Y CONTROL DE EMERGENCIAS</td><td class="td-obs"><span class="obs-text">19:15 A 20:45</span><span class="obs-badge-row"><span class="semanal-badge" title="Se repite todas las semanas">SEMANAL</span></span></td><td class="td-term">23/jun/26</td><td class="td-d" style="background:#FFEB00;color:#000;" title="+55d">+55d</td><td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,&#39;1&#39;,true)" title="Opciones">✎</button></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Jueves Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Jueves Santo&#39;)"></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Viernes Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Viernes Santo&#39;)"></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day today-col" style="border-left:2.5px solid #e53935;"></td><td class="td-day" style=""></td><td class="td-day othermonth feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día del Trabajo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día del Trabajo&#39;)"></td><td class="td-day wknd othermonth" style=""></td><td class="td-day wknd othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td></tr><tr class=""><td class="td-act">TALLER PREV. DE RIESGOS Y CONTROL DE EMERGENCIAS</td><td class="td-obs"><span class="obs-text">19:15 A 20:45</span><span class="obs-badge-row"><span class="semanal-badge" title="Se repite todas las semanas">SEMANAL</span></span></td><td class="td-term">30/jun/26</td><td class="td-d" style="background:#FFEB00;color:#000;" title="+62d">+62d</td><td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,&#39;1&#39;,true)" title="Opciones">✎</button></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Jueves Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Jueves Santo&#39;)"></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Viernes Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Viernes Santo&#39;)"></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day today-col" style="border-left:2.5px solid #e53935;"></td><td class="td-day" style=""></td><td class="td-day othermonth feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día del Trabajo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día del Trabajo&#39;)"></td><td class="td-day wknd othermonth" style=""></td><td class="td-day wknd othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td></tr><tr class=""><td class="td-act">TALLER PREV. DE RIESGOS Y CONTROL DE EMERGENCIAS</td><td class="td-obs"><span class="obs-text">19:15 A 20:45</span><span class="obs-badge-row"><span class="semanal-badge" title="Se repite todas las semanas">SEMANAL</span></span></td><td class="td-term">07/jul/26</td><td class="td-d" style="background:#FFEB00;color:#000;" title="+69d">+69d</td><td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,&#39;1&#39;,true)" title="Opciones">✎</button></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day" style=""></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Jueves Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Jueves Santo&#39;)"></td><td class="td-day feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Viernes Santo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Viernes Santo&#39;)"></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day wknd" style=""></td><td class="td-day wknd" style=""></td><td class="td-day" style=""></td><td class="td-day" style=""></td><td class="td-day today-col" style="border-left:2.5px solid #e53935;"></td><td class="td-day" style=""></td><td class="td-day othermonth feriado" style="" onmouseenter="showFeriadoTip(this,&#39;Día del Trabajo&#39;)" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,&#39;Día del Trabajo&#39;)"></td><td class="td-day wknd othermonth" style=""></td><td class="td-day wknd othermonth" style=""></td><td class="td-day othermonth" style=""></td><td class="td-day othermonth" style=""></td></tr></tbody></table></div>
     </div>
   </div>
+</div>
+
+<!-- MENÚ CONTEXTUAL LÁPIZ -->
+<div class="ctx-menu" id="ctx-menu">
+  <div class="ctx-item" id="ctx-edit" onclick="ctxEdit()">✎ &nbsp;Editar actividad</div>
+  <div class="ctx-divider"></div>
+  <div class="ctx-item danger" id="ctx-del" onclick="ctxDel()">✕ &nbsp;Eliminar actividad</div>
 </div>
 
 <!-- MODAL CONFIRMACIÓN -->
@@ -420,7 +478,7 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
   <div class="modal-addpwd">
     <h3>🔒 Ingresar nueva actividad</h3>
     <p>Esta acción requiere contraseña de acceso:</p>
-    <input type="password" id="addpwd-input" placeholder="••••" maxlength="10" onkeydown="if(event.key==='Enter')verifyAddPwd()">
+    <input type="password" id="addpwd-input" placeholder="••••" maxlength="10" onkeydown="if(event.key===&#39;Enter&#39;)verifyAddPwd()">
     <div class="pwd-error" id="addpwd-error" style="display: none;">Contraseña incorrecta.</div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeAddPwdModal()">Cancelar</button>
@@ -430,7 +488,7 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
 </div>
 
 <!-- TOOLTIP FERIADOS -->
-<div class="feriado-tooltip" id="feriado-tooltip" style="display: none; left: 0; top: 0;">Jueves Santo</div>
+<div class="feriado-tooltip" id="feriado-tooltip" style="display: none; left: 638.839px; top: 195.085px;">Jueves Santo</div>
 
 <!-- MODAL EDICIÓN CON CONTRASEÑA -->
 <div class="modal-overlay" id="modal-edit-overlay">
@@ -438,10 +496,11 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
     <h3>✏ Editar actividad</h3>
     <p class="subtitle">Ingrese la contraseña para modificar</p>
 
+    <!-- Paso 1: contraseña -->
     <div id="edit-step-pwd" style="display: none;">
       <div class="pwd-box">
         <p>Esta acción está protegida. Ingrese la contraseña de acceso:</p>
-        <input type="password" id="edit-pwd" placeholder="••••" maxlength="10" onkeydown="if(event.key==='Enter')verifyPwd()">
+        <input type="password" id="edit-pwd" placeholder="••••" maxlength="10" onkeydown="if(event.key===&#39;Enter&#39;)verifyPwd()">
         <div class="pwd-error" id="pwd-error" style="display: none;">Contraseña incorrecta. Intente nuevamente.</div>
       </div>
       <div class="modal-btns">
@@ -450,14 +509,15 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
       </div>
     </div>
 
+    <!-- Paso 2: formulario de edición (oculto hasta ingresar pwd) -->
     <div id="edit-step-form" style="display: block;">
       <div class="form-group">
         <label>Tipo de actividad</label>
-        <select id="edit-tipo" class="select-tipo" onchange="onTipoSelectChange(this,'edit')"><option value="revision" selected="">Revisión</option><option value="plazo">Plazo</option><option value="aniversario">Aniversario</option><option value="clases">Clases</option><option value="otro">Otro</option><option value="__add__">+ Agregar nueva opción...</option></select>
+        <select id="edit-tipo" class="select-tipo" onchange="onTipoSelectChange(this,&#39;edit&#39;)"><option value="revision" selected="">Revisión</option><option value="plazo">Plazo</option><option value="aniversario">Aniversario</option><option value="clases">Clases</option><option value="otro">Otro</option><option value="__add__">+ Agregar nueva opción...</option></select>
       </div>
       <div class="form-group">
         <label>Frecuencia</label>
-        <select id="edit-freq" class="select-freq" onchange="onFreqSelectChange(this,'edit')">
+        <select id="edit-freq" class="select-freq" onchange="onFreqSelectChange(this,&#39;edit&#39;)">
           <option value="puntual">Puntual</option>
           <option value="semanal">Semanal</option>
           <option value="mensual">Mensual</option>
@@ -472,10 +532,10 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
         <label>Observaciones</label>
         <input type="text" id="edit-obs">
       </div>
-      <div class="fecha-inicio-block visible" id="edit-inicio-block">
+      <div class="fecha-inicio-block visible" id="edit-inicio-block" style="display: block;">
         <label>Fecha de inicio</label>
         <input type="date" id="edit-inicio">
-        <div class="hint">La actividad solo aparece desde esta fecha en adelante.</div>
+        <div class="hint">Fecha desde la que aparece la actividad en la carta Gantt.</div>
       </div>
       <div class="form-group">
         <label>Fecha de término</label>
@@ -494,7 +554,7 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
 <div class="tipo-add-overlay" id="tipo-add-overlay">
   <div class="tipo-add-modal">
     <h4>Nueva categoría de tipo</h4>
-    <input type="text" id="tipo-add-input" placeholder="Ej: Capacitación, Reunión..." maxlength="30" onkeydown="if(event.key==='Enter')confirmTipoAdd();">
+    <input type="text" id="tipo-add-input" placeholder="Ej: Capacitación, Reunión..." maxlength="30" onkeydown="if(event.key===&#39;Enter&#39;)confirmTipoAdd();">
     <div class="err" id="tipo-add-err">Esa categoría ya existe.</div>
     <div class="btns">
       <button class="btn-cancel" onclick="closeTipoAddModal()">Cancelar</button>
@@ -504,7 +564,7 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
   </div>
 </div>
 
-<!-- MODAL ACTIVIDADES RECURRENTES -->
+<!-- MODAL ACTIVIDADES RECURRENTES (Anuales / Mensuales / Semanales) -->
 <div class="modal-overlay" id="modal-anuales-overlay">
   <div class="modal-edit" style="max-width:680px;width:95vw;">
     <h3>📅 Actividades recurrentes</h3>
@@ -517,19 +577,14 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════
-// CORRECCIÓN PRINCIPAL: Las actividades recurrentes con fechaInicio
-// ahora respetan correctamente el rango [fechaInicio, fechaTermino]
-// y NO generan ocurrencias fuera de ese período.
-// ═══════════════════════════════════════════════════════════════
-
+// ── ESTADO ───────────────────────────────────────────────────
 const TODAY = new Date();
 TODAY.setHours(0,0,0,0);
 
 let acts = [];
 let cType = 'revision';
-let cFreq = 'puntual';
-let editFreq = 'puntual';
+let cFreq = 'puntual';     // frecuencia para nueva actividad
+let editFreq = 'puntual';  // frecuencia en modal editar
 let nextId = 200;
 let currentFilter = 'all';
 let currentMonthKey = 'current';
@@ -545,20 +600,27 @@ function diasRest(fecha){
   return Math.round((t - TODAY) / 86400000);
 }
 function getColor(diff, isAniv){
-  if(isAniv)    return {bg:'#c8960a',fg:'#fff', hideNum:false};
+  // Vencidos: verde claro — aplica a todos incluidos aniversarios
   if(diff < 0)  return {bg:'#9DCB47',fg:'#9DCB47', hideNum:true};
+  if(isAniv)    return {bg:'#c8960a',fg:'#fff', hideNum:false};
+  // 0–5 días: rojo + número blanco
   if(diff <= 5) return {bg:'#FF0000',fg:'#fff', hideNum:false};
+  // 5–10 días: naranja + número negro
   if(diff <= 10)return {bg:'#FFB400',fg:'#000', hideNum:false};
+  // 10–365 días: amarillo + número negro
   if(diff<=365) return {bg:'#FFEB00',fg:'#000', hideNum:false};
   return              {bg:'#2e7d32',fg:'#fff', hideNum:false};
 }
 function filterGroup(diff, isAniv){
+  // Los aniversarios van al grupo 'aniv' SOLO cuando el filtro 'aniv' está activo.
+  // Para los otros filtros (amarillo, naranja, rojo, venc) se clasifican por días igual que el resto.
   if(diff < 0) return 'venc';
   if(diff <= 5) return 'rojo';
   if(diff <= 10) return 'naranja';
   if(diff <= 365) return 'amarillo';
   return 'otro';
 }
+// Función separada para el filtro 'aniv' (solo por tipo)
 function matchesFilter(a, filterKey){
   if(filterKey==='all') return true;
   if(filterKey==='aniv') return a.type==='aniversario';
@@ -573,23 +635,18 @@ function dLabel(diff){
   return (diff<0?'':'+') + diff + 'd';
 }
 
-// ═══════════════════════════════════════════════════════════════
-// CORRECCIÓN 1: buildDaysForMonth ahora soporta generar días
-// para TODO un año cuando se pasa month = -1
-// ═══════════════════════════════════════════════════════════════
+// ── GENERADOR DE DÍAS ─────────────────────────────────────────
+// FIX 2: genera días correctamente incluyendo días extra del mes siguiente
 function buildDaysForMonth(year, month){
-  // Si month === -1, generamos TODO el año
-  if(month === -1){
-    return buildDaysForYear(year);
-  }
-  
   const firstOfMonth = new Date(year, month, 1);
   const lastOfMonth  = new Date(year, month+1, 0);
 
+  // Primer lunes de la semana que contiene el día 1
   const startDay = new Date(firstOfMonth);
   const dow = startDay.getDay();
   startDay.setDate(startDay.getDate() - (dow===0 ? 6 : dow-1));
 
+  // Último día: fin del mes + 5 días calendario
   const endDay = new Date(lastOfMonth);
   endDay.setDate(endDay.getDate() + 5);
 
@@ -602,31 +659,6 @@ function buildDaysForMonth(year, month){
       d: new Date(cur),
       wknd: cur.getDay()===0 || cur.getDay()===6,
       otherMonth: cur.getMonth() !== month
-    });
-    cur.setDate(cur.getDate()+1);
-  }
-  return days;
-}
-
-// Nueva función: genera días para TODO un año
-function buildDaysForYear(year){
-  const days = [];
-  const startOfYear = new Date(year, 0, 1);
-  const endOfYear = new Date(year, 11, 31);
-  
-  // Empezar desde el primer lunes de la semana que contiene el 1 de enero
-  const startDay = new Date(startOfYear);
-  const dow = startDay.getDay();
-  startDay.setDate(startDay.getDate() - (dow===0 ? 6 : dow-1));
-  
-  const cur = new Date(startDay);
-  while(cur <= endOfYear){
-    days.push({
-      n: String(cur.getDate()).padStart(2,'0'),
-      dn: DNAMES[cur.getDay()],
-      d: new Date(cur),
-      wknd: cur.getDay()===0 || cur.getDay()===6,
-      otherMonth: cur.getFullYear() !== year
     });
     cur.setDate(cur.getDate()+1);
   }
@@ -651,13 +683,15 @@ function getViewMonthYear(){
   if(currentMonthKey==='all') return {year:TODAY.getFullYear(), month:TODAY.getMonth()};
   if(currentMonthKey.startsWith('year-')){
     const y = Number(currentMonthKey.split('-')[1]);
-    return {year:y, month:-1, isFullYear:true}; // month = -1 indica "todo el año"
+    return {year:y, month:TODAY.getMonth(), isFullYear:true};
   }
   const parts = currentMonthKey.split('-');
   return {year:Number(parts[0]), month:Number(parts[1])};
 }
 
-// ── SELECTOR AÑO → MES ──────────────────────────────────────
+// ── SELECTOR AÑO → MES (cascada) ─────────────────────────────
+
+// Calcula qué años y meses tienen actividades, y cuál es el rango visible
 function calcRangoYMeses(){
   const monthSet = {};
   const todayY_count = TODAY.getFullYear();
@@ -701,9 +735,11 @@ function calcRangoYMeses(){
     if(ay > maxY) maxY = ay;
   });
 
+  // Construir lista de años disponibles
   const years = [];
   for(let y=minY; y<=maxY; y++) years.push(y);
 
+  // Construir lista de meses por año
   const allMonths=[];
   let curY=minY, curM=0;
   const endY=maxY, endM=11;
@@ -722,11 +758,14 @@ function rebuildMonthSelect(){
   const monthSel = document.getElementById('month-select');
   const monthLbl = document.getElementById('month-select-label');
 
-  const prevKey = currentMonthKey;
+  // Guardar selección previa
+  const prevKey = currentMonthKey; // p.ej. "2027-5", "all", "current"
 
+  // ── Poblar selector de años ──
   yearSel.innerHTML = '<option value="all">— Toda la Gantt —</option>';
   yearSel.innerHTML += '<option value="current">Año actual ('+todayY+')</option>';
   years.forEach(y=>{
+    // Contar actividades en ese año
     const total = allMonths.filter(m=>m.year===y)
       .reduce((acc,m)=>{ const info=monthSet[m.year+'-'+m.month]; return acc+(info?info.count:0); }, 0);
     const sufijo = total ? ' ('+total+' act.)' : '';
@@ -734,6 +773,7 @@ function rebuildMonthSelect(){
     yearSel.innerHTML += '<option value="'+y+'">'+y+sufijo+esHoy+'</option>';
   });
 
+  // ── Restaurar estado ──
   let selectedYear = 'all';
   if(prevKey==='all'){
     selectedYear = 'all';
@@ -748,6 +788,7 @@ function rebuildMonthSelect(){
     monthSel.style.display = '';
     monthLbl.style.display = '';
   } else {
+    // prevKey puede ser "YYYY-M" o "year-YYYY"
     let py;
     if(prevKey.startsWith('year-')){
       py = Number(prevKey.split('-')[1]);
@@ -776,6 +817,7 @@ function rebuildMonthSelect(){
     }
   }
 
+  // Sincronizar currentMonthKey con lo que quedó seleccionado
   if(yearSel.value==='all'){
     currentMonthKey = 'all';
   } else {
@@ -783,11 +825,13 @@ function rebuildMonthSelect(){
   }
 }
 
+// Puebla el selector de meses para un año dado
 function _buildMonthsForYear(year, monthSet, allMonths, todayY, todayM, conTodoElAnio){
   const monthSel = document.getElementById('month-select');
   const mesesDelAnio = allMonths.filter(m=>m.year===year);
   monthSel.innerHTML = '';
 
+  // Opción "Todo el año"
   if(conTodoElAnio !== false){
     const optAll = document.createElement('option');
     optAll.value = 'year-'+year;
@@ -808,6 +852,7 @@ function _buildMonthsForYear(year, monthSet, allMonths, todayY, todayM, conTodoE
   });
 }
 
+// Cuando cambia el selector de AÑO
 function onYearChange(){
   const yearSel  = document.getElementById('year-select');
   const monthSel = document.getElementById('month-select');
@@ -825,22 +870,28 @@ function onYearChange(){
   const {monthSet, allMonths, todayY, todayM} = calcRangoYMeses();
   const year = val==='current' ? todayY : Number(val);
 
+  // Agregar opción "Todo el año" al inicio del selector de meses
   _buildMonthsForYear(year, monthSet, allMonths, todayY, todayM, true);
 
   monthSel.style.display = '';
   monthLbl.style.display = '';
 
+  // Al seleccionar un año → mostrar TODO el año por defecto
   monthSel.value = 'year-'+year;
   currentMonthKey = 'year-'+year;
   render();
 }
 
+// Cuando cambia el selector de MES
 function onMonthChange(){
   currentMonthKey = document.getElementById('month-select').value;
   render();
 }
 
+
+
 // ── TIPO / FORMULARIO ─────────────────────────────────────────
+// Tipos por defecto (no se pueden borrar)
 const TIPOS_BASE = [
   {value:'revision',    label:'Revisión'},
   {value:'plazo',       label:'Plazo'},
@@ -849,7 +900,7 @@ const TIPOS_BASE = [
   {value:'otro',        label:'Otro'}
 ];
 const TIPOS_CUSTOM_KEY = 'gantt_maah_tipos_custom';
-let tiposCustom = [];
+let tiposCustom = [];   // [{value, label}]
 let tipoAddTarget = 'add';
 
 function loadTiposCustom(){
@@ -916,9 +967,16 @@ function toggleFechaInicioBlock(where, freq){
   const id = where==='add' ? 'f-inicio-block' : 'edit-inicio-block';
   const el = document.getElementById(id);
   if(!el) return;
-  const recurrente = (freq==='semanal' || freq==='mensual' || freq==='anual');
-  if(recurrente) el.classList.add('visible');
-  else           el.classList.remove('visible');
+  // Siempre visible — solo cambia el hint según si es recurrente o no
+  el.style.display = 'block';
+  el.classList.add('visible');
+  const hint = el.querySelector('.hint');
+  if(hint){
+    const recurrente = (freq==='semanal' || freq==='mensual' || freq==='anual');
+    hint.textContent = recurrente
+      ? 'La actividad se repetirá desde esta fecha hasta la fecha de término.'
+      : 'Fecha desde la que aparece la actividad en la carta Gantt.';
+  }
 }
 
 // ── MODAL "AGREGAR NUEVA CATEGORÍA" ───────────────────────────
@@ -963,6 +1021,7 @@ function confirmTipoAdd(){
   }
 }
 
+// Compatibilidad con llamadas antiguas
 function setType(el,type){ cType=type; const s=document.getElementById('f-tipo'); if(s) s.value=type; }
 function setFreq(el,freq){ cFreq=freq; const s=document.getElementById('f-freq'); if(s){ s.value=freq; toggleFechaInicioBlock('add',freq); } }
 function setEditFreq(el,freq){ editFreq=freq; const s=document.getElementById('edit-freq'); if(s){ s.value=freq; toggleFechaInicioBlock('edit',freq); } }
@@ -1009,15 +1068,15 @@ function addActivity(){
   const [yr,mo,da]=fv.split('-').map(Number);
   const fecha=new Date(yr,mo-1,da);
 
+  // Fecha de inicio — aplica a cualquier frecuencia si se ingresó
   let fechaInicio = null;
   const esRecurrente = (cFreq==='semanal'||cFreq==='mensual'||cFreq==='anual');
-  if(esRecurrente){
-    if(fiv){
-      const [yri,moi,dai]=fiv.split('-').map(Number);
-      fechaInicio = new Date(yri,moi-1,dai);
-    } else {
-      fechaInicio = new Date(TODAY);
-    }
+  if(fiv){
+    const [yri,moi,dai]=fiv.split('-').map(Number);
+    fechaInicio = new Date(yri,moi-1,dai);
+    fechaInicio.setHours(0,0,0,0);
+  } else if(esRecurrente){
+    fechaInicio = new Date(TODAY);
     fechaInicio.setHours(0,0,0,0);
   }
 
@@ -1033,10 +1092,13 @@ function addActivity(){
   resetPreview();
   saveActToFB(newAct);
   resetFreqSelector();
-  if(!FB_CONFIGURED){ rebuildMonthSelect(); render(); }
+  rebuildMonthSelect(); render();
 }
 
+// Aplica los campos de recurrencia al objeto act según la frecuencia elegida.
+// 'puntual' es el caso normal — no agrega nada.
 function aplicarFrecuenciaACto(act, freq, fechaBase){
+  // Limpiar metadata previa para que el cambio en una edición sea consistente
   delete act.anual; delete act.mensual; delete act.semanal;
   delete act.dia;   delete act.mes;     delete act.dow;
   delete act.freq;
@@ -1046,17 +1108,17 @@ function aplicarFrecuenciaACto(act, freq, fechaBase){
   }
   if(freq==='anual'){
     act.freq='anual';
-    act.anual=true;
-    act.dia=fechaBase.getDate();
-    act.mes=fechaBase.getMonth();
+    act.anual=true;                       // compatibilidad con la lógica previa
+    act.dia=fechaBase.getDate();          // 1-31
+    act.mes=fechaBase.getMonth();         // 0-11
   } else if(freq==='mensual'){
     act.freq='mensual';
     act.mensual=true;
-    act.dia=fechaBase.getDate();
+    act.dia=fechaBase.getDate();          // 1-31
   } else if(freq==='semanal'){
     act.freq='semanal';
     act.semanal=true;
-    act.dow=fechaBase.getDay();
+    act.dow=fechaBase.getDay();           // 0=dom..6=sáb
   }
 }
 
@@ -1072,19 +1134,20 @@ function delAct(id){
   showModal('¿Eliminar esta actividad de la Carta Gantt?',()=>{
     acts=acts.filter(a=>String(a.id)!==String(id));
     deleteActFromFB(id);
-    if(!FB_CONFIGURED){ rebuildMonthSelect(); render(); }
+    rebuildMonthSelect(); render();
   });
 }
+// Eliminar una actividad recurrente (afecta a TODAS las repeticiones)
 function confirmDelRecurrente(parentId){
   const orig = acts.find(a=>String(a.id)===String(parentId));
-  if(!orig){ return; }
+  if(!orig){ alert('No se encontró la actividad. Recarga la página e intenta de nuevo.'); return; }
   const nombre = (orig.act||'').toString();
   const fr = getFrecuencia(orig);
   const tipoFr = fr==='anual' ? 'ANUAL' : (fr==='mensual' ? 'MENSUAL' : 'SEMANAL');
-  showModal('¿Eliminar la actividad '+tipoFr+' "'+nombre+'"?\\n\\nEsto borrará TODAS las repeticiones (pasadas y futuras).',()=>{
+  showModal('¿Eliminar la actividad '+tipoFr+' "'+nombre+'"?\n\nEsto borrará TODAS las repeticiones (pasadas y futuras).',()=>{
     acts = acts.filter(a=>String(a.id)!==String(parentId));
     deleteActFromFB(parentId);
-    if(!FB_CONFIGURED){ rebuildMonthSelect(); render(); }
+    rebuildMonthSelect(); render();
   });
 }
 function confirmClear(){
@@ -1105,13 +1168,16 @@ function showModal(msg,cb){
 }
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
 
-// ── EDICIÓN CON CONTRASEÑA ───────────────────────────────────
+// ── EDICIÓN CON CONTRASEÑA (FIX 2 & 3) ───────────────────────
+// Al estar logueado, NO se vuelve a pedir clave: ya está autenticado.
+// EDIT_PWD se mantiene como fallback para modo sin login (Firebase no configurado).
 const EDIT_PWD = '1996';
 let editingId = null;
 let editType  = 'revision';
 
 function requestEdit(id){
   editingId = id;
+  // Si ya está logueado, saltar paso de pwd e ir directo al formulario
   if(currentUser){
     document.getElementById('edit-step-pwd').style.display='none';
     document.getElementById('edit-step-form').style.display='block';
@@ -1119,6 +1185,7 @@ function requestEdit(id){
     fillEditForm(id);
     return;
   }
+  // Resetear modal al estado inicial (paso contraseña)
   document.getElementById('edit-step-pwd').style.display='block';
   document.getElementById('edit-step-form').style.display='none';
   document.getElementById('edit-pwd').value='';
@@ -1135,13 +1202,29 @@ function verifyPwd(){
     document.getElementById('edit-pwd').focus();
     return;
   }
+  // Contraseña correcta → cargar datos de la actividad
   fillEditForm(editingId);
 }
 
 function fillEditForm(id){
-  const act = acts.find(a=>String(a.id)===String(id));
+  // Buscar primero por id exacto, luego por id como string (compatibilidad Firebase)
+  let act = acts.find(a=>String(a.id)===String(id));
   if(!act){closeEditModal();return;}
 
+  // Si por algún motivo llegó una ocurrencia virtual, usar la madre
+  if(act.isVirtualAnual && act.parentAnualId){
+    act = acts.find(a=>String(a.id)===String(act.parentAnualId)) || act;
+  }
+
+  // Asegurar que fecha es Date (Firebase puede guardar timestamps)
+  if(act.fecha && !(act.fecha instanceof Date)){
+    act.fecha = new Date(act.fecha);
+  }
+  if(act.fechaInicio && !(act.fechaInicio instanceof Date)){
+    act.fechaInicio = new Date(act.fechaInicio);
+  }
+
+  // Rellenar formulario
   document.getElementById('edit-act').value   = act.act;
   document.getElementById('edit-obs').value   = act.obs||'';
   let fechaParaInput = act.fecha;
@@ -1152,10 +1235,12 @@ function fillEditForm(id){
   document.getElementById('edit-fecha').value =
     f.getFullYear()+'-'+String(f.getMonth()+1).padStart(2,'0')+'-'+String(f.getDate()).padStart(2,'0');
 
+  // Tipo
   editType = act.type||'revision';
   const tipoSel = document.getElementById('edit-tipo');
   fillTipoSelect(tipoSel, editType);
 
+  // Frecuencia
   let freqActual = act.freq;
   if(!freqActual){
     if(act.anual)         freqActual='anual';
@@ -1167,6 +1252,10 @@ function fillEditForm(id){
   const freqSel = document.getElementById('edit-freq');
   if(freqSel) freqSel.value = freqActual;
   toggleFechaInicioBlock('edit', freqActual);
+
+  // Fecha de inicio — siempre visible
+  const inicioBlock = document.getElementById('edit-inicio-block');
+  if(inicioBlock) inicioBlock.style.display = 'block';
 
   const inicioInp = document.getElementById('edit-inicio');
   if(inicioInp){
@@ -1209,15 +1298,14 @@ function saveEdit(){
   const [yr,mo,da]=fv.split('-').map(Number);
   const nuevaFecha=new Date(yr,mo-1,da);
 
+  // Fecha de inicio — aplica a cualquier frecuencia si se ingresó
   let nuevaFechaInicio = null;
-  const esRecurrente = (editFreq==='semanal'||editFreq==='mensual'||editFreq==='anual');
-  if(esRecurrente){
-    if(fiv){
-      const [yri,moi,dai]=fiv.split('-').map(Number);
-      nuevaFechaInicio = new Date(yri,moi-1,dai);
-    } else {
-      nuevaFechaInicio = new Date(TODAY);
-    }
+  if(fiv){
+    const [yri,moi,dai]=fiv.split('-').map(Number);
+    nuevaFechaInicio = new Date(yri,moi-1,dai);
+    nuevaFechaInicio.setHours(0,0,0,0);
+  } else if(esRecurrente){
+    nuevaFechaInicio = new Date(TODAY);
     nuevaFechaInicio.setHours(0,0,0,0);
   }
 
@@ -1228,7 +1316,7 @@ function saveEdit(){
   const anioAnterior= acts[idx].fecha instanceof Date ? acts[idx].fecha.getFullYear() : -1;
   const merged = {...acts[idx], act:actTxt, obs:obsTxt, fecha:nuevaFecha, type:editType};
   aplicarFrecuenciaACto(merged, editFreq, nuevaFecha);
-  if(esRecurrente && nuevaFechaInicio){
+  if(nuevaFechaInicio){
     merged.fechaInicio = nuevaFechaInicio;
   } else {
     delete merged.fechaInicio;
@@ -1241,21 +1329,15 @@ function saveEdit(){
 
   const nuevoMes  = nuevaFecha.getMonth();
   const nuevoAnio = nuevaFecha.getFullYear();
-  if(!FB_CONFIGURED){
-    rebuildMonthSelect();
-    if((nuevoMes!==mesAnterior||nuevoAnio!==anioAnterior) && currentMonthKey!=='all'){
-      currentMonthKey = nuevoAnio+'-'+nuevoMes;
-      syncSelectoresAKey(currentMonthKey);
-    }
-    render();
-  } else {
-    if((nuevoMes!==mesAnterior||nuevoAnio!==anioAnterior) && currentMonthKey!=='all'){
-      currentMonthKey = nuevoAnio+'-'+nuevoMes;
-      syncSelectoresAKey(currentMonthKey);
-    }
+  rebuildMonthSelect();
+  if((nuevoMes!==mesAnterior||nuevoAnio!==anioAnterior) && currentMonthKey!=='all'){
+    currentMonthKey = nuevoAnio+'-'+nuevoMes;
+    syncSelectoresAKey(currentMonthKey);
   }
+  render();
 }
 
+// Sincroniza year-select y month-select con una clave "YYYY-M"
 function syncSelectoresAKey(key){
   const yearSel  = document.getElementById('year-select');
   const monthSel = document.getElementById('month-select');
@@ -1284,20 +1366,19 @@ function closeEditModal(){
 
 // ── IMPRIMIR ─────────────────────────────────────────────────
 function printGantt(){
+  // Determinar título
   let titleText;
   if(currentMonthKey==='all'){
     titleText='CARTA GANTT MAAH';
   } else {
     const vm=getViewMonthYear();
-    if(vm.isFullYear){
-      titleText='CARTA GANTT MAAH — AÑO '+vm.year;
-    } else {
-      titleText='CARTA GANTT MAAH — '+MNAMES[vm.month].toUpperCase()+' '+vm.year;
-    }
+    titleText='CARTA GANTT MAAH — '+MNAMES[vm.month].toUpperCase()+' '+vm.year;
   }
 
+  // Obtener el HTML actual de la tabla (ya renderizada)
   const tableHTML = document.getElementById('gantt-wrap').innerHTML;
 
+  // Construir CSS inline para la ventana de impresión
   const printCSS = `
     @page { size: landscape; margin: 8mm 6mm; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1316,15 +1397,20 @@ function printGantt(){
             -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     th, td { border: 0.5px solid #888; padding: 0; text-align: center;
              -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    /* Ocultar fila 1 del thead (título con "CARTA GANTT OPERACIONES") */
     thead tr:first-child { display: none; }
+    /* Ocultar columna de botones editar */
     .td-del, .th-col-del { display: none !important; }
-    .del-btn, .edit-btn { display: none !important; }
+    .edit-btn { display: none !important; }
+    /* Tamaños de celdas de día */
     .td-day, .th-daynum, .th-dayname, .bar-cell {
       width: 16px !important; height: 16px !important; line-height: 16px !important; }
+    /* Columnas fijas */
     .th-col-act { width: 130px !important; font-size: 7pt; text-align: left; padding: 2px 4px; }
     .th-col-obs  { width: 30px !important; }
     .th-col-term { width: 46px !important; }
     .th-col-dias { width: 26px !important; }
+    /* Colores */
     .th-title, .th-week, .th-col-act, .th-col-obs,
     .th-col-term, .th-col-dias, .th-col-del {
       background: #1a3f6f !important; color: #fff !important; }
@@ -1348,6 +1434,7 @@ function printGantt(){
     .today-col { border-left: 2px solid #e53935 !important; }
   `;
 
+  // Abrir ventana nueva
   const pw = window.open('', '_blank', 'width=1200,height=700');
   if(!pw){ alert('Active las ventanas emergentes para imprimir.'); return; }
 
@@ -1369,11 +1456,249 @@ function printGantt(){
   pw.document.close();
 }
 
-// ═══════════════════════════════════════════════════════════════
-// CORRECCIÓN 2: La función render() ahora maneja correctamente
-// el modo "Todo el año" y filtra las ocurrencias por fechaInicio
-// ═══════════════════════════════════════════════════════════════
+// ── RENDER ───────────────────────────────────────────────────
+// ── ACTIVIDADES RECURRENTES ──────────────────────────────────
+// Una actividad recurrente se guarda UNA SOLA VEZ en Firebase. Para
+// mostrarse repetida en la Gantt, generamos "ocurrencias" virtuales con
+// fechas reales calculadas al vuelo según la vista que el usuario abra.
+//
+// Frecuencias soportadas:
+//   - anual:   {anual:true, dia(1-31), mes(0-11)}  → 1 ocurrencia por año
+//   - mensual: {mensual:true, dia(1-31)}           → 1 ocurrencia por mes
+//   - semanal: {semanal:true, dow(0=dom..6=sáb)}   → 1 ocurrencia por semana
+// Cada ocurrencia conserva parentAnualId/isVirtualAnual para que la fila
+// no permita editar/borrar individualmente — eso se hace desde el modal
+// "Recurrentes" sobre el registro original.
+
+function getFrecuencia(act){
+  if(act.freq) return act.freq;
+  if(act.anual)   return 'anual';
+  if(act.mensual) return 'mensual';
+  if(act.semanal) return 'semanal';
+  return 'puntual';
+}
+
+function makeAnualOcurrencia(orig, year){
+  const dia = Math.min(Math.max(parseInt(orig.dia,10)||1,1),31);
+  const mes = Math.min(Math.max(parseInt(orig.mes,10)||0,0),11);
+  // Si el día no existe en ese mes (ej: 29-feb en año no bisiesto),
+  // JS lo "rebota" al mes siguiente. Lo limitamos al último día válido.
+  const ultimoDia = new Date(year, mes+1, 0).getDate();
+  const diaSeguro = Math.min(dia, ultimoDia);
+  const fecha = new Date(year, mes, diaSeguro, 12, 0, 0);
+  return {
+    ...orig,
+    fecha: fecha,
+    type: orig.type || 'aniversario',
+    parentAnualId: orig.id,
+    isVirtualAnual: true,
+    id: 'A'+orig.id+'_'+year
+  };
+}
+
+function makeMensualOcurrencia(orig, year, month){
+  const dia = Math.min(Math.max(parseInt(orig.dia,10)||1,1),31);
+  const ultimoDia = new Date(year, month+1, 0).getDate();
+  const diaSeguro = Math.min(dia, ultimoDia);
+  const fecha = new Date(year, month, diaSeguro, 12, 0, 0);
+  return {
+    ...orig,
+    fecha: fecha,
+    type: orig.type || 'revision',
+    parentAnualId: orig.id,
+    isVirtualAnual: true,
+    id: 'M'+orig.id+'_'+year+'_'+month
+  };
+}
+
+// Genera todas las ocurrencias semanales que caen dentro del rango
+// [startDate, endDate] (inclusive) para una actividad semanal.
+function makeSemanalOcurrencias(orig, startDate, endDate){
+  const dow = Math.min(Math.max(parseInt(orig.dow,10)||0,0),6);
+  const out = [];
+  // Aplicar la fecha de término de la actividad como límite máximo (si existe)
+  let endLimit = endDate;
+  if(orig.fecha instanceof Date && !isNaN(orig.fecha.getTime())){
+    const termino = new Date(orig.fecha);
+    termino.setHours(23,59,59,999);
+    if(termino < endLimit) endLimit = termino;
+  }
+  // Avanzamos al primer día con el dow correcto a partir de startDate
+  const cur = new Date(startDate);
+  cur.setHours(12,0,0,0);
+  const diff = (dow - cur.getDay() + 7) % 7;
+  cur.setDate(cur.getDate() + diff);
+  while(cur <= endLimit){
+    const occ = new Date(cur);
+    out.push({
+      ...orig,
+      fecha: occ,
+      type: orig.type || 'revision',
+      parentAnualId: orig.id,
+      isVirtualAnual: true,
+      id: 'S'+orig.id+'_'+occ.getFullYear()+'_'+occ.getMonth()+'_'+occ.getDate()
+    });
+    cur.setDate(cur.getDate() + 7);
+  }
+  return out;
+}
+
+// ── MODAL ACTIVIDADES ANUALES ────────────────────────────────
+function openAnualesModal(){
+  const overlay = document.getElementById('modal-anuales-overlay');
+  if(!overlay){ return; }
+  renderAnualesList();
+  overlay.classList.add('open');
+}
+function closeAnualesModal(){
+  const overlay = document.getElementById('modal-anuales-overlay');
+  if(overlay) overlay.classList.remove('open');
+}
+function renderAnualesList(){
+  const cont = document.getElementById('anuales-list');
+  if(!cont) return;
+  // Recurrentes = todas las que tienen freq distinto de puntual (o flags antiguos)
+  const recurrentes = acts.filter(a=> {
+    const fr = getFrecuencia(a);
+    return fr==='anual' || fr==='mensual' || fr==='semanal';
+  });
+  if(!recurrentes.length){
+    cont.innerHTML = '<div style="padding:20px;text-align:center;color:#718096;font-size:13px;">No tienes actividades recurrentes.<br><br>Crea una desde el formulario <strong>+ Nueva actividad</strong> de la Carta Gantt eligiendo una frecuencia (Semanal/Mensual/Anual), o desde la <strong>Agenda</strong> marcando la casilla ANUAL al ingresar una actividad.</div>';
+    return;
+  }
+  // Ordenar: anuales primero (por mes/día), luego mensuales (por día), luego semanales (por dow)
+  const ord = {anual:1, mensual:2, semanal:3};
+  const DOW_NAMES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  recurrentes.sort((a,b)=>{
+    const fa=getFrecuencia(a), fb=getFrecuencia(b);
+    if(ord[fa]!==ord[fb]) return ord[fa]-ord[fb];
+    if(fa==='anual'){
+      if(a.mes!==b.mes) return (a.mes||0)-(b.mes||0);
+      return (a.dia||0)-(b.dia||0);
+    }
+    if(fa==='mensual') return (a.dia||0)-(b.dia||0);
+    if(fa==='semanal') return (a.dow||0)-(b.dow||0);
+    return 0;
+  });
+  let html = '<table style="width:100%;border-collapse:collapse;">';
+  html += '<thead><tr style="background:#1a3f6f;color:#fff;">';
+  html += '<th style="padding:8px 10px;text-align:left;font-size:11px;">ACTIVIDAD</th>';
+  html += '<th style="padding:8px 10px;text-align:center;font-size:11px;width:80px;">FRECUENCIA</th>';
+  html += '<th style="padding:8px 10px;text-align:center;font-size:11px;width:120px;">CUÁNDO</th>';
+  html += '<th style="padding:8px 10px;text-align:center;font-size:11px;width:140px;">ACCIONES</th>';
+  html += '</tr></thead><tbody>';
+  recurrentes.forEach(a=>{
+    const fr = getFrecuencia(a);
+    let badgeCls, badgeTxt, cuando;
+    if(fr==='anual'){
+      badgeCls='anual-badge'; badgeTxt='ANUAL';
+      cuando = String(a.dia||1).padStart(2,'0')+' / '+(MNAMES[a.mes||0]||'?');
+    } else if(fr==='mensual'){
+      badgeCls='mensual-badge'; badgeTxt='MENSUAL';
+      cuando = 'Día '+String(a.dia||1).padStart(2,'0')+' de cada mes';
+    } else {
+      badgeCls='semanal-badge'; badgeTxt='SEMANAL';
+      cuando = 'Cada '+(DOW_NAMES[a.dow||0]||'—');
+    }
+    // Escapamos posibles ' en ids/textos
+    const safeId = JSON.stringify(a.id); // funciona para number y string
+    html += '<tr style="border-bottom:1px solid #e2e8f0;">';
+    html += '<td style="padding:8px 10px;font-size:12px;color:#2d3748;">'+(a.act||'')+(a.obs?' <span style="color:#718096;font-size:10px;">('+a.obs+')</span>':'')+'</td>';
+    html += '<td style="padding:8px 10px;text-align:center;"><span class="'+badgeCls+'" style="font-size:8px;padding:2px 6px;">'+badgeTxt+'</span></td>';
+    html += '<td style="padding:8px 10px;font-size:11px;color:#1a3f6f;text-align:center;font-weight:600;">'+cuando+'</td>';
+    html += '<td style="padding:8px 10px;text-align:center;">';
+    html += '<button onclick="editarRecurrente('+safeId+')" style="background:#1a3f6f;color:#fff;border:none;padding:5px 10px;border-radius:4px;font-size:11px;cursor:pointer;margin-right:4px;">&#9998; Cambiar</button>';
+    html += '<button onclick="borrarRecurrente('+safeId+')" style="background:#c62828;color:#fff;border:none;padding:5px 10px;border-radius:4px;font-size:11px;cursor:pointer;">&#10005; Borrar</button>';
+    html += '</td></tr>';
+  });
+  html += '</tbody></table>';
+  cont.innerHTML = html;
+}
+// Acepta id numérico o string (los recurrentes guardados desde la agenda
+// usan id numérico; comparamos con doble igual flexible).
+function _findActById(id){
+  return acts.find(a=> a.id===id || String(a.id)===String(id));
+}
+
+function editarRecurrente(id){
+  const orig = _findActById(id);
+  if(!orig){ alert('No se encontró la actividad recurrente.'); return; }
+  const fr = getFrecuencia(orig);
+  if(fr==='puntual'){ alert('Esta actividad no es recurrente.'); return; }
+  const DOW_NAMES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+  let updates = null;
+  if(fr==='anual'){
+    const diaActual = String(orig.dia||1).padStart(2,'0');
+    const mesActual = String((orig.mes||0)+1).padStart(2,'0');
+    const inputStr = prompt('Editar actividad ANUAL:\n\n'+(orig.act||'')+'\n\nIngrese la nueva fecha (DD/MM):', diaActual+'/'+mesActual);
+    if(!inputStr) return;
+    const m = inputStr.trim().match(/^(\d{1,2})\s*[\/\-\.]\s*(\d{1,2})$/);
+    if(!m){ alert('Formato inválido. Use DD/MM (por ejemplo: 21/04).'); return; }
+    const nDia = parseInt(m[1],10);
+    const nMes = parseInt(m[2],10);
+    if(nDia<1||nDia>31||nMes<1||nMes>12){ alert('Día o mes fuera de rango.'); return; }
+    updates = {dia:nDia, mes:nMes-1};
+  } else if(fr==='mensual'){
+    const diaActual = String(orig.dia||1);
+    const inputStr = prompt('Editar actividad MENSUAL:\n\n'+(orig.act||'')+'\n\nIngrese el nuevo día del mes (1-31):', diaActual);
+    if(!inputStr) return;
+    const nDia = parseInt(inputStr.trim(),10);
+    if(isNaN(nDia)||nDia<1||nDia>31){ alert('Día fuera de rango (1-31).'); return; }
+    updates = {dia:nDia};
+  } else if(fr==='semanal'){
+    const dowActual = String(orig.dow||0);
+    const lista = DOW_NAMES.map((n,i)=>i+'='+n).join('\n');
+    const inputStr = prompt('Editar actividad SEMANAL:\n\n'+(orig.act||'')+'\n\nIngrese el día de la semana (0-6):\n'+lista, dowActual);
+    if(!inputStr) return;
+    const nDow = parseInt(inputStr.trim(),10);
+    if(isNaN(nDow)||nDow<0||nDow>6){ alert('Día de la semana fuera de rango (0-6).'); return; }
+    updates = {dow:nDow};
+  }
+  if(!updates) return;
+
+  // Persistir
+  if(!FB_CONFIGURED || !dbRef){
+    Object.assign(orig, updates);
+    renderAnualesList();
+    rebuildMonthSelect();
+    render();
+    return;
+  }
+  dbRef.child(String(orig.id)).update(updates, err=>{
+    if(err){ alert('No se pudo guardar: '+err.message); return; }
+    setTimeout(()=>{ if(document.getElementById('modal-anuales-overlay').classList.contains('open')) renderAnualesList(); }, 300);
+  });
+}
+
+function borrarRecurrente(id){
+  const orig = _findActById(id);
+  if(!orig){ alert('No se encontró la actividad recurrente.'); return; }
+  const fr = getFrecuencia(orig);
+  const frTxt = fr==='anual'?'anual':(fr==='mensual'?'mensual':(fr==='semanal'?'semanal':''));
+  const aviso = fr==='anual'?'Dejará de aparecer en TODOS los años.'
+              :fr==='mensual'?'Dejará de aparecer en TODOS los meses.'
+              :'Dejará de aparecer en TODAS las semanas.';
+  if(!confirm('¿Borrar la actividad '+frTxt+' "'+(orig.act||'')+'"?\n\n'+aviso+'\nEsta acción no se puede deshacer.')) return;
+  if(!FB_CONFIGURED || !dbRef){
+    acts = acts.filter(a=> !(a.id===orig.id || String(a.id)===String(orig.id)));
+    renderAnualesList();
+    rebuildMonthSelect();
+    render();
+    return;
+  }
+  dbRef.child(String(orig.id)).remove(err=>{
+    if(err){ alert('No se pudo borrar: '+err.message); return; }
+    setTimeout(()=>{ if(document.getElementById('modal-anuales-overlay').classList.contains('open')) renderAnualesList(); }, 300);
+  });
+}
+
+// Aliases retro-compatibles por si algo del HTML viejo los llama
+function editarAnual(id){ return editarRecurrente(id); }
+function borrarAnual(id){ return borrarRecurrente(id); }
+
 function render(){
+  // ── Determinar modo de vista ──
   const isTodaGantt = currentMonthKey === 'all';
   const isFullYear  = currentMonthKey.startsWith('year-');
   let viewYear, viewMonth;
@@ -1389,14 +1714,15 @@ function render(){
     }
   } else if(isFullYear){
     viewYear  = Number(currentMonthKey.split('-')[1]);
-    viewMonth = -1; // -1 = todo el año
+    viewMonth = TODAY.getMonth(); // referencia para buildDays, no importa en año completo
   } else {
     const vm = getViewMonthYear();
     viewYear  = vm.year;
     viewMonth = vm.month;
   }
 
-  const allDays = buildDaysForMonth(viewYear, viewMonth);
+  // Para año completo o Toda la Gantt usamos el mes actual como base visual del header
+  const allDays = buildDaysForMonth(viewYear, isFullYear ? TODAY.getMonth() : viewMonth);
   const weeks   = groupWeeks(allDays);
   const todayIdx = allDays.findIndex(d=>
     d.d.getFullYear()===TODAY.getFullYear()&&
@@ -1433,20 +1759,21 @@ function render(){
     const expandidas = [];
     acts.forEach(a=>{
       const fr = getFrecuencia(a);
+      // Si la actividad recurrente tiene fechaInicio, ajustamos el rango efectivo
+      // para que las ocurrencias NUNCA aparezcan antes de esa fecha.
+      // Si NO la tiene (actividades viejas), usamos el rango completo (comportamiento original).
       let rIniEff = rIni;
-      let rFinEff = rFin;
-      
-      // CORRECCIÓN: Respetar fechaInicio como límite inferior
       if((fr==='anual'||fr==='mensual'||fr==='semanal') && a.fechaInicio instanceof Date && !isNaN(a.fechaInicio.getTime())){
         if(a.fechaInicio > rIni) rIniEff = a.fechaInicio;
       }
-      // CORRECCIÓN: Respetar fecha (término) como límite superior
+      // La fecha de la actividad recurrente actúa como FECHA DE TÉRMINO máxima:
+      // las repeticiones NO se generan después de esa fecha.
+      let rFinEff = rFin;
       if((fr==='anual'||fr==='mensual'||fr==='semanal') && a.fecha instanceof Date && !isNaN(a.fecha.getTime())){
         const term = new Date(a.fecha);
         term.setHours(23,59,59,999);
         if(term < rFin) rFinEff = term;
       }
-      
       if(fr==='anual'){
         for(let y=rIniEff.getFullYear(); y<=rFinEff.getFullYear(); y++){
           const occ = makeAnualOcurrencia(a, y);
@@ -1477,7 +1804,11 @@ function render(){
     const expandidas = [];
     acts.forEach(a=>{
       const fr = getFrecuencia(a);
+      // Filtro por fechaInicio: si existe, no generamos ocurrencias antes.
+      // Si no existe (actividades viejas), no filtramos por fecha.
       const fi = (a.fechaInicio instanceof Date && !isNaN(a.fechaInicio.getTime())) ? a.fechaInicio : null;
+      // Filtro por fecha de término: la fecha de la actividad recurrente
+      // actúa como límite máximo, las repeticiones NO siguen después.
       let ft = null;
       if((fr==='anual'||fr==='mensual'||fr==='semanal') && a.fecha instanceof Date && !isNaN(a.fecha.getTime())){
         ft = new Date(a.fecha);
@@ -1500,11 +1831,13 @@ function render(){
     byMonth = [...normales, ...expandidas].sort((a,b)=>a.fecha-b.fecha);
   }
 
+  // ── Filtro de estado (vencidas, rojo, etc.) sobre las del mes ──
   let filtered = [...byMonth];
   if(currentFilter!=='all'){
     filtered = byMonth.filter(a=> matchesFilter(a, currentFilter));
   }
 
+  // ── Info de vista ──
   let infoTxt;
   if(isTodaGantt)       infoTxt = 'Mostrando todas las actividades';
   else if(isFullYear)   infoTxt = 'Mostrando todo el año '+viewYear+' ('+byMonth.length+' actividades)';
@@ -1512,29 +1845,31 @@ function render(){
   else infoTxt = 'Mostrando '+MNAMES[viewMonth]+' '+viewYear+' ('+byMonth.length+' actividades)';
   document.getElementById('view-info').textContent = infoTxt;
 
+  // Actualizar panel de feriados del mes visible
   renderFeriadosPanel(viewYear, viewMonth, isTodaGantt || isFullYear);
 
-  const NCOLS=6+allDays.length;
+  const NCOLS=5+allDays.length;
   let html='<table class="gantt"><colgroup>';
-  html+='<col style="width:155px;"><col style="width:40px;"><col style="width:62px;"><col style="width:36px;"><col style="width:20px;"><col style="width:20px;">';
+  html+='<col style="width:155px;"><col style="width:40px;"><col style="width:62px;"><col style="width:36px;"><col style="width:22px;">';
   allDays.forEach(()=>{ html+='<col style="width:24px;">'; });
   html+='</colgroup><thead><tr>';
 
+  // Fila 1: título + semanas
   let titleMes;
   if(isTodaGantt)     titleMes = 'TODAS LAS ACTIVIDADES';
   else if(isFullYear) titleMes = 'AÑO '+viewYear+' — TODAS LAS ACTIVIDADES';
   else                titleMes = MNAMES[viewMonth].toUpperCase()+' '+viewYear;
-  html+='<th class="th-title" colspan="6">CARTA GANTT MAAH — '+titleMes+'</th>';
+  html+='<th class="th-title" colspan="5">CARTA GANTT MAAH — '+titleMes+'</th>';
   weeks.forEach(w=>{
     html+='<th class="th-week" colspan="'+w.days.length+'">'+w.label+'</th>';
   });
   html+='</tr><tr>';
 
+  // Fila 2: cabeceras fijas + números de día
   html+='<th class="th-col-act">ACTIVIDAD</th>';
   html+='<th class="th-col-obs">OBS</th>';
   html+='<th class="th-col-term">TÉRMINO</th>';
   html+='<th class="th-col-dias">DÍAS</th>';
-  html+='<th class="th-col-del"></th>';
   html+='<th class="th-col-del"></th>';
   allDays.forEach((d,i)=>{
     const isToday=i===todayIdx;
@@ -1544,11 +1879,11 @@ function render(){
   });
   html+='</tr><tr>';
 
+  // Fila 3: solo nombres de día (LUN, MAR, MIÉ...), SIN repetir las columnas de texto
   html+='<td class="th-col-act" style="background:#2c5282;"></td>';
   html+='<td class="th-col-obs" style="background:#2c5282;"></td>';
   html+='<td class="th-col-term" style="background:#2c5282;"></td>';
   html+='<td class="th-col-dias" style="background:#2c5282;"></td>';
-  html+='<td class="th-col-del" style="background:#2c5282;"></td>';
   html+='<td class="th-col-del" style="background:#2c5282;"></td>';
   allDays.forEach((d,i)=>{
     const isToday=i===todayIdx;
@@ -1589,6 +1924,7 @@ function render(){
       if(fr==='anual')        badge='<span class="anual-badge" title="Se repite todos los años">ANUAL</span>';
       else if(fr==='mensual') badge='<span class="mensual-badge" title="Se repite todos los meses">MENSUAL</span>';
       else if(fr==='semanal') badge='<span class="semanal-badge" title="Se repite todas las semanas">SEMANAL</span>';
+      // Badge va en una línea separada, debajo del texto, para que se vea más ordenado
       let cellInner = '';
       if(obsTxt) cellInner += '<span class="obs-text">'+obsTxt+'</span>';
       if(badge)  cellInner += '<span class="obs-badge-row">'+badge+'</span>';
@@ -1599,14 +1935,14 @@ function render(){
     html+='<td class="td-term">'+fmtDate(r.fecha)+'</td>';
     html+='<td class="td-d" style="background:'+col.bg+';color:'+col.fg+';'+(col.hideNum?'border:1px solid #7AB034;':'')+'" title="'+(col.hideNum?'Vencido':dl)+'">'+(col.hideNum?'':dl)+'</td>';
     if(r.isVirtualAnual){
+      // Fila virtual (recurrente): solo lápiz con menú contextual
       const parentId = r.parentAnualId;
       const safeId = String(parentId).replace(/'/g,"\\'");
-      html+='<td class="td-del"><button class="edit-btn" onclick="requestEdit(\\''+safeId+'\\')" title="Editar actividad recurrente">&#9998;</button></td>';
-      html+='<td class="td-del"><button class="del-btn" onclick="confirmDelRecurrente(\\''+safeId+'\\')" title="Eliminar actividad recurrente">&#10005;</button></td>';
+      html+='<td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,\''+safeId+'\',true)" title="Opciones">&#9998;</button></td>';
     } else {
+      // Actividad normal: solo lápiz con menú contextual
       const safeId = String(r.id).replace(/'/g,"\\'");
-      html+='<td class="td-del"><button class="edit-btn" onclick="requestEdit(\\''+safeId+'\\')" title="Editar">&#9998;</button></td>';
-      html+='<td class="td-del"><button class="del-btn" onclick="delAct(\\''+safeId+'\\')" title="Eliminar">&#10005;</button></td>';
+      html+='<td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,\''+safeId+'\',false)" title="Opciones">&#9998;</button></td>';
     }
 
     allDays.forEach((_,i)=>{
@@ -1620,11 +1956,11 @@ function render(){
       const ferNombre=esFeriado?fmap[fKey]:'';
       if(i===barIdx){
         const ferCls=esFeriado?' feriado':'';
-        const ferAttr=esFeriado?' onmouseenter="showFeriadoTip(this,\\''+ferNombre.replace(/'/g,'&#39;')+'\\')" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,\\''+ferNombre.replace(/'/g,'&#39;')+'\\')"':'';
+        const ferAttr=esFeriado?' onmouseenter="showFeriadoTip(this,\''+ferNombre.replace(/'/g,'&#39;')+'\')" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,\''+ferNombre.replace(/'/g,'&#39;')+'\')"':'';
         html+='<td class="bar-cell'+ferCls+'" style="background:'+col.bg+' !important;'+tlStyle+'"'+ferAttr+'></td>';
       } else {
         let cls='td-day'+(isWknd?' wknd':'')+(isOther?' othermonth':'')+(isToday?' today-col':'')+(esFeriado?' feriado':'');
-        const ferAttr=esFeriado?' onmouseenter="showFeriadoTip(this,\\''+ferNombre.replace(/'/g,'&#39;')+'\\')" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,\\''+ferNombre.replace(/'/g,'&#39;')+'\\')"':'';
+        const ferAttr=esFeriado?' onmouseenter="showFeriadoTip(this,\''+ferNombre.replace(/'/g,'&#39;')+'\')" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,\''+ferNombre.replace(/'/g,'&#39;')+'\')"':'';
         html+='<td class="'+cls+'" style="'+tlStyle+'"'+ferAttr+'></td>';
       }
     });
@@ -1634,6 +1970,7 @@ function render(){
   html+='</tbody></table>';
   document.getElementById('gantt-wrap').innerHTML=html;
 
+  // Stats (siempre sobre TODAS las actividades)
   document.getElementById('s-total').textContent=acts.length;
   document.getElementById('s-venc').textContent=acts.filter(a=>diasRest(a.fecha)<0).length;
   document.getElementById('s-rojo').textContent=acts.filter(a=>{const d=diasRest(a.fecha);return d>=0&&d<=5;}).length;
@@ -1642,270 +1979,40 @@ function render(){
   document.getElementById('s-anivs').textContent=acts.filter(a=>a.type==='aniversario').length;
 }
 
-// ── ACTIVIDADES RECURRENTES ──────────────────────────────────
-function getFrecuencia(act){
-  if(act.freq) return act.freq;
-  if(act.anual)   return 'anual';
-  if(act.mensual) return 'mensual';
-  if(act.semanal) return 'semanal';
-  return 'puntual';
-}
-
-function makeAnualOcurrencia(orig, year){
-  const dia = Math.min(Math.max(parseInt(orig.dia,10)||1,1),31);
-  const mes = Math.min(Math.max(parseInt(orig.mes,10)||0,0),11);
-  const ultimoDia = new Date(year, mes+1, 0).getDate();
-  const diaSeguro = Math.min(dia, ultimoDia);
-  const fecha = new Date(year, mes, diaSeguro, 12, 0, 0);
-  return {
-    ...orig,
-    fecha: fecha,
-    type: orig.type || 'aniversario',
-    parentAnualId: orig.id,
-    isVirtualAnual: true,
-    id: 'A'+orig.id+'_'+year
-  };
-}
-
-function makeMensualOcurrencia(orig, year, month){
-  const dia = Math.min(Math.max(parseInt(orig.dia,10)||1,1),31);
-  const ultimoDia = new Date(year, month+1, 0).getDate();
-  const diaSeguro = Math.min(dia, ultimoDia);
-  const fecha = new Date(year, month, diaSeguro, 12, 0, 0);
-  return {
-    ...orig,
-    fecha: fecha,
-    type: orig.type || 'revision',
-    parentAnualId: orig.id,
-    isVirtualAnual: true,
-    id: 'M'+orig.id+'_'+year+'_'+month
-  };
-}
-
-// ═══════════════════════════════════════════════════════════════
-// CORRECCIÓN 3: makeSemanalOcurrencias ahora respeta EXACTAMENTE
-// el rango [startDate, endDate] y no genera ocurrencias fuera
-// ═══════════════════════════════════════════════════════════════
-function makeSemanalOcurrencias(orig, startDate, endDate){
-  const dow = Math.min(Math.max(parseInt(orig.dow,10)||0,0),6);
-  const out = [];
-  
-  // El límite máximo es la fecha de término de la actividad
-  let endLimit = endDate;
-  if(orig.fecha instanceof Date && !isNaN(orig.fecha.getTime())){
-    const termino = new Date(orig.fecha);
-    termino.setHours(23,59,59,999);
-    if(termino < endLimit) endLimit = termino;
-  }
-  
-  // El límite mínimo es la fecha de inicio de la actividad
-  let startLimit = startDate;
-  if(orig.fechaInicio instanceof Date && !isNaN(orig.fechaInicio.getTime())){
-    const inicio = new Date(orig.fechaInicio);
-    inicio.setHours(0,0,0,0);
-    if(inicio > startLimit) startLimit = inicio;
-  }
-  
-  // Si el rango es inválido (inicio > fin), no generar nada
-  if(startLimit > endLimit) return out;
-  
-  const cur = new Date(startLimit);
-  cur.setHours(12,0,0,0);
-  const diff = (dow - cur.getDay() + 7) % 7;
-  cur.setDate(cur.getDate() + diff);
-  
-  while(cur <= endLimit){
-    const occ = new Date(cur);
-    out.push({
-      ...orig,
-      fecha: occ,
-      type: orig.type || 'revision',
-      parentAnualId: orig.id,
-      isVirtualAnual: true,
-      id: 'S'+orig.id+'_'+occ.getFullYear()+'_'+occ.getMonth()+'_'+occ.getDate()
-    });
-    cur.setDate(cur.getDate() + 7);
-  }
-  return out;
-}
-
-// ── MODAL ACTIVIDADES ANUALES ────────────────────────────────
-function openAnualesModal(){
-  const overlay = document.getElementById('modal-anuales-overlay');
-  if(!overlay){ return; }
-  renderAnualesList();
-  overlay.classList.add('open');
-}
-function closeAnualesModal(){
-  const overlay = document.getElementById('modal-anuales-overlay');
-  if(overlay) overlay.classList.remove('open');
-}
-function renderAnualesList(){
-  const cont = document.getElementById('anuales-list');
-  if(!cont) return;
-  const recurrentes = acts.filter(a=> {
-    const fr = getFrecuencia(a);
-    return fr==='anual' || fr==='mensual' || fr==='semanal';
-  });
-  if(!recurrentes.length){
-    cont.innerHTML = '<div style="padding:20px;text-align:center;color:#718096;font-size:13px;">No tienes actividades recurrentes.<br><br>Crea una desde el formulario <strong>+ Nueva actividad</strong> de la Carta Gantt eligiendo una frecuencia (Semanal/Mensual/Anual).</div>';
-    return;
-  }
-  const ord = {anual:1, mensual:2, semanal:3};
-  const DOW_NAMES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  recurrentes.sort((a,b)=>{
-    const fa=getFrecuencia(a), fb=getFrecuencia(b);
-    if(ord[fa]!==ord[fb]) return ord[fa]-ord[fb];
-    if(fa==='anual'){
-      if(a.mes!==b.mes) return (a.mes||0)-(b.mes||0);
-      return (a.dia||0)-(b.dia||0);
-    }
-    if(fa==='mensual') return (a.dia||0)-(b.dia||0);
-    if(fa==='semanal') return (a.dow||0)-(b.dow||0);
-    return 0;
-  });
-  let html = '<table style="width:100%;border-collapse:collapse;">';
-  html += '<thead><tr style="background:#1a3f6f;color:#fff;">';
-  html += '<th style="padding:8px 10px;text-align:left;font-size:11px;">ACTIVIDAD</th>';
-  html += '<th style="padding:8px 10px;text-align:center;font-size:11px;width:80px;">FRECUENCIA</th>';
-  html += '<th style="padding:8px 10px;text-align:center;font-size:11px;width:120px;">CUÁNDO</th>';
-  html += '<th style="padding:8px 10px;text-align:center;font-size:11px;width:140px;">ACCIONES</th>';
-  html += '</tr></thead><tbody>';
-  recurrentes.forEach(a=>{
-    const fr = getFrecuencia(a);
-    let badgeCls, badgeTxt, cuando;
-    if(fr==='anual'){
-      badgeCls='anual-badge'; badgeTxt='ANUAL';
-      cuando = String(a.dia||1).padStart(2,'0')+' / '+(MNAMES[a.mes||0]||'?');
-    } else if(fr==='mensual'){
-      badgeCls='mensual-badge'; badgeTxt='MENSUAL';
-      cuando = 'Día '+String(a.dia||1).padStart(2,'0')+' de cada mes';
-    } else {
-      badgeCls='semanal-badge'; badgeTxt='SEMANAL';
-      cuando = 'Cada '+(DOW_NAMES[a.dow||0]||'—');
-    }
-    const safeId = JSON.stringify(a.id);
-    html += '<tr style="border-bottom:1px solid #e2e8f0;">';
-    html += '<td style="padding:8px 10px;font-size:12px;color:#2d3748;">'+(a.act||'')+(a.obs?' <span style="color:#718096;font-size:10px;">('+a.obs+')</span>':'')+'</td>';
-    html += '<td style="padding:8px 10px;text-align:center;"><span class="'+badgeCls+'" style="font-size:8px;padding:2px 6px;">'+badgeTxt+'</span></td>';
-    html += '<td style="padding:8px 10px;font-size:11px;color:#1a3f6f;text-align:center;font-weight:600;">'+cuando+'</td>';
-    html += '<td style="padding:8px 10px;text-align:center;">';
-    html += '<button onclick="editarRecurrente('+safeId+')" style="background:#1a3f6f;color:#fff;border:none;padding:5px 10px;border-radius:4px;font-size:11px;cursor:pointer;margin-right:4px;">&#9998; Cambiar</button>';
-    html += '<button onclick="borrarRecurrente('+safeId+')" style="background:#c62828;color:#fff;border:none;padding:5px 10px;border-radius:4px;font-size:11px;cursor:pointer;">&#10005; Borrar</button>';
-    html += '</td></tr>';
-  });
-  html += '</tbody></table>';
-  cont.innerHTML = html;
-}
-
-function _findActById(id){
-  return acts.find(a=> a.id===id || String(a.id)===String(id));
-}
-
-function editarRecurrente(id){
-  const orig = _findActById(id);
-  if(!orig){ alert('No se encontró la actividad recurrente.'); return; }
-  const fr = getFrecuencia(orig);
-  if(fr==='puntual'){ alert('Esta actividad no es recurrente.'); return; }
-  const DOW_NAMES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-
-  let updates = null;
-  if(fr==='anual'){
-    const diaActual = String(orig.dia||1).padStart(2,'0');
-    const mesActual = String((orig.mes||0)+1).padStart(2,'0');
-    const inputStr = prompt('Editar actividad ANUAL:\\n\\n'+(orig.act||'')+'\\n\\nIngrese la nueva fecha (DD/MM):', diaActual+'/'+mesActual);
-    if(!inputStr) return;
-    const m = inputStr.trim().match(/^(\\d{1,2})\\s*[\\/\\-\\.]\\s*(\\d{1,2})$/);
-    if(!m){ alert('Formato inválido. Use DD/MM (por ejemplo: 21/04).'); return; }
-    const nDia = parseInt(m[1],10);
-    const nMes = parseInt(m[2],10);
-    if(nDia<1||nDia>31||nMes<1||nMes>12){ alert('Día o mes fuera de rango.'); return; }
-    updates = {dia:nDia, mes:nMes-1};
-  } else if(fr==='mensual'){
-    const diaActual = String(orig.dia||1);
-    const inputStr = prompt('Editar actividad MENSUAL:\\n\\n'+(orig.act||'')+'\\n\\nIngrese el nuevo día del mes (1-31):', diaActual);
-    if(!inputStr) return;
-    const nDia = parseInt(inputStr.trim(),10);
-    if(isNaN(nDia)||nDia<1||nDia>31){ alert('Día fuera de rango (1-31).'); return; }
-    updates = {dia:nDia};
-  } else if(fr==='semanal'){
-    const dowActual = String(orig.dow||0);
-    const lista = DOW_NAMES.map((n,i)=>i+'='+n).join('\\n');
-    const inputStr = prompt('Editar actividad SEMANAL:\\n\\n'+(orig.act||'')+'\\n\\nIngrese el día de la semana (0-6):\\n'+lista, dowActual);
-    if(!inputStr) return;
-    const nDow = parseInt(inputStr.trim(),10);
-    if(isNaN(nDow)||nDow<0||nDow>6){ alert('Día de la semana fuera de rango (0-6).'); return; }
-    updates = {dow:nDow};
-  }
-  if(!updates) return;
-
-  if(!FB_CONFIGURED || !dbRef){
-    Object.assign(orig, updates);
-    renderAnualesList();
-    rebuildMonthSelect();
-    render();
-    return;
-  }
-  dbRef.child(String(orig.id)).update(updates, err=>{
-    if(err){ alert('No se pudo guardar: '+err.message); return; }
-    setTimeout(()=>{ if(document.getElementById('modal-anuales-overlay').classList.contains('open')) renderAnualesList(); }, 300);
-  });
-}
-
-function borrarRecurrente(id){
-  const orig = _findActById(id);
-  if(!orig){ alert('No se encontró la actividad recurrente.'); return; }
-  const fr = getFrecuencia(orig);
-  const frTxt = fr==='anual'?'anual':(fr==='mensual'?'mensual':(fr==='semanal'?'semanal':''));
-  const aviso = fr==='anual'?'Dejará de aparecer en TODOS los años.'
-              :fr==='mensual'?'Dejará de aparecer en TODOS los meses.'
-              :'Dejará de aparecer en TODAS las semanas.';
-  if(!confirm('¿Borrar la actividad '+frTxt+' "'+(orig.act||'')+'"?\\n\\n'+aviso+'\\nEsta acción no se puede deshacer.')) return;
-  if(!FB_CONFIGURED || !dbRef){
-    acts = acts.filter(a=> !(a.id===orig.id || String(a.id)===String(orig.id)));
-    renderAnualesList();
-    rebuildMonthSelect();
-    render();
-    return;
-  }
-  dbRef.child(String(orig.id)).remove(err=>{
-    if(err){ alert('No se pudo borrar: '+err.message); return; }
-    setTimeout(()=>{ if(document.getElementById('modal-anuales-overlay').classList.contains('open')) renderAnualesList(); }, 300);
-  });
-}
-
-function editarAnual(id){ return editarRecurrente(id); }
-function borrarAnual(id){ return borrarRecurrente(id); }
-
 // ── DATOS INICIALES ──────────────────────────────────────────
+// Respaldo SOLO se usa cuando no hay conexión a Firebase ni a localStorage.
+// Tus datos reales están en Firebase y se cargan al hacer login.
 const DEFAULT_ACTS=[
+  // TALLER semanal — martes 19:15 a 20:45, desde 28/abr/26 hasta 07/jul/26
   {
     act: 'TALLER PREV. DE RIESGOS Y CONTROL DE EMERGENCIAS',
     obs: '19:15 A 20:45',
-    fecha: new Date(2026, 6, 7),
-    fechaInicio: new Date(2026, 3, 28),
+    fecha: new Date(2026, 6, 7),         // 07/jul/26 (fecha de término)
+    fechaInicio: new Date(2026, 3, 28),  // 28/abr/26 (inicio)
     type: 'clases',
     freq: 'semanal',
     semanal: true,
-    dow: 2,
+    dow: 2,                                // martes
     id: 1
   },
+  // CLASES semanal — martes 20:15 a 21:00
   {
     act: 'CLASES PREV. DE RIESGOS Y CONTROL DE EMERGENCIAS',
     obs: 'MARTES 20:15 A 21:00',
-    fecha: new Date(2026, 11, 29),
-    fechaInicio: new Date(2026, 3, 28),
+    fecha: new Date(2026, 11, 29),       // 29/dic/26 (fecha de término del año)
+    fechaInicio: new Date(2026, 3, 28),  // 28/abr/26
     type: 'clases',
     freq: 'semanal',
     semanal: true,
-    dow: 2,
+    dow: 2,                                // martes
     id: 2
   },
+  // ANIVERSARIO CARABINEROS — anual 27 abril
   {
     act: 'ANIVERSARIO · CARABINEROS',
     obs: 'CARABINEROS',
-    fecha: new Date(2030, 3, 27),
-    fechaInicio: new Date(2026, 3, 27),
+    fecha: new Date(2030, 3, 27),         // 27/abr/30 (límite lejano)
+    fechaInicio: new Date(2026, 3, 27),  // 27/abr/26
     type: 'aniversario',
     freq: 'anual',
     anual: true,
@@ -1913,6 +2020,7 @@ const DEFAULT_ACTS=[
     mes: 3,
     id: 3
   },
+  // REVISIÓN ARCHIVADORES — puntual 27/abr/26
   {
     act: 'REVISIÓN ARCHIVADORES PROCES.',
     obs: 'DEPTO I',
@@ -1924,6 +2032,8 @@ const DEFAULT_ACTS=[
 ];
 
 // ── FIREBASE CONFIG ──────────────────────────────────────────
+// INSTRUCCIÓN: Reemplaza estos valores con los de tu proyecto Firebase
+// Ve a: console.firebase.google.com → Tu proyecto → Configuración → SDK
 const FB_CONFIG = {
   apiKey:            "AIzaSyB0f_Sh2xiDgvB9_-nyp76Ol-XvhhyvcXA",
   authDomain:        "gantt-maah.firebaseapp.com",
@@ -1934,19 +2044,23 @@ const FB_CONFIG = {
   appId:             "1:299934642229:web:87681b489cdc2a5452c17c"
 };
 
+// Detectar si Firebase está configurado
 const FB_CONFIGURED = FB_CONFIG.apiKey !== "TU_API_KEY";
 
 let db = null;
 let dbRef = null;
 let fbListener = null;
 let fbOnline = false;
+
+// Usuario actualmente logueado (se setea desde login)
 let currentUser = null;
-let usuariosCache = [];
+let usuariosCache = []; // Lista cargada desde la agenda
 
 function initFirebase(){
   if(!FB_CONFIGURED){
+    // Sin Firebase: caemos a un modo demo con localStorage genérico
     loadFromLocalStorage();
-    showLoginOverlay();
+    showLoginOverlay(); // Aún así pedimos login con un usuario "DEMO"
     return;
   }
   try{
@@ -1958,6 +2072,7 @@ function initFirebase(){
       updateStatusBadge(fbOnline);
     });
 
+    // Cargar lista de usuarios de la AGENDA (compartida)
     cargarUsuariosAgenda();
   }catch(e){
     console.error('Firebase init error:', e);
@@ -1966,6 +2081,7 @@ function initFirebase(){
   }
 }
 
+// Cargar usuarios desde la base de la agenda
 function cargarUsuariosAgenda(){
   const sel=document.getElementById('login-usuario');
   sel.innerHTML='<option value="">⏳ Cargando usuarios...</option>';
@@ -1976,7 +2092,7 @@ function cargarUsuariosAgenda(){
     sel.disabled=false;
     if(!data){
       sel.innerHTML='<option value="">Sin usuarios registrados en la Agenda.</option>';
-      bootstrapSession();
+      bootstrapSession(); // igual intentamos restaurar sesión
       return;
     }
     usuariosCache=Object.entries(data).map(([id,u])=>({
@@ -1991,6 +2107,7 @@ function cargarUsuariosAgenda(){
         '<option value="'+u.id+'">'+u.nombre+(u.rol==='admin'?' ★':'')+'</option>'
       ).join('');
 
+    // CLAVE: solo AHORA que los usuarios cargaron, intentar restaurar sesión
     bootstrapSession();
 
   }, err=>{
@@ -2000,7 +2117,7 @@ function cargarUsuariosAgenda(){
     const errBox=document.getElementById('login-error');
     errBox.textContent='No se pudo cargar usuarios. Verifica tu conexion y recarga la pagina.';
     errBox.style.display='block';
-    showLoginOverlay();
+    showLoginOverlay(); // mostrar login de todas formas
   });
 }
 
@@ -2020,6 +2137,7 @@ function doLogin(){
   if(!userId){ errBox.textContent='Selecciona un usuario.';errBox.style.display='block';return; }
   if(!clave){ errBox.textContent='Ingresa tu clave.';errBox.style.display='block';return; }
 
+  // Si los usuarios aún no cargaron desde Firebase, esperar
   if(!usuariosCache.length){
     errBox.textContent='Aún cargando usuarios, intenta en un momento.';
     errBox.style.display='block';
@@ -2029,6 +2147,7 @@ function doLogin(){
   const u=usuariosCache.find(x=>x.id===userId);
   if(!u){ errBox.textContent='Usuario no encontrado. Recarga la página.';errBox.style.display='block';return; }
 
+  // Comparar claves: trim en ambos lados, siempre como string
   const passGuardada = String(u.pass||'').trim();
   const passIngresada = String(clave).trim();
 
@@ -2040,6 +2159,7 @@ function doLogin(){
     return;
   }
 
+  // Login OK
   currentUser=u;
   try{ sessionStorage.setItem('gantt_user', JSON.stringify({id:u.id,nombre:u.nombre,pass:u.pass,rol:u.rol})); }catch(e){}
   iniciarGanttDelUsuario();
@@ -2048,17 +2168,21 @@ function doLogin(){
 function doLogout(){
   try{ sessionStorage.removeItem('gantt_user'); }catch(e){}
   currentUser=null;
+  // Limpiar listeners y estado
   if(dbRef){ try{ dbRef.off(); }catch(e){} }
   acts=[];
+  // Recargar para empezar de cero
   location.reload();
 }
 
 function iniciarGanttDelUsuario(){
+  // Mostrar toda la app (estaba oculta hasta autenticarse)
   ['app-header','app-stats-bar','app-toolbar','app-main'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.style.display='';
   });
 
+  // Mostrar UI del usuario en el header
   const badge=document.getElementById('user-badge');
   badge.textContent='👤 '+currentUser.nombre+(currentUser.rol==='admin'?' ★':'');
   badge.style.display='inline-block';
@@ -2066,8 +2190,10 @@ function iniciarGanttDelUsuario(){
 
   hideLoginOverlay();
 
+  // Conectar a la ruta de ESTE usuario (cada uno tiene la suya)
   dbRef = db.ref('gantt_maah/actividades_por_usuario/'+currentUser.id);
 
+  // Bandera para hacer la migración solo una vez
   let migracionIntentada = false;
 
   dbRef.on('value', snap=>{
@@ -2080,6 +2206,7 @@ function iniciarGanttDelUsuario(){
         if(esRecurrente && (isNaN(f.getTime()) || !a.fecha)){
           f = new Date();
         }
+        // Parsear fecha de inicio (solo aplica a recurrentes)
         let fi = null;
         if(a.fechaInicio){
           const parsed = new Date(a.fechaInicio);
@@ -2106,12 +2233,15 @@ function iniciarGanttDelUsuario(){
       rebuildMonthSelect();
       render();
     } else {
+      // Sin datos en la ruta personal del usuario.
+      // Para cualquier admin: intentar recuperar datos del respaldo una sola vez.
       const esAdmin = currentUser.rol === 'admin';
       if(esAdmin && !migracionIntentada){
         migracionIntentada = true;
         migrarDatosViejosAMaah();
         return;
       }
+      // Usuario sin datos: gantt VACÍA
       acts = [];
       rebuildMonthSelect();
       render();
@@ -2122,6 +2252,8 @@ function iniciarGanttDelUsuario(){
   });
 }
 
+// Migración: copia los datos viejos de gantt_maah/actividades a la ruta personal de MAAH.
+// Solo se ejecuta cuando MAAH entra a una gantt vacía.
 function migrarDatosViejosAMaah(){
   console.log('[MAAH] Detectada gantt vacía. Buscando datos viejos para migrar...');
   db.ref('gantt_maah/actividades').once('value', snap=>{
@@ -2134,6 +2266,7 @@ function migrarDatosViejosAMaah(){
       return;
     }
     console.log('[MAAH] Datos viejos encontrados. Copiando a tu ruta personal...');
+    // Copiar cada actividad a la ruta personal de MAAH
     const updates = {};
     Object.entries(viejos).forEach(([id, act])=>{
       updates[id] = act;
@@ -2145,23 +2278,27 @@ function migrarDatosViejosAMaah(){
         return;
       }
       console.log('[MAAH] ✓ Datos migrados correctamente.');
+      // El listener dbRef.on('value') se reactivará automáticamente y los cargará.
     });
   }, err=>{
     console.error('[MAAH] Error leyendo datos viejos:', err);
   });
 }
 
+// Restaurar sesión — se llama SOLO cuando usuariosCache ya está cargado
 function intentarRestaurarSesion(){
   try{
     const raw=sessionStorage.getItem('gantt_user');
     if(!raw) return false;
     const u=JSON.parse(raw);
     if(!u||!u.id) return false;
+    // Siempre revalidar contra usuariosCache (ya está cargado al llegar aquí)
     const vivo=usuariosCache.find(x=>x.id===u.id);
     if(!vivo){
       sessionStorage.removeItem('gantt_user');
       return false;
     }
+    // Verificar que la clave sigue siendo correcta
     if(String(vivo.pass||'').trim() !== String(u.pass||'').trim()){
       sessionStorage.removeItem('gantt_user');
       return false;
@@ -2189,6 +2326,7 @@ function updateStatusBadge(online){
   }
 }
 
+// ── FIREBASE: guardar actividad ───────────────────────────────
 function saveActToFB(act){
   if(!dbRef){ saveToLocalStorage(); return; }
   const toSave = {...act, fecha: act.fecha.toISOString()};
@@ -2198,7 +2336,7 @@ function saveActToFB(act){
     toSave.fechaInicio = null;
   }
   dbRef.child(String(act.id)).set(toSave);
-  saveToLocalStorage();
+  saveToLocalStorage(); // respaldo local también
 }
 
 function deleteActFromFB(id){
@@ -2213,6 +2351,7 @@ function clearAllFromFB(){
   saveToLocalStorage();
 }
 
+// ── LOCALSTORAGE (respaldo) ───────────────────────────────────
 const LS_KEY='gantt_maah_acts';
 const LS_ID='gantt_maah_nextid';
 
@@ -2261,16 +2400,20 @@ function loadFromLocalStorage(){
   render();
 }
 
+// Función unificada para compatibilidad
 function saveToStorage(){ saveToLocalStorage(); }
 
+// ── FIX 5: CLAVE PARA NUEVA ACTIVIDAD ────────────────────────
 let addPwdVerified=false;
 
 function openAddPwdModal(){
+  // Si está logueado, saltar el modal de contraseña
   if(currentUser){
     addPwdVerified=true;
     showAddForm();
     return;
   }
+  // Si ya está autenticado en esta sesión, no pedir clave de nuevo
   if(addPwdVerified){ showAddForm(); return; }
   document.getElementById('addpwd-input').value='';
   document.getElementById('addpwd-error').style.display='none';
@@ -2297,18 +2440,21 @@ function showAddForm(){
   document.getElementById('add-form-locked').style.display='none';
 }
 
+// Fix 3: Bloquear sesión — ocultar formulario y volver al estado bloqueado
 function lockSession(){
   addPwdVerified=false;
   document.getElementById('add-form-body').style.display='none';
   document.getElementById('add-form-locked').style.display='block';
+  // Limpiar campos por seguridad
   document.getElementById('f-act').value='';
   document.getElementById('f-obs').value='';
   document.getElementById('f-fecha').value='';
   resetPreview();
 }
 
-// ── FERIADOS CHILE ───────────────────────────────────────────
+// ── FIX 4: FERIADOS CHILE ────────────────────────────────────
 function getFeriadosChile(year){
+  // Calcular Semana Santa (algoritmo de Meeus/Jones/Butcher)
   function easterDate(y){
     const a=y%19,b=Math.floor(y/100),c=y%100;
     const d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25);
@@ -2350,6 +2496,7 @@ function getFeriadosChile(year){
   return map;
 }
 
+// Cache de feriados por año
 const feriadosCache={};
 function getFeriados(year){
   if(!feriadosCache[year]) feriadosCache[year]=getFeriadosChile(year);
@@ -2359,10 +2506,11 @@ function feriadoKey(d){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
+// Panel de feriados del mes visible
 function renderFeriadosPanel(year, month, isTodaGantt){
   const list=document.getElementById('feriados-list');
   if(!list)return;
-  if(isTodaGantt || month === -1){
+  if(isTodaGantt){
     list.innerHTML='<span style="color:#888;font-style:italic;">Selecciona un mes específico para ver sus feriados</span>';
     return;
   }
@@ -2388,6 +2536,7 @@ function renderFeriadosPanel(year, month, isTodaGantt){
   ).join(' ');
 }
 
+// Tooltip de feriados
 const tooltip=document.getElementById('feriado-tooltip');
 function showFeriadoTip(el,nombre){
   tooltip.textContent=nombre;
@@ -2405,10 +2554,14 @@ document.getElementById('today-lbl').textContent=
   'HOY: '+String(td2.getDate()).padStart(2,'0')+'/'+MSHORT[td2.getMonth()]+'/'+td2.getFullYear();
 
 setFilter('all');
+
+// Inicializar firebase y cargar usuarios; mostrar login (o restaurar sesión)
 initFirebase();
 
+// bootstrapSession: se llama desde cargarUsuariosAgenda cuando los usuarios ya cargaron.
+// NO usa setInterval — se ejecuta síncronamente una vez que usuariosCache está listo.
 function bootstrapSession(){
-  if(currentUser) return;
+  if(currentUser) return; // ya logueado (evitar doble ejecución)
   const restaurada = intentarRestaurarSesion();
   if(!restaurada){
     showLoginOverlay();
@@ -2418,7 +2571,9 @@ function bootstrapSession(){
     }, 150);
   }
 }
+// NO llamar bootstrapSession aquí — se llama desde cargarUsuariosAgenda al terminar
 
+// Inicialización extra: cargar tipos personalizados y poblar selects de Tipo
 loadTiposCustom();
 (function initTipoSelectsAlInicio(){
   const ready = ()=>{
@@ -2435,9 +2590,64 @@ loadTiposCustom();
 })();
 
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeModal();closeEditModal();closeAddPwdModal();closeTipoAddModal();}
+  if(e.key==='Escape'){closeModal();closeEditModal();closeAddPwdModal();closeTipoAddModal();closeCtxMenu();}
+});
+
+// ── MENÚ CONTEXTUAL LÁPIZ ─────────────────────────────────────
+let ctxActId = null;
+let ctxIsRecurrente = false;
+
+function openCtxMenu(event, id, isRecurrente){
+  event.stopPropagation();
+  ctxActId = id;
+  ctxIsRecurrente = isRecurrente;
+  const menu = document.getElementById('ctx-menu');
+  menu.classList.add('open');
+  // Posicionar junto al botón
+  const btn = event.currentTarget;
+  const rect = btn.getBoundingClientRect();
+  let top = rect.bottom + 4;
+  let left = rect.left - menu.offsetWidth + btn.offsetWidth;
+  if(left < 4) left = 4;
+  if(top + 120 > window.innerHeight) top = rect.top - 120;
+  menu.style.top = top + 'px';
+  menu.style.left = left + 'px';
+}
+
+function closeCtxMenu(){
+  const menu = document.getElementById('ctx-menu');
+  if(menu) menu.classList.remove('open');
+  // Limpiar id en siguiente tick para que ctxEdit/ctxDel ya lo hayan leído
+  setTimeout(()=>{ ctxActId = null; ctxIsRecurrente = false; }, 50);
+}
+
+function ctxEdit(){
+  const id = ctxActId;
+  closeCtxMenu();
+  if(id !== null) requestEdit(id);
+}
+
+function ctxDel(){
+  const id = ctxActId;
+  const rec = ctxIsRecurrente;
+  closeCtxMenu();
+  if(id === null) return;
+  if(rec){
+    confirmDelRecurrente(id);
+  } else {
+    delAct(id);
+  }
+}
+
+// Cerrar menú al hacer clic fuera
+document.addEventListener('click', function(e){
+  const menu = document.getElementById('ctx-menu');
+  if(menu && menu.classList.contains('open') && !menu.contains(e.target)){
+    closeCtxMenu();
+  }
 });
 </script>
 
-</body>
-</html>
+
+
+</body></html>
