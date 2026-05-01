@@ -144,6 +144,14 @@ table.gantt th,table.gantt td{border:0.5px solid #c8d0e0;padding:0;text-align:ce
 .th-dayname.othermonth{opacity:.35;}
 .th-dayname.today-col{border-left:2.5px solid #e53935 !important;background:#2a1010;}
 
+/* Días "extras" del mes siguiente (modo extendido) */
+.th-daynum.extra{background:#a06310 !important;color:#fbe6c4 !important;}
+.th-daynum.extra.wknd{background:#7a4a0c !important;color:#c4a575 !important;}
+.th-dayname.extra{background:#a06310 !important;color:#fbe6c4 !important;}
+.th-dayname.extra.wknd{background:#7a4a0c !important;color:#c4a575 !important;}
+.td-day.extra{background:#fdf3e0 !important;}
+.td-day.extra.wknd{background:#f0e0c0 !important;}
+
 /* ── CELDAS DE TEXTO — alineación izquierda con alta especificidad ── */
 table.gantt td.td-act{text-align:left !important;padding:3px 7px;font-size:9px;color:#2d3748;background:#fff;width:255px;max-width:255px;white-space:normal;line-height:1.3;vertical-align:middle;font-weight:500;text-transform:uppercase;}
 table.gantt td.td-obs{width:40px;font-size:8px;background:#fff;color:#4a5568;vertical-align:middle;padding:2px 4px;text-align:left !important;text-transform:uppercase;}
@@ -322,6 +330,8 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
     <!-- FIX 5: botón imprimir -->
     <button class="btn-print" onclick="openAnualesModal()" title="Ver/editar actividades que se repiten (anuales, mensuales, semanales)">📅 Recurrentes</button>
     <button class="btn-print" onclick="printGantt()">🖶 Imprimir carta</button>
+    <button class="btn-print" id="btn-extended" onclick="openExtendedModal()" style="background:#f39c12;border-color:#f39c12;" title="Imprimir o ver mes completo + semanas extras del mes siguiente">📅+ Imprimir extendido</button>
+    <button class="btn-print" id="btn-exit-extended" onclick="exitExtendedView()" style="background:#0F6E56;border-color:#0F6E56;display:none;" title="Volver a la vista normal">↩ Volver a vista normal</button>
     <span id="fb-status" style="font-size: 10px; padding: 3px 10px; border-radius: 12px; background: rgba(46, 125, 50, 0.3); color: rgb(165, 214, 167);">● En línea</span>
     <span class="today-badge" id="today-lbl">HOY: 30/abr/2026</span>
   </div>
@@ -625,6 +635,59 @@ PERS. 11:45 A 15:00</td><td class="td-obs"><span class="obs-text">SABADOS</span>
     <div class="hint">Las categorías agregadas quedan guardadas para próximas actividades.</div>
   </div>
 </div>
+
+<!-- MODAL IMPRIMIR EXTENDIDO -->
+<div class="modal-overlay" id="modal-extended-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9990;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:10px;padding:22px 24px;width:420px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.3);font-family:'Segoe UI',Arial,sans-serif;max-height:90vh;overflow-y:auto;">
+    <h3 style="margin:0 0 4px;font-size:15px;font-weight:600;color:#1a3f6f;">📅+ Imprimir semanas seleccionadas</h3>
+    <p style="font-size:12px;color:#5F5E5A;margin:0 0 16px;">Marca las semanas que quieres incluir. Pueden ser saltadas y de meses distintos.</p>
+
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;color:#5F5E5A;margin-bottom:5px;font-weight:500;">Mes a mostrar</div>
+      <select id="ext-month" style="width:100%;font-size:12px;padding:7px 9px;border:1px solid #cbd5e0;border-radius:5px;background:#fff;color:#2d3748;"></select>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;color:#5F5E5A;margin-bottom:5px;font-weight:500;">Semanas a imprimir</div>
+      <div id="ext-weeks-list" style="border:1px solid #cbd5e0;border-radius:6px;max-height:240px;overflow-y:auto;background:#f8fafc;"></div>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;color:#5F5E5A;margin-bottom:5px;font-weight:500;">¿Qué hacer?</div>
+      <div style="display:flex;gap:0;border:1px solid #cbd5e0;border-radius:5px;overflow:hidden;" id="ext-mode-row">
+        <button type="button" class="ext-mbtn active" data-m="print" onclick="setExtMode('print')" style="flex:1;padding:8px 6px;font-size:11px;background:#0F6E56;color:#fff;border:none;cursor:pointer;font-weight:500;font-family:inherit;">Solo imprimir PDF</button>
+        <button type="button" class="ext-mbtn" data-m="screen" onclick="setExtMode('screen')" style="flex:1;padding:8px 6px;font-size:11px;background:#fff;color:#2d3748;border:none;cursor:pointer;font-weight:500;font-family:inherit;">Ver en pantalla</button>
+      </div>
+    </div>
+
+    <div id="ext-hint" style="background:#fffbe6;border:1px solid #ffd966;border-radius:5px;padding:8px 10px;font-size:11px;color:#5a3c00;margin-bottom:14px;line-height:1.4;">
+      <span id="ext-range-text">Marca al menos una semana</span>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button type="button" onclick="closeExtendedModal()" style="flex:1;padding:9px;background:#fff;color:#5F5E5A;border:1px solid #cbd5e0;border-radius:5px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;">Cancelar</button>
+      <button type="button" onclick="applyExtended()" style="flex:2;padding:9px;background:#1a3f6f;color:#fff;border:none;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;" id="ext-go-btn">Imprimir</button>
+    </div>
+  </div>
+</div>
+<style>
+  .ext-wkrow { display:flex; align-items:center; gap:10px; padding:8px 12px; border-bottom:0.5px solid #e2e8f0; cursor:pointer; font-size:12px; transition:background 0.1s; user-select:none; }
+  .ext-wkrow:last-child { border-bottom:none; }
+  .ext-wkrow:hover { background:#eef4fb; }
+  .ext-wkrow.checked { background:#eaf3df; }
+  .ext-wkrow.master { background:#1a3f6f; color:#fff; font-weight:600; }
+  .ext-wkrow.master:hover { background:#143057; }
+  .ext-wkrow.master.checked { background:#1a3f6f; }
+  .ext-wkrow.section { background:#fdf3e0; color:#5a3c00; font-weight:600; font-size:11px; pointer-events:none; padding:6px 12px; cursor:default; }
+  .ext-wkrow.extra { background:#fdfaf2; }
+  .ext-wkrow.extra.checked { background:#faecca; }
+  .ext-cb { width:16px; height:16px; border:1.5px solid #94a0b3; border-radius:3px; flex-shrink:0; background:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; line-height:1; }
+  .ext-wkrow.checked .ext-cb { background:#0F6E56; border-color:#0F6E56; color:#fff; }
+  .ext-wkrow.checked .ext-cb::after { content:"✓"; }
+  .ext-wkrow.master.checked .ext-cb { background:#fff; border-color:#fff; color:#1a3f6f; }
+  .ext-wk-tag { background:#a06310; color:#fff; font-size:9px; padding:1px 5px; border-radius:3px; font-weight:700; margin-left:6px; }
+  .ext-mbtn.active { background:#0F6E56 !important; color:#fff !important; }
+</style>
 
 <!-- MODAL ACTIVIDADES RECURRENTES (Anuales / Mensuales / Semanales) -->
 <div class="modal-overlay" id="modal-anuales-overlay">
@@ -972,27 +1035,29 @@ function rebuildWeekSelect(){
   const lbl = document.getElementById('week-select-label');
   if(!sel || !lbl) return;
 
-  // Solo mostrar cuando hay un MES específico (no año completo, no toda la gantt)
-  const isMonthSpecific = currentMonthKey &&
-    !currentMonthKey.startsWith('year-') &&
-    currentMonthKey !== 'all' &&
-    currentMonthKey !== 'current';
-
-  if(!isMonthSpecific){
+  // Determinar año/mes a usar para listar semanas
+  // 'current' (vista por defecto al cargar) → tomar mes de HOY
+  // 'YYYY-M' → mes específico
+  // 'year-YYYY' o 'all' → no aplica (ocultar)
+  let year, month;
+  if(currentMonthKey === 'current'){
+    year = TODAY.getFullYear();
+    month = TODAY.getMonth();
+  } else if(currentMonthKey && !currentMonthKey.startsWith('year-') && currentMonthKey !== 'all'){
+    const parts = currentMonthKey.split('-');
+    year = Number(parts[0]);
+    month = Number(parts[1]);
+    if(isNaN(year) || isNaN(month)){
+      sel.style.display = 'none';
+      lbl.style.display = 'none';
+      return;
+    }
+  } else {
+    // Año completo o Toda la Gantt → no hay semanas que mostrar
     sel.style.display = 'none';
     lbl.style.display = 'none';
     sel.innerHTML = '<option value="all">Todo el mes</option>';
     currentWeekKey = 'all';
-    return;
-  }
-
-  // Extraer año y mes de la clave "YYYY-M"
-  const parts = currentMonthKey.split('-');
-  const year = Number(parts[0]);
-  const month = Number(parts[1]);
-  if(isNaN(year) || isNaN(month)){
-    sel.style.display = 'none';
-    lbl.style.display = 'none';
     return;
   }
 
@@ -1534,20 +1599,381 @@ function closeEditModal(){
 }
 
 // ── IMPRIMIR ─────────────────────────────────────────────────
-function printGantt(){
-  // Determinar título
-  let titleText;
-  if(currentMonthKey==='all'){
-    titleText='CARTA GANTT MAAH';
+// ── MODO EXTENDIDO (semanas seleccionables, saltables, mes + mes siguiente) ──
+// Cuando extendedState.active = true, render() usa el array de días seleccionados.
+let extendedState = {
+  active: false,
+  baseYear: null,
+  baseMonth: null,
+  selectedWeeks: [],   // array de objetos {ini: Date, fin: Date, label, isExtra}
+  diasArr: [],         // array de días resultante (sólo los de las semanas seleccionadas, en orden)
+  mode: 'print'
+};
+
+// Estado temporal del modal mientras el usuario configura
+let extModalCfg = {
+  year: null,
+  month: null,
+  weeks: [],           // array completo de semanas disponibles del mes elegido
+  extraWeeks: [],      // array de semanas del mes siguiente
+  selected: new Set(), // índices marcados (de weeks + extraWeeks combinados)
+  mode: 'print'
+};
+
+function openExtendedModal(){
+  // Llenar el dropdown de meses con los próximos 12 a partir del mes actual
+  const sel = document.getElementById('ext-month');
+  sel.innerHTML = '';
+  const baseY = TODAY.getFullYear();
+  const baseM = TODAY.getMonth();
+  for(let i=0; i<12; i++){
+    const m = (baseM + i) % 12;
+    const y = baseY + Math.floor((baseM + i) / 12);
+    const opt = document.createElement('option');
+    opt.value = y + '-' + m;
+    opt.textContent = MNAMES[m] + ' ' + y + (i===0 ? ' (mes en curso)' : '');
+    sel.appendChild(opt);
+  }
+  extModalCfg.year = baseY;
+  extModalCfg.month = baseM;
+  extModalCfg.mode = 'print';
+  sel.value = baseY + '-' + baseM;
+  sel.onchange = ()=>{
+    const parts = sel.value.split('-');
+    extModalCfg.year = Number(parts[0]);
+    extModalCfg.month = Number(parts[1]);
+    rebuildExtWeeksList();
+  };
+  rebuildExtWeeksList();
+  setExtMode('print');
+  document.getElementById('modal-extended-overlay').style.display = 'flex';
+}
+
+function closeExtendedModal(){
+  document.getElementById('modal-extended-overlay').style.display = 'none';
+}
+
+// Reconstruye el listado de checkboxes según el mes elegido
+function rebuildExtWeeksList(){
+  const y = extModalCfg.year, m = extModalCfg.month;
+  // Semanas del mes elegido (lunes-domingo que tocan el mes)
+  const weeksMes = generarSemanasDelMes(y, m);
+  // Semanas del mes siguiente (las primeras 4)
+  const nextDate = new Date(y, m+1, 1);
+  const ny = nextDate.getFullYear(), nm = nextDate.getMonth();
+  const weeksSig = generarSemanasDelMes(ny, nm).slice(0, 4);
+
+  extModalCfg.weeks = weeksMes;
+  extModalCfg.extraWeeks = weeksSig;
+  // Por defecto: marcar mes completo (todas las del mes elegido)
+  extModalCfg.selected = new Set();
+  for(let i=0; i<weeksMes.length; i++) extModalCfg.selected.add('m'+i);
+
+  const fmt = (d, withMes)=>{
+    const M = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    return String(d.getDate()).padStart(2,'0') + (withMes ? ' '+M[d.getMonth()] : '');
+  };
+
+  let html = '';
+  // Master: mes completo
+  html += '<div class="ext-wkrow master checked" onclick="toggleExtMaster()" id="ext-master">';
+  html += '<div class="ext-cb"></div>';
+  html += '<div style="flex:1;">Mes completo (todas las semanas de '+MNAMES[m]+')</div>';
+  html += '</div>';
+  // Semanas del mes
+  weeksMes.forEach((w, i)=>{
+    const lab = 'Semana '+(i+1)+' — '+fmt(w.lunes, true)+' al '+fmt(w.domingo, true);
+    html += '<div class="ext-wkrow checked" onclick="toggleExtWeek(\'m'+i+'\')" data-key="m'+i+'">';
+    html += '<div class="ext-cb"></div>';
+    html += '<div style="flex:1;">'+lab+'</div>';
+    html += '</div>';
+  });
+  // Sección semanas siguientes
+  if(weeksSig.length){
+    html += '<div class="ext-wkrow section">SEMANAS DEL MES SIGUIENTE ('+MNAMES[nm]+' '+ny+')</div>';
+    weeksSig.forEach((w, i)=>{
+      const lab = MNAMES[nm].substring(0,3)+' - Semana '+(i+1)+' — '+fmt(w.lunes, true)+' al '+fmt(w.domingo, true);
+      html += '<div class="ext-wkrow extra" onclick="toggleExtWeek(\'e'+i+'\')" data-key="e'+i+'">';
+      html += '<div class="ext-cb"></div>';
+      html += '<div style="flex:1;">'+lab+'<span class="ext-wk-tag">EXTRA</span></div>';
+      html += '</div>';
+    });
+  }
+  document.getElementById('ext-weeks-list').innerHTML = html;
+  updateExtHint();
+}
+
+function toggleExtWeek(key){
+  if(extModalCfg.selected.has(key)){
+    extModalCfg.selected.delete(key);
   } else {
-    const vm=getViewMonthYear();
-    titleText='CARTA GANTT MAAH — '+MNAMES[vm.month].toUpperCase()+' '+vm.year;
+    extModalCfg.selected.add(key);
+  }
+  // Actualizar visual de la fila
+  const row = document.querySelector('[data-key="'+key+'"]');
+  if(row) row.classList.toggle('checked', extModalCfg.selected.has(key));
+  // Actualizar master (sólo si se ven todas las del mes marcadas)
+  syncExtMaster();
+  updateExtHint();
+}
+
+function toggleExtMaster(){
+  // Si todas las del mes están marcadas → desmarcar todas. Si no → marcar todas.
+  const allSelected = extModalCfg.weeks.every((_,i)=>extModalCfg.selected.has('m'+i));
+  extModalCfg.weeks.forEach((_,i)=>{
+    if(allSelected){ extModalCfg.selected.delete('m'+i); }
+    else { extModalCfg.selected.add('m'+i); }
+  });
+  // Refrescar UI
+  document.querySelectorAll('.ext-wkrow[data-key^="m"]').forEach(r=>{
+    r.classList.toggle('checked', extModalCfg.selected.has(r.dataset.key));
+  });
+  syncExtMaster();
+  updateExtHint();
+}
+
+function syncExtMaster(){
+  const allSelected = extModalCfg.weeks.length>0 && extModalCfg.weeks.every((_,i)=>extModalCfg.selected.has('m'+i));
+  const masterEl = document.getElementById('ext-master');
+  if(masterEl) masterEl.classList.toggle('checked', allSelected);
+}
+
+function setExtMode(mode){
+  extModalCfg.mode = mode;
+  document.querySelectorAll('.ext-mbtn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.m === mode);
+  });
+  document.getElementById('ext-go-btn').textContent =
+    (mode === 'print') ? 'Imprimir' : 'Ver en pantalla';
+}
+
+// Devuelve array ordenado de las semanas seleccionadas con sus rangos
+function getSelectedWeeks(){
+  const out = [];
+  extModalCfg.weeks.forEach((w, i)=>{
+    if(extModalCfg.selected.has('m'+i)){
+      out.push({ lunes: w.lunes, domingo: w.domingo, isExtra: false, weekNum: i+1 });
+    }
+  });
+  extModalCfg.extraWeeks.forEach((w, i)=>{
+    if(extModalCfg.selected.has('e'+i)){
+      out.push({ lunes: w.lunes, domingo: w.domingo, isExtra: true, weekNum: i+1 });
+    }
+  });
+  // Ordenar por fecha de lunes
+  out.sort((a,b)=>a.lunes - b.lunes);
+  return out;
+}
+
+// Construye el array de días (allDays) a partir de las semanas seleccionadas
+function buildDaysFromWeeks(weeks, baseMonth){
+  const dias = [];
+  weeks.forEach(wk=>{
+    const cur = new Date(wk.lunes);
+    cur.setHours(12,0,0,0);
+    for(let i=0; i<7; i++){
+      dias.push({
+        d: new Date(cur),
+        n: String(cur.getDate()).padStart(2,'0'),
+        dn: DNAMES[cur.getDay()],
+        wknd: cur.getDay()===0 || cur.getDay()===6,
+        otherMonth: false,
+        isExtra: wk.isExtra || (cur.getMonth() !== baseMonth)
+      });
+      cur.setDate(cur.getDate()+1);
+    }
+  });
+  return dias;
+}
+
+function updateExtHint(){
+  const sel = getSelectedWeeks();
+  const hint = document.getElementById('ext-range-text');
+  if(!sel.length){
+    hint.textContent = 'Marca al menos una semana';
+    hint.parentElement.style.background = '#ffe6e6';
+    hint.parentElement.style.borderColor = '#f5a3a3';
+    hint.parentElement.style.color = '#8b1a1a';
+    return;
+  }
+  const fmt = d => {
+    const M = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    return String(d.getDate()).padStart(2,'0')+' '+M[d.getMonth()];
+  };
+  // Detectar tramos contiguos vs saltados
+  const diasTotal = sel.length * 7;
+  let txt = sel.length + ' semana'+(sel.length>1?'s':'')+' — ';
+  // Mostrar primer y último día
+  txt += fmt(sel[0].lunes) + ' → ' + fmt(sel[sel.length-1].domingo) +
+         ' '+sel[sel.length-1].domingo.getFullYear() +
+         ' ('+diasTotal+' días)';
+  hint.innerHTML = '<strong>'+txt+'</strong>';
+  hint.parentElement.style.background = '#fffbe6';
+  hint.parentElement.style.borderColor = '#ffd966';
+  hint.parentElement.style.color = '#5a3c00';
+}
+
+function applyExtended(){
+  const sel = getSelectedWeeks();
+  if(!sel.length){ alert('Debes marcar al menos una semana.'); return; }
+  closeExtendedModal();
+
+  const diasArr = buildDaysFromWeeks(sel, extModalCfg.month);
+
+  extendedState = {
+    active: true,
+    baseYear: extModalCfg.year,
+    baseMonth: extModalCfg.month,
+    selectedWeeks: sel,
+    diasArr: diasArr,
+    mode: extModalCfg.mode
+  };
+
+  if(extModalCfg.mode === 'screen'){
+    document.getElementById('btn-exit-extended').style.display = '';
+    render();
+  } else {
+    render();
+    setTimeout(()=>{
+      printGantt();
+      setTimeout(()=>{
+        extendedState.active = false;
+        render();
+      }, 400);
+    }, 100);
+  }
+}
+
+function exitExtendedView(){
+  extendedState.active = false;
+  document.getElementById('btn-exit-extended').style.display = 'none';
+  render();
+}
+
+
+function printGantt(){
+  // ── 1. Determinar título dinámico según vista activa ──
+  let titleText = 'CARTA GANTT MAAH';
+
+  if(extendedState.active && extendedState.selectedWeeks && extendedState.selectedWeeks.length){
+    // Modo extendido: descripción según semanas seleccionadas
+    const sel = extendedState.selectedWeeks;
+    const m1 = MNAMES[extendedState.baseMonth].toUpperCase();
+    const y  = extendedState.baseYear;
+    const fromMes = sel.filter(w => !w.isExtra);
+    const fromExtra = sel.filter(w => w.isExtra);
+    const totalMesAvailable = (typeof extModalCfg !== 'undefined' && extModalCfg.weeks) ? extModalCfg.weeks.length : 5;
+
+    // Helper para listar números de semana en español: "2 Y 3", "1, 3 Y 5"
+    const listNums = arr => {
+      const nums = arr.map(w=>w.weekNum);
+      if(nums.length === 1) return String(nums[0]);
+      if(nums.length === 2) return nums[0]+' Y '+nums[1];
+      return nums.slice(0,-1).join(', ')+' Y '+nums[nums.length-1];
+    };
+
+    const next = new Date(extendedState.baseYear, extendedState.baseMonth + 1, 1);
+    const m2 = MNAMES[next.getMonth()].toUpperCase();
+
+    if(fromMes.length === totalMesAvailable && fromExtra.length === 0){
+      // Mes completo sin extras
+      titleText = 'CARTA GANTT MAAH — '+m1+' '+y;
+    } else if(fromMes.length === totalMesAvailable && fromExtra.length > 0){
+      // Mes completo + N semanas del siguiente (con números)
+      const sw = fromExtra.length>1 ? 'SEMANAS' : 'SEMANA';
+      titleText = 'CARTA GANTT MAAH — '+m1+' '+y+' + '+sw+' '+listNums(fromExtra)+' DE '+m2;
+    } else if(fromMes.length > 0 && fromExtra.length === 0){
+      // Solo semanas del mes (saltadas o no)
+      const sw = fromMes.length>1 ? 'SEMANAS' : 'SEMANA';
+      titleText = 'CARTA GANTT MAAH — '+sw+' '+listNums(fromMes)+' DE '+m1+' '+y;
+    } else if(fromMes.length === 0 && fromExtra.length > 0){
+      // Solo semanas del mes siguiente
+      const sw = fromExtra.length>1 ? 'SEMANAS' : 'SEMANA';
+      titleText = 'CARTA GANTT MAAH — '+sw+' '+listNums(fromExtra)+' DE '+m2+' '+y;
+    } else {
+      // Mezcla: algunas del mes + algunas del siguiente
+      const swM = fromMes.length>1 ? 'SEMANAS' : 'SEMANA';
+      const swE = fromExtra.length>1 ? 'SEMANAS' : 'SEMANA';
+      titleText = 'CARTA GANTT MAAH — '+swM+' '+listNums(fromMes)+' DE '+m1+' + '+swE+' '+listNums(fromExtra)+' DE '+m2+' '+y;
+    }
+  } else if(currentMonthKey === 'all'){
+    titleText = 'CARTA GANTT MAAH';
+  } else if(currentMonthKey.startsWith('year-')){
+    const y = currentMonthKey.split('-')[1];
+    titleText = 'CARTA GANTT MAAH — AÑO ' + y;
+  } else if(currentWeekKey && currentWeekKey !== 'all'){
+    const r = rangoSemanaActual();
+    if(r){
+      const d1 = String(r.ini.getDate()).padStart(2,'0');
+      const d2 = String(r.fin.getDate()).padStart(2,'0');
+      const m1 = MNAMES[r.ini.getMonth()].toUpperCase();
+      const m2 = MNAMES[r.fin.getMonth()].toUpperCase();
+      const y  = r.fin.getFullYear();
+      if(r.ini.getMonth() === r.fin.getMonth()){
+        titleText = 'CARTA GANTT MAAH — SEMANA DEL '+d1+' AL '+d2+' DE '+m1+' '+y;
+      } else {
+        titleText = 'CARTA GANTT MAAH — SEMANA DEL '+d1+' DE '+m1+' AL '+d2+' DE '+m2+' '+y;
+      }
+    } else {
+      const vm = getViewMonthYear();
+      titleText = 'CARTA GANTT MAAH — '+MNAMES[vm.month].toUpperCase()+' '+vm.year;
+    }
+  } else {
+    const vm = getViewMonthYear();
+    titleText = 'CARTA GANTT MAAH — '+MNAMES[vm.month].toUpperCase()+' '+vm.year;
   }
 
-  // Obtener el HTML actual de la tabla (ya renderizada)
-  const tableHTML = document.getElementById('gantt-wrap').innerHTML;
+  // ── 2. Clonar la tabla y reescribir el <colgroup> COMPLETO con porcentajes ──
+  const wrap = document.getElementById('gantt-wrap');
+  const tableEl = wrap.querySelector('table.gantt');
+  if(!tableEl){ alert('No se encontró la tabla Gantt.'); return; }
+  const tableClone = tableEl.cloneNode(true);
 
-  // Construir CSS inline para la ventana de impresión
+  const oldCols = tableClone.querySelectorAll('colgroup col');
+  const totalCols = oldCols.length;
+  const nDayCols = Math.max(1, totalCols - 5);
+
+  // ── ELIMINAR FÍSICAMENTE las columnas TÉRMINO, DÍAS y DEL ──
+  // (en vez de ocultarlas con CSS, que causaba desalineación con el colgroup)
+  // Eliminar todas las celdas con esas clases
+  tableClone.querySelectorAll(
+    '.th-col-term, .th-col-dias, .th-col-del, .td-term, .td-d, .td-del'
+  ).forEach(el => el.remove());
+  // Ajustar el colspan="5" del título de la primera fila (que ahora tiene 2 columnas, ACT+OBS)
+  const titleTh = tableClone.querySelector('th.th-title');
+  if(titleTh) titleTh.setAttribute('colspan', '2');
+
+  // Reparto proporcional según cantidad de días (escala inversa)
+  let pctAct, pctObs;
+  if(nDayCols <= 7){          pctAct = 32; pctObs = 11; }
+  else if(nDayCols <= 14){    pctAct = 28; pctObs = 10; }
+  else if(nDayCols <= 31){    pctAct = 24; pctObs = 9;  }
+  else if(nDayCols <= 45){    pctAct = 20; pctObs = 8;  }
+  else {                      pctAct = 18; pctObs = 7;  }
+  const pctRestante = 100 - pctAct - pctObs;
+  const pctDay = (pctRestante / nDayCols).toFixed(3);
+
+  // Tamaño de fuente adaptable para los números de día
+  let dayFontPt;
+  if(nDayCols <= 7){          dayFontPt = 8.5; }
+  else if(nDayCols <= 14){    dayFontPt = 8;   }
+  else if(nDayCols <= 31){    dayFontPt = 6.5; }
+  else if(nDayCols <= 45){    dayFontPt = 5.5; }
+  else {                      dayFontPt = 5;   }
+
+  // Reconstruir colgroup SIN las columnas eliminadas (solo ACT, OBS, días)
+  let newCols = '';
+  newCols += '<col style="width:'+pctAct+'%;">';
+  newCols += '<col style="width:'+pctObs+'%;">';
+  for(let i=0; i<nDayCols; i++){
+    newCols += '<col style="width:'+pctDay+'%;">';
+  }
+  const oldCg = tableClone.querySelector('colgroup');
+  if(oldCg) oldCg.innerHTML = newCols;
+
+  const tableHTML = tableClone.outerHTML;
+
+  // ── 3. CSS de impresión ──
   const printCSS = `
     @page { size: landscape; margin: 8mm 6mm; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1561,46 +1987,147 @@ function printGantt(){
       margin-bottom: 10px;
       color: #000;
     }
-    table { border-collapse: collapse; font-size: 6.5pt; white-space: nowrap;
-            table-layout: fixed; width: 100%;
-            -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    th, td { border: 0.5px solid #888; padding: 0; text-align: center;
-             -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    /* Ocultar fila 1 del thead (título con "CARTA GANTT OPERACIONES") */
-    thead tr:first-child { display: none; }
-    /* Ocultar columna de botones editar */
+
+    /* RESET QUIRÚRGICO: anular SOLO los anchos px específicos heredados de la pantalla.
+       NO usar selectores globales (table.gantt th, td) porque eso anula el colgroup. */
+    table.gantt th.th-col-act, table.gantt td.td-act {
+      width: auto !important; max-width: none !important; min-width: 0 !important;
+    }
+    table.gantt th.th-col-obs, table.gantt td.td-obs {
+      width: auto !important; max-width: none !important; min-width: 0 !important;
+    }
+    table.gantt th.th-daynum, table.gantt th.th-dayname,
+    table.gantt td.td-day, table.gantt td.bar-cell {
+      width: auto !important; max-width: none !important; min-width: 0 !important;
+    }
+
+    table.gantt {
+      border-collapse: collapse !important;
+      font-size: 6.5pt !important;
+      white-space: nowrap !important;
+      table-layout: fixed !important;
+      width: 100% !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    table.gantt th, table.gantt td {
+      border: 0.5px solid #888 !important;
+      padding: 0 !important;
+      text-align: center !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    /* Ocultar fila 1 del thead (título azul interno) y columnas no imprimibles */
+    table.gantt thead tr:first-child { display: none !important; }
     .td-del, .th-col-del { display: none !important; }
     .edit-btn { display: none !important; }
-    /* Tamaños de celdas de día */
-    .td-day, .th-daynum, .th-dayname, .bar-cell {
-      width: 16px !important; height: 16px !important; line-height: 16px !important; }
-    /* Columnas fijas */
-    .th-col-act { width: 130px !important; font-size: 7pt; text-align: left; padding: 2px 4px; }
-    .th-col-obs  { width: 30px !important; }
-    .th-col-term { width: 46px !important; }
-    .th-col-dias { width: 26px !important; }
-    /* Colores */
-    .th-title, .th-week, .th-col-act, .th-col-obs,
-    .th-col-term, .th-col-dias, .th-col-del {
-      background: #1a3f6f !important; color: #fff !important; }
-    .th-daynum  { background: #2c5282 !important; color: #c8d8f0 !important; font-size: 6pt; }
-    .th-daynum.wknd { background: #1e3a5f !important; color: #7888aa !important; }
-    .th-dayname { background: #2c5282 !important; color: #8ab0d8 !important; font-size: 6pt; }
-    .th-dayname.wknd { background: #1e3a5f !important; }
-    .td-act { text-align: left; padding: 2px 4px; font-size: 7pt; background: #fff; color: #000;
-              white-space: normal; line-height: 1.2; vertical-align: middle; }
-    .td-obs, .td-term { font-size: 6.5pt; background: #fff; }
-    .td-day { background: #e8ecf0 !important; }
-    .td-day.wknd { background: #d0d5dd !important; }
-    .td-day.othermonth { background: #cdd2da !important; opacity: .6; }
-    .bar-cell { background: inherit; }
-    .row-aniv .td-act { color: #5a3c00 !important; font-style: italic; font-weight: 600; }
-    .row-aniv .td-act, .row-aniv .td-obs, .row-aniv .td-term,
-    .row-aniv .td-d, .row-aniv .td-day { background: #fffde7 !important; }
-    .row-aniv .td-day.wknd { background: #f0ead0 !important; }
-    .plazo-badge { background: #8B0000 !important; color: #fff !important;
-                   font-size: 6pt; padding: 1px 2px; border-radius: 2px; }
-    .today-col { border-left: 2px solid #e53935 !important; }
+    .td-term, .th-col-term, .td-d, .th-col-dias { display: none !important; }
+
+    /* ANULAR el borde rojo HOY en impresión (no aplica en vista personalizada) */
+    .today-col { border-left: 0.5px solid #888 !important; }
+    .th-daynum.today-col, .th-dayname.today-col {
+      background: #2c5282 !important; color: #c8d8f0 !important;
+    }
+    .th-dayname.today-col { color: #8ab0d8 !important; }
+    .today-th-label { display: none !important; }
+
+    /* ACTIVIDAD: 2 líneas máximo con quiebre automático */
+    table.gantt th.th-col-act {
+      font-size: 7pt !important; text-align: left !important; padding: 2px 4px !important;
+      white-space: normal !important; word-wrap: break-word !important;
+      overflow-wrap: break-word !important; line-height: 1.2 !important;
+      vertical-align: middle !important;
+      background: #1a3f6f !important; color: #fff !important;
+    }
+    table.gantt td.td-act {
+      text-align: left !important; padding: 2px 4px !important; font-size: 6.5pt !important;
+      background: #fff !important; color: #000 !important; line-height: 1.2 !important;
+      vertical-align: middle !important;
+      white-space: normal !important; word-wrap: break-word !important;
+      overflow-wrap: break-word !important;
+      text-transform: uppercase !important; font-weight: 500 !important;
+      /* Altura mínima = 2 líneas para que TODAS las filas queden parejas */
+      height: 22px !important;
+    }
+    /* Aplicar la misma altura mínima a TODAS las celdas de la fila para uniformidad */
+    table.gantt tbody tr { height: 22px !important; }
+    table.gantt tbody tr td { height: 22px !important; }
+
+    /* OBS: 2 líneas con quiebre automático */
+    table.gantt th.th-col-obs {
+      font-size: 6.5pt !important; padding: 2px 3px !important; line-height: 1.15 !important;
+      white-space: normal !important; word-wrap: break-word !important;
+      overflow-wrap: break-word !important; vertical-align: middle !important;
+      background: #1a3f6f !important; color: #fff !important;
+    }
+    table.gantt td.td-obs {
+      font-size: 6pt !important; background: #fff !important; color: #000 !important;
+      padding: 2px 3px !important; vertical-align: middle !important;
+      line-height: 1.2 !important;
+      white-space: normal !important; word-wrap: break-word !important;
+      overflow-wrap: break-word !important;
+      text-align: center !important; text-transform: uppercase !important;
+      height: 22px !important;
+    }
+
+    /* CELDAS DE DÍA: altura UNIFORME en toda la tabla */
+    table.gantt td.td-day, table.gantt td.bar-cell {
+      height: 22px !important; line-height: 22px !important;
+      padding: 0 !important; vertical-align: middle !important;
+    }
+    table.gantt th.th-daynum {
+      height: 16px !important; line-height: 16px !important;
+      padding: 1px 0 !important;
+      font-size: ${dayFontPt}pt !important;
+      background: #2c5282 !important; color: #c8d8f0 !important;
+      font-weight: 600 !important; vertical-align: middle !important;
+    }
+    table.gantt th.th-daynum.wknd {
+      background: #1e3a5f !important; color: #7888aa !important;
+    }
+    table.gantt th.th-dayname {
+      height: 13px !important; line-height: 13px !important;
+      padding: 0 !important;
+      font-size: ${Math.max(4.5, dayFontPt-1.5)}pt !important;
+      background: #2c5282 !important; color: #8ab0d8 !important;
+      vertical-align: middle !important;
+    }
+    table.gantt th.th-dayname.wknd { background: #1e3a5f !important; }
+
+    /* Headers azules de las columnas fijas */
+    table.gantt th.th-title, table.gantt th.th-week {
+      background: #1a3f6f !important; color: #fff !important;
+      font-size: 6.5pt !important; padding: 2px 4px !important;
+    }
+
+    /* Días del mes siguiente (modo extendido) */
+    table.gantt th.th-daynum.extra { background: #a06310 !important; color: #fbe6c4 !important; }
+    table.gantt th.th-daynum.extra.wknd { background: #7a4a0c !important; color: #c4a575 !important; }
+    table.gantt th.th-dayname.extra { background: #a06310 !important; color: #fbe6c4 !important; }
+    table.gantt th.th-dayname.extra.wknd { background: #7a4a0c !important; color: #c4a575 !important; }
+    table.gantt td.td-day.extra { background: #fdf3e0 !important; }
+    table.gantt td.td-day.extra.wknd { background: #f0e0c0 !important; }
+
+    /* Fondos de día normales */
+    table.gantt td.td-day { background: #e8ecf0 !important; }
+    table.gantt td.td-day.wknd { background: #d0d5dd !important; }
+    table.gantt td.td-day.othermonth { background: #cdd2da !important; opacity: .6; }
+    table.gantt td.bar-cell { background: inherit; }
+
+    /* Aniversarios */
+    table.gantt tr.row-aniv td.td-act {
+      color: #5a3c00 !important; font-style: italic !important; font-weight: 600 !important;
+    }
+    table.gantt tr.row-aniv td.td-act, table.gantt tr.row-aniv td.td-obs,
+    table.gantt tr.row-aniv td.td-day { background: #fffde7 !important; }
+    table.gantt tr.row-aniv td.td-day.wknd { background: #f0ead0 !important; }
+
+    /* Plazo badge */
+    .plazo-badge {
+      background: #8B0000 !important; color: #fff !important;
+      font-size: 6pt !important; padding: 1px 2px !important; border-radius: 2px !important;
+    }
   `;
 
   // Abrir ventana nueva
@@ -1892,9 +2419,17 @@ function render(){
 
   // Para año completo o Toda la Gantt usamos el mes actual como base visual del header
   let allDays = buildDaysForMonth(viewYear, isFullYear ? TODAY.getMonth() : viewMonth);
+
+  // ── MODO EXTENDIDO: si está activo, usar el array de días seleccionados ──
+  if(extendedState.active && extendedState.diasArr && extendedState.diasArr.length){
+    allDays = extendedState.diasArr;
+    viewYear = extendedState.baseYear;
+    viewMonth = extendedState.baseMonth;
+  }
+
   // Si hay una semana seleccionada, recortar allDays a esos 7 días
   const semanaRango = rangoSemanaActual();
-  if(semanaRango && !isTodaGantt && !isFullYear){
+  if(semanaRango && !isTodaGantt && !isFullYear && !extendedState.active){
     const dias7 = [];
     const cur = new Date(semanaRango.ini);
     cur.setHours(12,0,0,0);
@@ -1921,6 +2456,12 @@ function render(){
   let byMonth;
 
   function rangoVista(){
+    if(extendedState.active && extendedState.diasArr && extendedState.diasArr.length){
+      const arr = extendedState.diasArr;
+      const ini = new Date(arr[0].d); ini.setHours(0,0,0,0);
+      const fin = new Date(arr[arr.length-1].d); fin.setHours(23,59,59,999);
+      return { ini, fin };
+    }
     if(isTodaGantt){
       const yIni = TODAY.getFullYear();
       return {ini: new Date(yIni,0,1,0,0,0), fin: new Date(yIni+2,11,31,23,59,59)};
@@ -2073,7 +2614,8 @@ function render(){
   html+='<th class="th-col-del"></th>';
   allDays.forEach((d,i)=>{
     const isToday=i===todayIdx;
-    const cls='th-daynum'+(d.wknd?' wknd':'')+(d.otherMonth?' othermonth':'')+(isToday?' today-col':'');
+    const isExtra=d.isExtra===true;
+    const cls='th-daynum'+(d.wknd?' wknd':'')+(d.otherMonth?' othermonth':'')+(isToday?' today-col':'')+(isExtra?' extra':'');
     const content=isToday?'<span class="today-th-label">HOY</span>':d.n;
     html+='<th class="'+cls+'">'+content+'</th>';
   });
@@ -2087,7 +2629,8 @@ function render(){
   html+='<td class="th-col-del" style="background:#2c5282;"></td>';
   allDays.forEach((d,i)=>{
     const isToday=i===todayIdx;
-    const cls='th-dayname'+(d.wknd?' wknd':'')+(d.otherMonth?' othermonth':'')+(isToday?' today-col':'');
+    const isExtra=d.isExtra===true;
+    const cls='th-dayname'+(d.wknd?' wknd':'')+(d.otherMonth?' othermonth':'')+(isToday?' today-col':'')+(isExtra?' extra':'');
     html+='<th class="'+cls+'">'+d.dn+'</th>';
   });
   html+='</tr></thead><tbody>';
@@ -2149,6 +2692,7 @@ function render(){
       const isToday=i===todayIdx;
       const isWknd=allDays[i].wknd;
       const isOther=allDays[i].otherMonth;
+      const isExtra=allDays[i].isExtra===true;
       const tlStyle=isToday?'border-left:2.5px solid #e53935;':'';
       const fmap=getFeriados(allDays[i].d.getFullYear());
       const fKey=feriadoKey(allDays[i].d);
@@ -2156,10 +2700,11 @@ function render(){
       const ferNombre=esFeriado?fmap[fKey]:'';
       if(i===barIdx){
         const ferCls=esFeriado?' feriado':'';
+        const extCls=isExtra?' extra':'';
         const ferAttr=esFeriado?' onmouseenter="showFeriadoTip(this,\''+ferNombre.replace(/'/g,'&#39;')+'\')" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,\''+ferNombre.replace(/'/g,'&#39;')+'\')"':'';
-        html+='<td class="bar-cell'+ferCls+'" style="background:'+col.bg+' !important;'+tlStyle+'"'+ferAttr+'></td>';
+        html+='<td class="bar-cell'+ferCls+extCls+'" style="background:'+col.bg+' !important;'+tlStyle+'"'+ferAttr+'></td>';
       } else {
-        let cls='td-day'+(isWknd?' wknd':'')+(isOther?' othermonth':'')+(isToday?' today-col':'')+(esFeriado?' feriado':'');
+        let cls='td-day'+(isWknd?' wknd':'')+(isOther?' othermonth':'')+(isToday?' today-col':'')+(esFeriado?' feriado':'')+(isExtra?' extra':'');
         const ferAttr=esFeriado?' onmouseenter="showFeriadoTip(this,\''+ferNombre.replace(/'/g,'&#39;')+'\')" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,\''+ferNombre.replace(/'/g,'&#39;')+'\')"':'';
         html+='<td class="'+cls+'" style="'+tlStyle+'"'+ferAttr+'></td>';
       }
