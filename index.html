@@ -3407,6 +3407,40 @@ function migrarDatosViejosAMaah(){
 // Restaurar sesión — se llama SOLO cuando usuariosCache ya está cargado
 function intentarRestaurarSesion(){
   try{
+    // ── SSO desde sistema MAAH ──
+    // Si el usuario hizo clic en "Abrir Carta Gantt" desde el sistema MAAH,
+    // este último dejó un ticket de sesión en localStorage. Si existe y es válido,
+    // lo usamos directo y no pedimos clave.
+    const ssoRaw = localStorage.getItem('maah_session');
+    if(ssoRaw){
+      try{
+        const sso = JSON.parse(ssoRaw);
+        // Validar que el ticket no haya expirado (válido 30 minutos)
+        const ahora = Date.now();
+        if(sso && sso.userId && sso.expira && ahora < sso.expira){
+          const vivoSSO = usuariosCache.find(x => x.id === sso.userId);
+          if(vivoSSO){
+            // Verificar permiso de Gantt (admin siempre puede)
+            const tienePermiso = (vivoSSO.rol === 'admin') ||
+                                 (vivoSSO.permisos && vivoSSO.permisos.gantt === true);
+            if(!tienePermiso){
+              alert('Tu cuenta no tiene acceso al servicio Gantt.\n\nSolicita la activación al administrador.');
+              localStorage.removeItem('maah_session');
+              return false;
+            }
+            // Login OK vía SSO
+            currentUser = vivoSSO;
+            try{ sessionStorage.setItem('gantt_user', JSON.stringify({id:vivoSSO.id,nombre:vivoSSO.nombre,pass:vivoSSO.pass,rol:vivoSSO.rol})); }catch(e){}
+            iniciarGanttDelUsuario();
+            return true;
+          }
+        }
+      }catch(eSso){
+        console.warn('[MAAH] Ticket SSO inválido, ignorando.', eSso);
+      }
+    }
+
+    // ── Restauración normal por sessionStorage ──
     const raw=sessionStorage.getItem('gantt_user');
     if(!raw) return false;
     const u=JSON.parse(raw);
@@ -3421,6 +3455,15 @@ function intentarRestaurarSesion(){
     if(String(vivo.pass||'').trim() !== String(u.pass||'').trim()){
       sessionStorage.removeItem('gantt_user');
       return false;
+    }
+    // Verificar permiso de Gantt para usuarios no-admin
+    if(vivo.rol !== 'admin'){
+      const tienePermiso = vivo.permisos && vivo.permisos.gantt === true;
+      if(!tienePermiso){
+        sessionStorage.removeItem('gantt_user');
+        alert('Tu cuenta ya no tiene acceso al servicio Gantt.');
+        return false;
+      }
     }
     currentUser=vivo;
     iniciarGanttDelUsuario();
