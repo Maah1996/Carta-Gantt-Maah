@@ -376,7 +376,13 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
   <span class="toolbar-label" id="month-select-label" style="">Mes:</span>
   <select class="month-select" id="month-select" onchange="onMonthChange()" style="min-width: 160px;"><option value="year-2026" style="font-weight: bold;">📅 Todo el año 2026</option><option value="2026-0">Enero 2026 (3 act.)</option><option value="2026-1">Febrero 2026 (3 act.)</option><option value="2026-2">Marzo 2026 (3 act.)</option><option value="2026-3">Abril 2026 (5 act.) ← HOY</option><option value="2026-4">Mayo 2026 (6 act.)</option><option value="2026-5">Junio 2026 (5 act.)</option><option value="2026-6">Julio 2026 (3 act.)</option><option value="2026-7">Agosto 2026 (4 act.)</option><option value="2026-8">Septiembre 2026 (3 act.)</option><option value="2026-9">Octubre 2026 (4 act.)</option><option value="2026-10">Noviembre 2026 (3 act.)</option><option value="2026-11">Diciembre 2026 (3 act.)</option></select>
   <span class="toolbar-label" id="week-select-label" style="display:none;">Semana:</span>
-  <select class="month-select" id="week-select" onchange="onWeekChange()" style="min-width:200px;display:none;"><option value="all">Todo el mes</option></select>
+  <div id="week-select-wrap" style="position:relative;display:none;">
+    <button type="button" id="week-trigger" onclick="toggleWeekDropdown(event)" style="min-width:230px;font-size:11px;padding:6px 10px;background:#fff;border:1px solid #cbd5e0;border-radius:5px;color:#2d3748;font-weight:500;cursor:pointer;text-align:left;display:inline-flex;align-items:center;justify-content:space-between;gap:8px;font-family:inherit;">
+      <span id="week-trigger-text">Todo el mes</span>
+      <span style="font-size:9px;color:#5F5E5A;">▾</span>
+    </button>
+    <div id="week-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:1px solid #cbd5e0;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.15);min-width:280px;max-height:340px;overflow-y:auto;z-index:9000;font-family:'Segoe UI',Arial,sans-serif;"></div>
+  </div>
   <div class="toolbar-divider"></div>
   <span class="view-info" id="view-info">Mostrando Mayo 2026 (21 actividades)</span>
   <div class="toolbar-divider"></div>
@@ -672,6 +678,10 @@ PERS. 11:45 A 15:00</td><td class="td-obs"><span class="obs-text">SABADOS</span>
 </div>
 <style>
   .ext-wkrow { display:flex; align-items:center; gap:10px; padding:8px 12px; border-bottom:0.5px solid #e2e8f0; cursor:pointer; font-size:12px; transition:background 0.1s; user-select:none; }
+  /* Dropdown del selector "Semana" en pantalla — reutiliza las mismas filas */
+  #week-dropdown .ext-wkrow { font-size: 11px; padding: 6px 10px; }
+  #week-trigger:hover { background: #f7fafc; border-color: #94a0b3; }
+  #week-trigger.has-selection { background: #fffbe6; border-color: #ffd966; color: #5a3c00; font-weight: 600; }
   .ext-wkrow:last-child { border-bottom:none; }
   .ext-wkrow:hover { background:#eef4fb; }
   .ext-wkrow.checked { background:#eaf3df; }
@@ -1015,30 +1025,196 @@ function onMonthChange(){
   currentMonthKey = document.getElementById('month-select').value;
   // Resetear filtro de semana siempre que cambia el mes
   currentWeekKey = 'all';
+  selectedWeekKeys = new Set();
   rebuildWeekSelect();
   render();
 }
 
 // ── FILTRO POR SEMANA (lunes a domingo, ISO) ───────────────────
 // currentWeekKey: 'all' = sin filtro, o 'YYYY-MM-DD' = lunes de la semana
+//   (compatibilidad para resto del código que usa 1 sola semana)
+// selectedWeekKeys: Set de claves cuando el usuario marca múltiples
 let currentWeekKey = 'all';
+let selectedWeekKeys = new Set();   // Ej: {"2026-05-04", "2026-05-11"}
+let weekDropdownOpenList = [];       // Caché de las semanas mostradas en el dropdown
 
-function onWeekChange(){
-  const sel = document.getElementById('week-select');
-  currentWeekKey = sel ? sel.value : 'all';
+// Sincroniza currentWeekKey desde selectedWeekKeys (para compatibilidad)
+function syncWeekKeyFromSet(){
+  if(selectedWeekKeys.size === 0){
+    currentWeekKey = 'all';
+  } else if(selectedWeekKeys.size === 1){
+    // Una sola semana: comportamiento clásico (filtro a esa semana)
+    currentWeekKey = Array.from(selectedWeekKeys)[0];
+  } else {
+    // Múltiples: marcamos como 'multi' para que rangoSemanaActual() devuelva null
+    // y el render use modo extendido con buildDaysFromMultipleWeeks
+    currentWeekKey = 'multi';
+  }
+}
+
+// Construir/abrir/cerrar el dropdown de semanas
+function toggleWeekDropdown(ev){
+  if(ev) ev.stopPropagation();
+  const dd = document.getElementById('week-dropdown');
+  if(!dd) return;
+  if(dd.style.display === 'block'){
+    dd.style.display = 'none';
+  } else {
+    rebuildWeekDropdown();
+    dd.style.display = 'block';
+  }
+}
+
+// Cerrar el dropdown al hacer clic fuera
+document.addEventListener('click', function(ev){
+  const wrap = document.getElementById('week-select-wrap');
+  if(!wrap) return;
+  if(!wrap.contains(ev.target)){
+    const dd = document.getElementById('week-dropdown');
+    if(dd) dd.style.display = 'none';
+  }
+});
+
+// Toggle de una semana específica (clave = lunes-YYYY-MM-DD)
+function toggleWeekSelection(key){
+  if(selectedWeekKeys.has(key)){
+    selectedWeekKeys.delete(key);
+  } else {
+    selectedWeekKeys.add(key);
+  }
+  syncWeekKeyFromSet();
+  rebuildWeekDropdown();   // refrescar visual
+  updateWeekTriggerLabel();
   render();
+}
+
+// Toggle "Todo el mes" — marca/desmarca TODAS las del mes elegido (no las extras)
+function toggleWeekMaster(){
+  // Identificar las claves del mes (no extras)
+  const mesKeys = weekDropdownOpenList.filter(w => !w.isExtra).map(w => w.key);
+  const todasMarcadas = mesKeys.length > 0 && mesKeys.every(k => selectedWeekKeys.has(k));
+  if(todasMarcadas){
+    // Desmarcar todas las del mes
+    mesKeys.forEach(k => selectedWeekKeys.delete(k));
+  } else {
+    // Marcar todas las del mes
+    mesKeys.forEach(k => selectedWeekKeys.add(k));
+  }
+  syncWeekKeyFromSet();
+  rebuildWeekDropdown();
+  updateWeekTriggerLabel();
+  render();
+}
+
+// Reconstruye el contenido del dropdown según el mes elegido
+function rebuildWeekDropdown(){
+  const dd = document.getElementById('week-dropdown');
+  if(!dd) return;
+
+  let year, month;
+  if(currentMonthKey === 'current'){
+    year = TODAY.getFullYear();
+    month = TODAY.getMonth();
+  } else if(currentMonthKey && !currentMonthKey.startsWith('year-') && currentMonthKey !== 'all'){
+    const parts = currentMonthKey.split('-');
+    year = Number(parts[0]);
+    month = Number(parts[1]);
+  } else {
+    return;
+  }
+
+  // Semanas del mes
+  const semanasMes = generarSemanasDelMes(year, month);
+  // Semanas del mes siguiente (4)
+  const nextDate = new Date(year, month+1, 1);
+  const semanasSig = generarSemanasDelMes(nextDate.getFullYear(), nextDate.getMonth()).slice(0, 4);
+
+  const fmt = (d)=>{
+    const M = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    return String(d.getDate()).padStart(2,'0')+' '+M[d.getMonth()];
+  };
+  const wkKey = (lunes)=> lunes.getFullYear()+'-'+String(lunes.getMonth()+1).padStart(2,'0')+'-'+String(lunes.getDate()).padStart(2,'0');
+
+  // Cache
+  weekDropdownOpenList = [];
+  semanasMes.forEach((s,i)=>{
+    weekDropdownOpenList.push({ key: wkKey(s.lunes), lunes: s.lunes, domingo: s.domingo, num: i+1, isExtra: false });
+  });
+  semanasSig.forEach((s,i)=>{
+    weekDropdownOpenList.push({ key: wkKey(s.lunes), lunes: s.lunes, domingo: s.domingo, num: i+1, isExtra: true });
+  });
+
+  // Construir HTML
+  const mesKeys = semanasMes.map(s => wkKey(s.lunes));
+  const todasMarcadas = mesKeys.length > 0 && mesKeys.every(k => selectedWeekKeys.has(k));
+
+  let html = '';
+  // Master
+  html += '<div class="ext-wkrow master '+(todasMarcadas?'checked':'')+'" onclick="toggleWeekMaster();event.stopPropagation();">';
+  html += '<div class="ext-cb"></div>';
+  html += '<div style="flex:1;">Todo el mes ('+MNAMES[month]+')</div>';
+  html += '</div>';
+
+  // Semanas del mes
+  semanasMes.forEach((s, i)=>{
+    const k = wkKey(s.lunes);
+    const checked = selectedWeekKeys.has(k);
+    html += '<div class="ext-wkrow '+(checked?'checked':'')+'" onclick="toggleWeekSelection(\''+k+'\');event.stopPropagation();">';
+    html += '<div class="ext-cb"></div>';
+    html += '<div style="flex:1;">Semana '+(i+1)+' — '+fmt(s.lunes)+' al '+fmt(s.domingo)+'</div>';
+    html += '</div>';
+  });
+
+  // Sección extras
+  if(semanasSig.length){
+    const nextMonth = nextDate.getMonth();
+    const nextYear = nextDate.getFullYear();
+    html += '<div class="ext-wkrow section">SEMANAS DEL MES SIGUIENTE ('+MNAMES[nextMonth]+' '+nextYear+')</div>';
+    semanasSig.forEach((s, i)=>{
+      const k = wkKey(s.lunes);
+      const checked = selectedWeekKeys.has(k);
+      html += '<div class="ext-wkrow extra '+(checked?'checked':'')+'" onclick="toggleWeekSelection(\''+k+'\');event.stopPropagation();">';
+      html += '<div class="ext-cb"></div>';
+      html += '<div style="flex:1;">'+MNAMES[nextMonth].substring(0,3)+' - Semana '+(i+1)+' — '+fmt(s.lunes)+' al '+fmt(s.domingo)+'<span class="ext-wk-tag">EXTRA</span></div>';
+      html += '</div>';
+    });
+  }
+
+  dd.innerHTML = html;
+}
+
+// Actualiza el texto del botón trigger según selección
+function updateWeekTriggerLabel(){
+  const trigger = document.getElementById('week-trigger');
+  const text = document.getElementById('week-trigger-text');
+  if(!trigger || !text) return;
+  const n = selectedWeekKeys.size;
+  if(n === 0){
+    text.textContent = 'Todo el mes';
+    trigger.classList.remove('has-selection');
+  } else if(n === 1){
+    // Buscar la semana en el cache para mostrar el rango
+    const k = Array.from(selectedWeekKeys)[0];
+    const w = weekDropdownOpenList.find(x => x.key === k);
+    if(w){
+      const fmt = d => String(d.getDate()).padStart(2,'0')+' '+['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()];
+      text.textContent = 'Sem '+w.num+' ('+fmt(w.lunes)+' – '+fmt(w.domingo)+')';
+    } else {
+      text.textContent = '1 semana';
+    }
+    trigger.classList.add('has-selection');
+  } else {
+    text.textContent = n+' semanas seleccionadas';
+    trigger.classList.add('has-selection');
+  }
 }
 
 // Reconstruye el desplegable de semana según el mes/año seleccionado
 function rebuildWeekSelect(){
-  const sel = document.getElementById('week-select');
+  const wrap = document.getElementById('week-select-wrap');
   const lbl = document.getElementById('week-select-label');
-  if(!sel || !lbl) return;
+  if(!wrap || !lbl) return;
 
-  // Determinar año/mes a usar para listar semanas
-  // 'current' (vista por defecto al cargar) → tomar mes de HOY
-  // 'YYYY-M' → mes específico
-  // 'year-YYYY' o 'all' → no aplica (ocultar)
   let year, month;
   if(currentMonthKey === 'current'){
     year = TODAY.getFullYear();
@@ -1048,37 +1224,23 @@ function rebuildWeekSelect(){
     year = Number(parts[0]);
     month = Number(parts[1]);
     if(isNaN(year) || isNaN(month)){
-      sel.style.display = 'none';
+      wrap.style.display = 'none';
       lbl.style.display = 'none';
       return;
     }
   } else {
     // Año completo o Toda la Gantt → no hay semanas que mostrar
-    sel.style.display = 'none';
+    wrap.style.display = 'none';
     lbl.style.display = 'none';
-    sel.innerHTML = '<option value="all">Todo el mes</option>';
-    currentWeekKey = 'all';
+    selectedWeekKeys = new Set();
+    syncWeekKeyFromSet();
     return;
   }
 
-  // Generar las semanas (lunes-domingo) que tocan este mes
-  const semanas = generarSemanasDelMes(year, month);
-
-  const MNAMES_CORTOS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-  let html = '<option value="all">Todo el mes</option>';
-  semanas.forEach((s, idx)=>{
-    const fmt = (d)=>{
-      const dia = String(d.getDate()).padStart(2,'0');
-      const mes = MNAMES_CORTOS[d.getMonth()];
-      return dia+' '+mes;
-    };
-    const key = s.lunes.getFullYear()+'-'+String(s.lunes.getMonth()+1).padStart(2,'0')+'-'+String(s.lunes.getDate()).padStart(2,'0');
-    html += '<option value="'+key+'">Semana '+(idx+1)+' ('+fmt(s.lunes)+' – '+fmt(s.domingo)+')</option>';
-  });
-  sel.innerHTML = html;
-  sel.value = currentWeekKey || 'all';
-  sel.style.display = '';
+  wrap.style.display = '';
   lbl.style.display = '';
+  rebuildWeekDropdown();
+  updateWeekTriggerLabel();
 }
 
 // Genera array de {lunes, domingo} para todas las semanas que tocan el mes
@@ -1853,10 +2015,17 @@ function exitExtendedView(){
 
 function printGantt(){
   // ── 1. Determinar título dinámico según vista activa ──
-  let titleText = 'CARTA GANTT MAAH';
+  // Helper: lista números: [2] -> "2", [1,3] -> "1 Y 3", [1,2,3] -> "1, 2 Y 3"
+  const listNums = (nums)=>{
+    if(nums.length === 1) return String(nums[0]);
+    if(nums.length === 2) return nums[0]+' Y '+nums[1];
+    return nums.slice(0,-1).join(', ')+' Y '+nums[nums.length-1];
+  };
 
+  let titleText = 'GANTT';
+
+  // CASO A: Modo extendido (botón "Imprimir extendido")
   if(extendedState.active && extendedState.selectedWeeks && extendedState.selectedWeeks.length){
-    // Modo extendido: descripción según semanas seleccionadas
     const sel = extendedState.selectedWeeks;
     const m1 = MNAMES[extendedState.baseMonth].toUpperCase();
     const y  = extendedState.baseYear;
@@ -1864,63 +2033,123 @@ function printGantt(){
     const fromExtra = sel.filter(w => w.isExtra);
     const totalMesAvailable = (typeof extModalCfg !== 'undefined' && extModalCfg.weeks) ? extModalCfg.weeks.length : 5;
 
-    // Helper para listar números de semana en español: "2 Y 3", "1, 3 Y 5"
-    const listNums = arr => {
-      const nums = arr.map(w=>w.weekNum);
-      if(nums.length === 1) return String(nums[0]);
-      if(nums.length === 2) return nums[0]+' Y '+nums[1];
-      return nums.slice(0,-1).join(', ')+' Y '+nums[nums.length-1];
-    };
-
     const next = new Date(extendedState.baseYear, extendedState.baseMonth + 1, 1);
     const m2 = MNAMES[next.getMonth()].toUpperCase();
 
     if(fromMes.length === totalMesAvailable && fromExtra.length === 0){
-      // Mes completo sin extras
-      titleText = 'CARTA GANTT MAAH — '+m1+' '+y;
+      titleText = 'GANTT MES DE '+m1+' '+y;
     } else if(fromMes.length === totalMesAvailable && fromExtra.length > 0){
-      // Mes completo + N semanas del siguiente (con números)
       const sw = fromExtra.length>1 ? 'SEMANAS' : 'SEMANA';
-      titleText = 'CARTA GANTT MAAH — '+m1+' '+y+' + '+sw+' '+listNums(fromExtra)+' DE '+m2;
+      titleText = 'GANTT MES DE '+m1+' '+y+' + '+sw+' '+listNums(fromExtra.map(w=>w.weekNum))+' DE '+m2;
     } else if(fromMes.length > 0 && fromExtra.length === 0){
-      // Solo semanas del mes (saltadas o no)
+      // Solo semanas del mes (sin extras): "GANTT MAYO 2026 - SEMANAS 1, 2 Y 3"
       const sw = fromMes.length>1 ? 'SEMANAS' : 'SEMANA';
-      titleText = 'CARTA GANTT MAAH — '+sw+' '+listNums(fromMes)+' DE '+m1+' '+y;
+      if(fromMes.length === 1){
+        // 1 sola semana: usar formato "(DD AL DD)"
+        const w = fromMes[0];
+        const d1 = String(w.lunes.getDate()).padStart(2,'0');
+        const d2 = String(w.domingo.getDate()).padStart(2,'0');
+        titleText = 'GANTT MES DE '+m1+' '+y+' - SEMANA '+w.weekNum+' ('+d1+' AL '+d2+')';
+      } else {
+        titleText = 'GANTT '+m1+' '+y+' - '+sw+' '+listNums(fromMes.map(w=>w.weekNum));
+      }
     } else if(fromMes.length === 0 && fromExtra.length > 0){
       // Solo semanas del mes siguiente
       const sw = fromExtra.length>1 ? 'SEMANAS' : 'SEMANA';
-      titleText = 'CARTA GANTT MAAH — '+sw+' '+listNums(fromExtra)+' DE '+m2+' '+y;
+      titleText = 'GANTT '+m2+' '+y+' - '+sw+' '+listNums(fromExtra.map(w=>w.weekNum));
     } else {
-      // Mezcla: algunas del mes + algunas del siguiente
+      // Mezcla: "GANTT - SEMANAS 4, 5 DE MAYO + SEMANAS 1, 2 Y 3 DE JUNIO"
       const swM = fromMes.length>1 ? 'SEMANAS' : 'SEMANA';
       const swE = fromExtra.length>1 ? 'SEMANAS' : 'SEMANA';
-      titleText = 'CARTA GANTT MAAH — '+swM+' '+listNums(fromMes)+' DE '+m1+' + '+swE+' '+listNums(fromExtra)+' DE '+m2+' '+y;
+      titleText = 'GANTT - '+swM+' '+listNums(fromMes.map(w=>w.weekNum))+' DE '+m1+' + '+swE+' '+listNums(fromExtra.map(w=>w.weekNum))+' DE '+m2;
     }
-  } else if(currentMonthKey === 'all'){
-    titleText = 'CARTA GANTT MAAH';
-  } else if(currentMonthKey.startsWith('year-')){
-    const y = currentMonthKey.split('-')[1];
-    titleText = 'CARTA GANTT MAAH — AÑO ' + y;
-  } else if(currentWeekKey && currentWeekKey !== 'all'){
-    const r = rangoSemanaActual();
-    if(r){
-      const d1 = String(r.ini.getDate()).padStart(2,'0');
-      const d2 = String(r.fin.getDate()).padStart(2,'0');
-      const m1 = MNAMES[r.ini.getMonth()].toUpperCase();
-      const m2 = MNAMES[r.fin.getMonth()].toUpperCase();
-      const y  = r.fin.getFullYear();
-      if(r.ini.getMonth() === r.fin.getMonth()){
-        titleText = 'CARTA GANTT MAAH — SEMANA DEL '+d1+' AL '+d2+' DE '+m1+' '+y;
+  }
+  // CASO B: Selección de semanas directamente en pantalla (selectedWeekKeys)
+  else if(selectedWeekKeys && selectedWeekKeys.size > 0){
+    // Resolver el mes base actual
+    let baseYear, baseMonth;
+    if(currentMonthKey === 'current'){
+      baseYear = TODAY.getFullYear();
+      baseMonth = TODAY.getMonth();
+    } else {
+      const parts = currentMonthKey.split('-');
+      baseYear = Number(parts[0]);
+      baseMonth = Number(parts[1]);
+    }
+    const m1 = MNAMES[baseMonth].toUpperCase();
+    const y  = baseYear;
+
+    // Obtener todas las semanas con su número desde el cache del dropdown
+    // Si no está disponible, reconstruir
+    let weeksCache = (typeof weekDropdownOpenList !== 'undefined' && weekDropdownOpenList.length)
+        ? weekDropdownOpenList : [];
+    if(!weeksCache.length){
+      // Reconstruir minimal
+      const semanasMes = generarSemanasDelMes(baseYear, baseMonth);
+      const nextDate = new Date(baseYear, baseMonth+1, 1);
+      const semanasSig = generarSemanasDelMes(nextDate.getFullYear(), nextDate.getMonth()).slice(0,4);
+      const wkKey = (lunes)=> lunes.getFullYear()+'-'+String(lunes.getMonth()+1).padStart(2,'0')+'-'+String(lunes.getDate()).padStart(2,'0');
+      semanasMes.forEach((s,i)=>{ weeksCache.push({key:wkKey(s.lunes), lunes:s.lunes, domingo:s.domingo, num:i+1, isExtra:false}); });
+      semanasSig.forEach((s,i)=>{ weeksCache.push({key:wkKey(s.lunes), lunes:s.lunes, domingo:s.domingo, num:i+1, isExtra:true}); });
+    }
+
+    // Filtrar a las que están seleccionadas
+    const sel = weeksCache.filter(w => selectedWeekKeys.has(w.key));
+    sel.sort((a,b)=>a.lunes - b.lunes);
+    const fromMes = sel.filter(w => !w.isExtra);
+    const fromExtra = sel.filter(w => w.isExtra);
+
+    // Calcular cuántas semanas tiene el mes en total
+    const totalMesAvailable = generarSemanasDelMes(baseYear, baseMonth).length;
+    const next = new Date(baseYear, baseMonth + 1, 1);
+    const m2 = MNAMES[next.getMonth()].toUpperCase();
+
+    if(fromMes.length === totalMesAvailable && fromExtra.length === 0){
+      titleText = 'GANTT MES DE '+m1+' '+y;
+    } else if(fromMes.length === totalMesAvailable && fromExtra.length > 0){
+      const sw = fromExtra.length>1 ? 'SEMANAS' : 'SEMANA';
+      titleText = 'GANTT MES DE '+m1+' '+y+' + '+sw+' '+listNums(fromExtra.map(w=>w.num))+' DE '+m2;
+    } else if(fromMes.length > 0 && fromExtra.length === 0){
+      if(fromMes.length === 1){
+        // 1 sola semana
+        const w = fromMes[0];
+        const d1 = String(w.lunes.getDate()).padStart(2,'0');
+        const d2 = String(w.domingo.getDate()).padStart(2,'0');
+        titleText = 'GANTT MES DE '+m1+' '+y+' - SEMANA '+w.num+' ('+d1+' AL '+d2+')';
       } else {
-        titleText = 'CARTA GANTT MAAH — SEMANA DEL '+d1+' DE '+m1+' AL '+d2+' DE '+m2+' '+y;
+        const sw = 'SEMANAS';
+        titleText = 'GANTT '+m1+' '+y+' - '+sw+' '+listNums(fromMes.map(w=>w.num));
+      }
+    } else if(fromMes.length === 0 && fromExtra.length > 0){
+      if(fromExtra.length === 1){
+        const w = fromExtra[0];
+        const d1 = String(w.lunes.getDate()).padStart(2,'0');
+        const d2 = String(w.domingo.getDate()).padStart(2,'0');
+        titleText = 'GANTT MES DE '+m2+' '+y+' - SEMANA '+w.num+' ('+d1+' AL '+d2+')';
+      } else {
+        const sw = 'SEMANAS';
+        titleText = 'GANTT '+m2+' '+y+' - '+sw+' '+listNums(fromExtra.map(w=>w.num));
       }
     } else {
-      const vm = getViewMonthYear();
-      titleText = 'CARTA GANTT MAAH — '+MNAMES[vm.month].toUpperCase()+' '+vm.year;
+      // Mezcla: "GANTT - SEMANAS 4, 5 DE MAYO + SEMANAS 1, 2 Y 3 DE JUNIO"
+      const swM = fromMes.length>1 ? 'SEMANAS' : 'SEMANA';
+      const swE = fromExtra.length>1 ? 'SEMANAS' : 'SEMANA';
+      titleText = 'GANTT - '+swM+' '+listNums(fromMes.map(w=>w.num))+' DE '+m1+' + '+swE+' '+listNums(fromExtra.map(w=>w.num))+' DE '+m2;
     }
-  } else {
+  }
+  // CASO C: Toda la Gantt
+  else if(currentMonthKey === 'all'){
+    titleText = 'GANTT';
+  }
+  // CASO D: Año completo
+  else if(currentMonthKey.startsWith('year-')){
+    const y = currentMonthKey.split('-')[1];
+    titleText = 'GANTT AÑO ' + y;
+  }
+  // CASO E: Mes específico (sin semanas seleccionadas)
+  else {
     const vm = getViewMonthYear();
-    titleText = 'CARTA GANTT MAAH — '+MNAMES[vm.month].toUpperCase()+' '+vm.year;
+    titleText = 'GANTT MES DE '+MNAMES[vm.month].toUpperCase()+' '+vm.year;
   }
 
   // ── 2. Clonar la tabla y reescribir el <colgroup> COMPLETO con porcentajes ──
@@ -1941,15 +2170,19 @@ function printGantt(){
   ).forEach(el => el.remove());
   // Ajustar el colspan="5" del título de la primera fila (que ahora tiene 2 columnas, ACT+OBS)
   const titleTh = tableClone.querySelector('th.th-title');
-  if(titleTh) titleTh.setAttribute('colspan', '2');
+  if(titleTh){
+    titleTh.setAttribute('colspan', '2');
+    // Reemplazar el texto del título por el nuevo titleText (sin "CARTA GANTT MAAH")
+    titleTh.innerHTML = '■&nbsp; ' + titleText;
+  }
 
   // Reparto proporcional según cantidad de días (escala inversa)
   let pctAct, pctObs;
-  if(nDayCols <= 7){          pctAct = 32; pctObs = 11; }
-  else if(nDayCols <= 14){    pctAct = 28; pctObs = 10; }
-  else if(nDayCols <= 31){    pctAct = 24; pctObs = 9;  }
-  else if(nDayCols <= 45){    pctAct = 20; pctObs = 8;  }
-  else {                      pctAct = 18; pctObs = 7;  }
+  if(nDayCols <= 7){          pctAct = 30; pctObs = 14; }
+  else if(nDayCols <= 14){    pctAct = 26; pctObs = 12; }
+  else if(nDayCols <= 31){    pctAct = 23; pctObs = 10; }
+  else if(nDayCols <= 45){    pctAct = 20; pctObs = 9;  }
+  else {                      pctAct = 18; pctObs = 8;  }
   const pctRestante = 100 - pctAct - pctObs;
   const pctDay = (pctRestante / nDayCols).toFixed(3);
 
@@ -1978,15 +2211,6 @@ function printGantt(){
     @page { size: landscape; margin: 8mm 6mm; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; }
-    h1.print-h1 {
-      text-align: center;
-      font-size: 14pt;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 10px;
-      color: #000;
-    }
 
     /* RESET QUIRÚRGICO: anular SOLO los anchos px específicos heredados de la pantalla.
        NO usar selectores globales (table.gantt th, td) porque eso anula el colgroup. */
@@ -2019,7 +2243,26 @@ function printGantt(){
     }
 
     /* Ocultar fila 1 del thead (título azul interno) y columnas no imprimibles */
-    table.gantt thead tr:first-child { display: none !important; }
+    /* Mostrar la fila de título azul (donde irá "GANTT MES DE MAYO 2026") */
+    table.gantt thead tr:first-child { display: table-row !important; }
+    table.gantt th.th-title {
+      background: #1a3f6f !important;
+      color: #fff !important;
+      font-size: 11pt !important;
+      font-weight: 700 !important;
+      text-align: center !important;
+      padding: 6px 8px !important;
+      letter-spacing: 0.5px !important;
+      text-transform: uppercase !important;
+    }
+    table.gantt th.th-week {
+      background: #1a3f6f !important;
+      color: #fff !important;
+      font-size: 7pt !important;
+      font-weight: 600 !important;
+      padding: 3px 4px !important;
+      text-align: center !important;
+    }
     .td-del, .th-col-del { display: none !important; }
     .edit-btn { display: none !important; }
     .td-term, .th-col-term, .td-d, .th-col-dias { display: none !important; }
@@ -2064,11 +2307,20 @@ function printGantt(){
     table.gantt td.td-obs {
       font-size: 6pt !important; background: #fff !important; color: #000 !important;
       padding: 2px 3px !important; vertical-align: middle !important;
-      line-height: 1.2 !important;
+      line-height: 1.25 !important;
       white-space: normal !important; word-wrap: break-word !important;
       overflow-wrap: break-word !important;
       text-align: center !important; text-transform: uppercase !important;
       height: 22px !important;
+    }
+    /* Forzar el badge SEMANAL / PLAZO / ANUAL etc. a una línea propia debajo del texto */
+    table.gantt td.td-obs .badge, table.gantt td.td-obs span[style*="background"],
+    table.gantt td.td-obs > span:last-child {
+      display: block !important;
+      margin-top: 1px !important;
+      width: fit-content !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
     }
 
     /* CELDAS DE DÍA: altura UNIFORME en toda la tabla */
@@ -2139,7 +2391,6 @@ function printGantt(){
     <title>${titleText}</title>
     <style>${printCSS}</style>
   </head><body>
-    <h1 class="print-h1">${titleText}</h1>
     ${tableHTML}
     <script>
       window.onload = function(){
@@ -2482,23 +2733,51 @@ function render(){
     viewMonth = extendedState.baseMonth;
   }
 
-  // Si hay una semana seleccionada, recortar allDays a esos 7 días
-  const semanaRango = rangoSemanaActual();
-  if(semanaRango && !isTodaGantt && !isFullYear && !extendedState.active){
-    const dias7 = [];
-    const cur = new Date(semanaRango.ini);
-    cur.setHours(12,0,0,0);
-    for(let i=0; i<7; i++){
-      dias7.push({
-        n: String(cur.getDate()).padStart(2,'0'),
-        dn: DNAMES[cur.getDay()],
-        d: new Date(cur),
-        wknd: cur.getDay()===0 || cur.getDay()===6,
-        otherMonth: cur.getMonth() !== viewMonth
-      });
-      cur.setDate(cur.getDate()+1);
+  // Si hay UNA O MÁS semanas seleccionadas, recortar allDays a esos días
+  if(selectedWeekKeys && selectedWeekKeys.size > 0 && !isTodaGantt && !isFullYear && !extendedState.active){
+    // Convertir cada clave de semana en sus 7 días
+    const dias = [];
+    // Ordenar las claves cronológicamente
+    const keysOrdenadas = Array.from(selectedWeekKeys).sort();
+    keysOrdenadas.forEach(k=>{
+      const parts = k.split('-');
+      const lunes = new Date(Number(parts[0]), Number(parts[1])-1, Number(parts[2]));
+      lunes.setHours(12,0,0,0);
+      const cur = new Date(lunes);
+      // Determinar si esta semana es del mes "base" o es extra
+      const isExtraWeek = cur.getMonth() !== viewMonth;
+      for(let i=0; i<7; i++){
+        dias.push({
+          n: String(cur.getDate()).padStart(2,'0'),
+          dn: DNAMES[cur.getDay()],
+          d: new Date(cur),
+          wknd: cur.getDay()===0 || cur.getDay()===6,
+          otherMonth: false,
+          isExtra: isExtraWeek || (cur.getMonth() !== viewMonth)
+        });
+        cur.setDate(cur.getDate()+1);
+      }
+    });
+    allDays = dias;
+  } else {
+    // Caso clásico: 1 sola semana vía currentWeekKey (compatibilidad)
+    const semanaRango = rangoSemanaActual();
+    if(semanaRango && !isTodaGantt && !isFullYear && !extendedState.active){
+      const dias7 = [];
+      const cur = new Date(semanaRango.ini);
+      cur.setHours(12,0,0,0);
+      for(let i=0; i<7; i++){
+        dias7.push({
+          n: String(cur.getDate()).padStart(2,'0'),
+          dn: DNAMES[cur.getDay()],
+          d: new Date(cur),
+          wknd: cur.getDay()===0 || cur.getDay()===6,
+          otherMonth: cur.getMonth() !== viewMonth
+        });
+        cur.setDate(cur.getDate()+1);
+      }
+      allDays = dias7;
     }
-    allDays = dias7;
   }
   const weeks   = groupWeeks(allDays);
   const todayIdx = allDays.findIndex(d=>
@@ -2515,6 +2794,18 @@ function render(){
       const arr = extendedState.diasArr;
       const ini = new Date(arr[0].d); ini.setHours(0,0,0,0);
       const fin = new Date(arr[arr.length-1].d); fin.setHours(23,59,59,999);
+      return { ini, fin };
+    }
+    // Múltiples semanas seleccionadas → rango = primer lunes ↔ último domingo
+    if(selectedWeekKeys && selectedWeekKeys.size > 0 && !isTodaGantt && !isFullYear){
+      const keysOrd = Array.from(selectedWeekKeys).sort();
+      const primera = keysOrd[0].split('-');
+      const ultima  = keysOrd[keysOrd.length-1].split('-');
+      const ini = new Date(Number(primera[0]), Number(primera[1])-1, Number(primera[2]), 0,0,0);
+      const finLun = new Date(Number(ultima[0]), Number(ultima[1])-1, Number(ultima[2]));
+      const fin = new Date(finLun);
+      fin.setDate(fin.getDate()+6);
+      fin.setHours(23,59,59,999);
       return { ini, fin };
     }
     if(isTodaGantt){
@@ -2614,11 +2905,25 @@ function render(){
     byMonth = [...normales, ...expandidas].sort((a,b)=>a.fecha-b.fecha);
   }
 
-  // ── Filtro por SEMANA (si hay una semana seleccionada) ──
-  if(semanaRango && !isTodaGantt && !isFullYear){
+  // ── Filtro por SEMANA(S) seleccionada(s) ──
+  if(selectedWeekKeys && selectedWeekKeys.size > 0 && !isTodaGantt && !isFullYear){
+    // Construir un Set con todas las fechas (yyyy-mm-dd) de las semanas marcadas
+    const fechasOk = new Set();
+    selectedWeekKeys.forEach(k=>{
+      const parts = k.split('-');
+      const lun = new Date(Number(parts[0]), Number(parts[1])-1, Number(parts[2]));
+      lun.setHours(12,0,0,0);
+      const cur = new Date(lun);
+      for(let i=0; i<7; i++){
+        const ymd = cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0')+'-'+String(cur.getDate()).padStart(2,'0');
+        fechasOk.add(ymd);
+        cur.setDate(cur.getDate()+1);
+      }
+    });
     byMonth = byMonth.filter(a=>{
       if(!(a.fecha instanceof Date) || isNaN(a.fecha.getTime())) return false;
-      return a.fecha >= semanaRango.ini && a.fecha <= semanaRango.fin;
+      const ymd = a.fecha.getFullYear()+'-'+String(a.fecha.getMonth()+1).padStart(2,'0')+'-'+String(a.fecha.getDate()).padStart(2,'0');
+      return fechasOk.has(ymd);
     });
   }
 
@@ -2630,12 +2935,20 @@ function render(){
 
   // ── Info de vista ──
   let infoTxt;
+  const nWeeks = (selectedWeekKeys && selectedWeekKeys.size) || 0;
   if(isTodaGantt)       infoTxt = 'Mostrando todas las actividades';
   else if(isFullYear)   infoTxt = 'Mostrando todo el año '+viewYear+' ('+byMonth.length+' actividades)';
-  else if(semanaRango){
+  else if(nWeeks > 1){
+    infoTxt = 'Mostrando '+nWeeks+' semanas seleccionadas ('+byMonth.length+' actividades)';
+  }
+  else if(nWeeks === 1){
+    const k = Array.from(selectedWeekKeys)[0];
+    const parts = k.split('-');
+    const lun = new Date(Number(parts[0]), Number(parts[1])-1, Number(parts[2]));
+    const dom = new Date(lun); dom.setDate(dom.getDate()+6);
     const MSC=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
     const fmt = (d)=> String(d.getDate()).padStart(2,'0')+' '+MSC[d.getMonth()];
-    infoTxt = 'Mostrando semana del '+fmt(semanaRango.ini)+' al '+fmt(semanaRango.fin)+' ('+byMonth.length+' actividades)';
+    infoTxt = 'Mostrando semana del '+fmt(lun)+' al '+fmt(dom)+' ('+byMonth.length+' actividades)';
   }
   else if(currentMonthKey==='current') infoTxt = 'Mostrando '+MNAMES[viewMonth]+' '+viewYear+' + 5 días extra';
   else infoTxt = 'Mostrando '+MNAMES[viewMonth]+' '+viewYear+' ('+byMonth.length+' actividades)';
