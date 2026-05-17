@@ -437,6 +437,12 @@ table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:60
           <input type="date" id="f-fecha" oninput="previewDias()">
         </div>
         <div class="dias-preview prev-neutral" id="dias-preview" style="">Seleccione una fecha</div>
+        <div class="form-group" style="margin-top:8px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+            <input type="checkbox" id="f-enviar-agenda" style="width:16px;height:16px;cursor:pointer;">
+            Enviar también a la Agenda
+          </label>
+        </div>
         <button class="btn-add" onclick="addActivity()">+ Agregar a la Carta Gantt</button>
         <button class="btn-clear" onclick="confirmClear()">🗑 Limpiar todo</button>
         <button class="btn-lock" onclick="lockSession()">🔒 Bloquear sesión</button>
@@ -1450,6 +1456,29 @@ function setFilter(key){
 // ── AGREGAR / ELIMINAR ────────────────────────────────────────
 function toUpper(str){ return (str||'').toUpperCase().trim(); }
 
+function sincronizarGanttAAgenda(act){
+  if(!act||!act.act) return;
+  // Solo para actividades puntuales: escribir en la fecha exacta de la agenda
+  // Las recurrentes (semanal/mensual/anual) las lee la Agenda automáticamente
+  if(act.freq && act.freq!=='puntual') return;
+  if(!act.fecha) return;
+  var d=act.fecha instanceof Date ? act.fecha : new Date(act.fecha);
+  if(isNaN(d.getTime())) return;
+  var yr=d.getFullYear();
+  var mo=String(d.getMonth()+1).padStart(2,'0');
+  var da=String(d.getDate()).padStart(2,'0');
+  var fechaKey=yr+'-'+mo+'-'+da;
+  var agendaRef=db.ref('maah_agenda/'+currentUser.id+'/' +fechaKey);
+  agendaRef.once('value',function(snap){
+    var existing=snap.val()?Object.values(snap.val()):[];
+    var newEntry={hora:'08:00',act:(act.act||'').toUpperCase().trim(),obs:(act.obs||'').toUpperCase().trim()};
+    existing.push(newEntry);
+    existing.sort(function(a,b){return a.hora.localeCompare(b.hora);});
+    var obj=existing.reduce(function(o,a,i){o[i]=a;return o;},{});
+    agendaRef.set(obj);
+  });
+}
+
 function addActivity(){
   const act=toUpper(document.getElementById('f-act').value);
   const obs=toUpper(document.getElementById('f-obs').value);
@@ -1482,6 +1511,12 @@ function addActivity(){
   document.getElementById('f-inicio').value='';
   resetPreview();
   saveActToFB(newAct);
+  // Sincronizar a Agenda si está marcado
+  const chkAgenda=document.getElementById('f-enviar-agenda');
+  if(chkAgenda && chkAgenda.checked && currentUser){
+    sincronizarGanttAAgenda(newAct);
+    chkAgenda.checked=false;
+  }
   resetFreqSelector();
   rebuildMonthSelect(); render();
 }
@@ -1523,8 +1558,21 @@ function resetFreqSelector(){
 }
 function delAct(id){
   showModal('¿Eliminar esta actividad de la Carta Gantt?',()=>{
+    const orig=acts.find(a=>String(a.id)===String(id));
     acts=acts.filter(a=>String(a.id)!==String(id));
     deleteActFromFB(id);
+    // Si era puntual y venía de la Agenda, borrar también de ahí
+    if(orig && orig.fromAgenda && orig.agendaFecha && !orig.semanal && !orig.mensual && !orig.anual && currentUser && db){
+      var agRef=db.ref('maah_agenda/'+currentUser.id+'/'+orig.agendaFecha);
+      agRef.once('value',function(snap){
+        var ad=snap.val()||{};
+        var hora=orig.agendaHora||'';
+        Object.entries(ad).forEach(function([k,v]){
+          if(v && v.hora===hora)
+            db.ref('maah_agenda/'+currentUser.id+'/'+orig.agendaFecha+'/'+k).remove();
+        });
+      });
+    }
     rebuildMonthSelect(); render();
   });
 }
