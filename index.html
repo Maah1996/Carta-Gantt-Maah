@@ -451,6 +451,12 @@ table.gantt tr.row-priori td.td-act::before{content:'⚑ ';}
             Enviar también a la Agenda
           </label>
         </div>
+        <div class="form-group" style="margin-top:4px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#c62828;font-weight:700;">
+            <input type="checkbox" id="f-priori" style="width:16px;height:16px;cursor:pointer;accent-color:#c62828;">
+            ⭐ Actividad prioritaria
+          </label>
+        </div>
         <button class="btn-add" onclick="addActivity()">+ Agregar a la Carta Gantt</button>
         <button class="btn-clear" onclick="confirmClear()">🗑 Limpiar todo</button>
         <button class="btn-lock" onclick="lockSession()">🔒 Bloquear sesión</button>
@@ -1480,6 +1486,7 @@ function sincronizarGanttAAgenda(act){
   agendaRef.once('value',function(snap){
     var existing=snap.val()?Object.values(snap.val()):[];
     var newEntry={hora:'08:00',act:(act.act||'').toUpperCase().trim(),obs:(act.obs||'').toUpperCase().trim()};
+    if(act.priori) newEntry.priori=true;
     existing.push(newEntry);
     existing.sort(function(a,b){return a.hora.localeCompare(b.hora);});
     var obj=existing.reduce(function(o,a,i){o[i]=a;return o;},{});
@@ -1508,7 +1515,10 @@ function addActivity(){
     fechaInicio.setHours(0,0,0,0);
   }
 
+  const chkPriori=document.getElementById('f-priori');
+  const esPriori=chkPriori && chkPriori.checked;
   const newAct={act,obs,fecha,type:cType,id:nextId++};
+  if(esPriori) newAct.priori=true;
   if(fechaInicio) newAct.fechaInicio = fechaInicio;
   aplicarFrecuenciaACto(newAct, cFreq, fecha);
   acts.push(newAct);
@@ -1517,6 +1527,7 @@ function addActivity(){
   document.getElementById('f-obs').value='';
   document.getElementById('f-fecha').value='';
   document.getElementById('f-inicio').value='';
+  if(chkPriori) chkPriori.checked=false;
   resetPreview();
   saveActToFB(newAct);
   // Sincronizar a Agenda si está marcado
