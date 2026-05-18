@@ -179,6 +179,14 @@ table.gantt tr.row-aniv td.td-day{background:#fffde7;}
 table.gantt tr.row-aniv td.td-day.wknd{background:#f0ead0;}
 table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:600;text-align:left !important;}
 /* bar-cell NUNCA recibe el amarillo de aniv — su bg inline tiene prioridad al no usar !important */
+/* Actividades prioritarias (marcadas en agenda con ⚑) */
+table.gantt tr.row-priori td.td-act,
+table.gantt tr.row-priori td.td-obs,
+table.gantt tr.row-priori td.td-term,
+table.gantt tr.row-priori td.td-d,
+table.gantt tr.row-priori td.td-del{background:#fff3e0;}
+table.gantt tr.row-priori td.td-act{color:#e65100;font-weight:700;text-align:left !important;}
+table.gantt tr.row-priori td.td-act::before{content:'⚑ ';}
 
 /* FIX 2: fondo gris claro en todas las celdas de día para días normales */
 .td-day{width:24px;height:24px;background:#e8ecf0;vertical-align:middle;padding:0;}
@@ -3072,7 +3080,8 @@ function render(){
       d.d.getDate()===r.fecha.getDate()
     );
 
-    html+='<tr class="'+(isAniv?'row-aniv':'')+'">';
+    var rowCls=isAniv?'row-aniv':(r.priori?'row-priori':'');
+    html+='<tr class="'+rowCls+'">';
     html+='<td class="td-act">'+r.act+'</td>';
     if(isPlazo){
       html+='<td class="td-obs"><span class="plazo-badge">PLAZO</span></td>';
