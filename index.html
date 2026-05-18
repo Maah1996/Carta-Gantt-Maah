@@ -3405,7 +3405,18 @@ function iniciarGanttDelUsuario(){
       if(maxId >= nextId) nextId = maxId + 1;
       rebuildMonthSelect();
       rebuildWeekSelect();
-      render();
+      // Cruzar con agenda para detectar prioritarias (aunque no tengan el flag en Gantt)
+      db.ref('maah_agenda/'+currentUser.id).once('value').then(agSnap=>{
+        const agData=agSnap.val()||{};
+        acts.forEach(a=>{
+          if(a.fromAgenda && a.agendaFecha){
+            const dayActs=agData[a.agendaFecha]||{};
+            const match=Object.values(dayActs).find(ag=>ag&&ag.hora===a.agendaHora&&ag.priori);
+            if(match) a.priori=true; else delete a.priori;
+          }
+        });
+        render();
+      }).catch(()=>render());
     } else {
       // Sin datos en la ruta personal del usuario.
       // Para cualquier admin: intentar recuperar datos del respaldo una sola vez.
