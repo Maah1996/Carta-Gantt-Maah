@@ -2935,12 +2935,21 @@ function render(){
     byMonth = [...normales, ...expandidas].sort((a,b)=>a.fecha-b.fecha);
   } else {
     const targetKey = viewYear+'-'+viewMonth;
+    // Detectar meses extra cuando hay semanas del mes siguiente seleccionadas
+    const extraMonthKeys = new Set();
+    if(selectedWeekKeys && selectedWeekKeys.size > 0){
+      selectedWeekKeys.forEach(wk=>{
+        const p = wk.split('-');
+        const mk = Number(p[0])+'-'+(Number(p[1])-1);
+        if(mk !== targetKey) extraMonthKeys.add(mk);
+      });
+    }
     const normales = acts.filter(a=>{
       const fr = getFrecuencia(a);
       if(fr!=='puntual') return false;
       if(!(a.fecha instanceof Date) || isNaN(a.fecha.getTime())) return false;
       const k = a.fecha.getFullYear()+'-'+a.fecha.getMonth();
-      return k === targetKey;
+      return k === targetKey || extraMonthKeys.has(k);
     });
     const expandidas = [];
     acts.forEach(a=>{
@@ -2968,6 +2977,20 @@ function render(){
         const occ = makeSemanalOcurrencias(a, rIniEff, rFinEff);
         occ.forEach(o=>{ expandidas.push(o); });
       }
+      // Actividades del mes extra (semanas del mes siguiente seleccionadas)
+      extraMonthKeys.forEach(eMK=>{
+        const ep = eMK.split('-');
+        const eYear = Number(ep[0]);
+        const eMonth = Number(ep[1]);
+        if(fr==='anual' && a.mes===eMonth){
+          const occ = makeAnualOcurrencia(a, eYear);
+          if((!fi || occ.fecha >= fi) && (!ft || occ.fecha <= ft)) expandidas.push(occ);
+        } else if(fr==='mensual'){
+          const occ = makeMensualOcurrencia(a, eYear, eMonth);
+          if((!fi || occ.fecha >= fi) && (!ft || occ.fecha <= ft)) expandidas.push(occ);
+        }
+        // semanal ya cubierto por rangoVista()
+      });
     });
     byMonth = [...normales, ...expandidas].sort((a,b)=>a.fecha-b.fecha);
   }
@@ -3098,18 +3121,27 @@ function render(){
       html+='<td class="td-obs"><span class="plazo-badge">PLAZO</span></td>';
     } else if(r.isVirtualAnual){
       const obsTxt = r.obs ? r.obs : '';
-      const fr = getFrecuencia(r);
-      let badge='';
-      if(fr==='anual')        badge='<span class="anual-badge" title="Se repite todos los años">ANUAL</span>';
-      else if(fr==='mensual') badge='<span class="mensual-badge" title="Se repite todos los meses">MENSUAL</span>';
-      else if(fr==='semanal') badge='<span class="semanal-badge" title="Se repite todas las semanas">SEMANAL</span>';
-      // Badge va en una línea separada, debajo del texto, para que se vea más ordenado
-      let cellInner = '';
-      if(obsTxt) cellInner += '<span class="obs-text">'+obsTxt+'</span>';
-      if(badge)  cellInner += '<span class="obs-badge-row">'+badge+'</span>';
-      html+='<td class="td-obs">'+cellInner+'</td>';
+      if(obsTxt.trim().toUpperCase()==='NO'){
+        html+='<td class="td-obs" style="background:#c53030 !important;color:#fff !important;font-weight:700 !important;text-align:center !important;">NO</td>';
+      } else {
+        const fr = getFrecuencia(r);
+        let badge='';
+        if(fr==='anual')        badge='<span class="anual-badge" title="Se repite todos los años">ANUAL</span>';
+        else if(fr==='mensual') badge='<span class="mensual-badge" title="Se repite todos los meses">MENSUAL</span>';
+        else if(fr==='semanal') badge='<span class="semanal-badge" title="Se repite todas las semanas">SEMANAL</span>';
+        // Badge va en una línea separada, debajo del texto, para que se vea más ordenado
+        let cellInner = '';
+        if(obsTxt) cellInner += '<span class="obs-text">'+obsTxt+'</span>';
+        if(badge)  cellInner += '<span class="obs-badge-row">'+badge+'</span>';
+        html+='<td class="td-obs">'+cellInner+'</td>';
+      }
     } else {
-      html+='<td class="td-obs">'+(r.obs||'')+'</td>';
+      const obsVal=(r.obs||'').trim().toUpperCase();
+      if(obsVal==='NO'){
+        html+='<td class="td-obs" style="background:#c53030 !important;color:#fff !important;font-weight:700 !important;text-align:center !important;">NO</td>';
+      } else {
+        html+='<td class="td-obs">'+(r.obs||'')+'</td>';
+      }
     }
     html+='<td class="td-term">'+fmtDate(r.fecha)+'</td>';
     html+='<td class="td-d" style="background:'+col.bg+';color:'+col.fg+';'+(col.hideNum?'border:1px solid #7AB034;':'')+'" title="'+(col.hideNum?'Vencido':dl)+'">'+(col.hideNum?'':dl)+'</td>';
