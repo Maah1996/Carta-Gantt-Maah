@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup – Filtro por Tipo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#eef2f7;}
+
+/* ── HEADER ── */
+.app-header{background:#1a3f6f;color:#fff;padding:9px 20px;display:flex;align-items:center;justify-content:space-between;}
+.app-header h1{font-size:13px;font-weight:700;letter-spacing:.5px;}
+.user-badge{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);padding:3px 12px;border-radius:20px;font-size:11px;font-weight:600;}
+
+/* ── STATS BAR ── */
+.stats-bar{background:#1a3f6f;padding:6px 14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.1);}
+.filter-label{color:rgba(255,255,255,.6);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-right:4px;}
+.stat-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:4px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;min-width:58px;transition:all .15s;}
+.stat-card:hover{background:rgba(255,255,255,.18);}
+.stat-card .val{font-size:15px;font-weight:800;line-height:1.1;color:#fff;}
+.stat-card .lbl{font-size:8px;color:rgba(255,255,255,.6);margin-top:1px;text-transform:uppercase;letter-spacing:.3px;text-align:center;}
+.stat-venc .val{color:#9DCB47;}
+.stat-rojo .val{color:#ff6b6b;}
+.stat-naranja .val{color:#ffa94d;}
+.stat-amarillo .val{color:#ffe066;}
+.stat-aniv .val{color:#ffe082;}
+.stat-divider{width:1px;height:28px;background:rgba(255,255,255,.15);margin:0 2px;}
+
+/* ── NUEVO BOTÓN "POR TIPO" ── */
+.stat-card-tipo{
+  background:rgba(139,92,246,.25);
+  border:1px solid rgba(139,92,246,.5);
+  border-radius:6px;
+  padding:4px 12px;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  min-width:68px;
+  transition:all .15s;
+  position:relative;
+}
+.stat-card-tipo:hover{background:rgba(139,92,246,.45);transform:translateY(-1px);}
+.stat-card-tipo .val{font-size:15px;font-weight:800;line-height:1.1;color:#d8b4fe;}
+.stat-card-tipo .lbl{font-size:8px;color:rgba(216,180,254,.8);margin-top:1px;text-transform:uppercase;letter-spacing:.3px;text-align:center;}
+.stat-card-tipo .new-badge{position:absolute;top:-5px;right:-5px;background:#f59e0b;color:#fff;font-size:7px;font-weight:800;padding:1px 4px;border-radius:8px;letter-spacing:.3px;}
+
+/* ── MODAL OVERLAY ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;}
+.modal-box{background:#fff;border-radius:12px;width:700px;max-width:95vw;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+
+/* header del modal */
+.modal-head{background:#1a3f6f;color:#fff;padding:14px 20px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;}
+.modal-head h3{font-size:14px;font-weight:700;letter-spacing:.3px;}
+.modal-head .close-btn{background:rgba(255,255,255,.15);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+
+/* controles */
+.modal-controls{padding:14px 18px 10px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.ctrl-label{font-size:11px;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:.4px;}
+.tipo-select{font-size:13px;padding:7px 28px 7px 10px;border:1.5px solid #cbd5e0;border-radius:6px;color:#2d3748;font-weight:600;background:#fff;cursor:pointer;min-width:180px;appearance:none;background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%234a5568' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
+.tipo-select:focus{outline:none;border-color:#1a3f6f;}
+.count-badge{background:#1a3f6f;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;}
+.btn-print{background:#0f766e;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;margin-left:auto;}
+.btn-print:hover{background:#0a5240;}
+
+/* tabla resultados */
+.modal-body{overflow-y:auto;flex:1;}
+.res-table{width:100%;border-collapse:collapse;}
+.res-table thead th{background:#f0f4f8;color:#4a5568;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:8px 12px;border-bottom:2px solid #e2e8f0;text-align:left;position:sticky;top:0;}
+.res-table thead th:nth-child(1){width:100px;}
+.res-table thead th:nth-child(2){width:auto;}
+.res-table thead th:nth-child(3){width:80px;}
+.res-table thead th:nth-child(4){width:70px;}
+.res-table tbody tr{border-bottom:1px solid #f0f0f0;transition:background .1s;}
+.res-table tbody tr:hover{background:#f8fafc;}
+.res-table tbody td{padding:9px 12px;font-size:12px;color:#2d3748;vertical-align:middle;}
+.td-fecha{font-weight:700;color:#1a3f6f;white-space:nowrap;}
+.td-act{font-weight:600;}
+.td-flag{color:#e53e3e;font-size:11px;margin-right:4px;}
+.td-obs-no{background:#c53030;color:#fff;font-weight:700;font-size:10px;padding:2px 7px;border-radius:4px;display:inline-block;}
+.td-obs-si{background:#276749;color:#fff;font-weight:700;font-size:10px;padding:2px 7px;border-radius:4px;display:inline-block;}
+.td-obs-txt{color:#718096;font-size:11px;}
+.dias-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;white-space:nowrap;}
+.dias-venc{background:#e53e3e;color:#fff;}
+.dias-ok{background:#276749;color:#fff;}
+.dias-warn{background:#dd6b20;color:#fff;}
+.dias-near{background:#c05621;color:#fff;}
+
+/* footer */
+.modal-foot{padding:10px 18px;border-top:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:0 0 12px 12px;}
+.foot-info{font-size:11px;color:#718096;}
+.foot-info strong{color:#1a3f6f;}
+
+/* ── MOCKUP LABEL ── */
+.mockup-banner{background:#f59e0b;color:#fff;text-align:center;padding:6px;font-size:12px;font-weight:700;letter-spacing:.5px;}
+</style>
+</head>
+<body>
+
+<div class="mockup-banner">⚠️ PREVISUALIZACIÓN — Así quedaría el nuevo módulo "Filtrar por Tipo"</div>
+
+<!-- HEADER -->
+<div class="app-header">
+  <h1>📈 CARTA GANTT MAAH</h1>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <span class="user-badge">👤 ADMIN ★</span>
+    <button style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);color:#fff;padding:3px 10px;border-radius:5px;font-size:10px;cursor:pointer;">↪ Salir</button>
+  </div>
+</div>
+
+<!-- STATS BAR — con el nuevo botón -->
+<div class="stats-bar">
+  <span class="filter-label">Filtrar:</span>
+
+  <div class="stat-card stat-total">
+    <span class="val">20</span>
+    <span class="lbl">Total</span>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat-card stat-venc">
+    <span class="val">16</span>
+    <span class="lbl">Vencidas</span>
+  </div>
+  <div class="stat-card stat-rojo">
+    <span class="val">2</span>
+    <span class="lbl">0–5 días</span>
+  </div>
+  <div class="stat-card stat-naranja">
+    <span class="val">2</span>
+    <span class="lbl">5–10 días</span>
+  </div>
+  <div class="stat-card stat-amarillo">
+    <span class="val">0</span>
+    <span class="lbl">10–365 d</span>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat-card stat-aniv">
+    <span class="val">0</span>
+    <span class="lbl">Aniversarios</span>
+  </div>
+  <div class="stat-divider"></div>
+
+  <!-- ★ NUEVO BOTÓN ★ -->
+  <div class="stat-card-tipo" onclick="document.getElementById('modal-tipo').style.display='flex'">
+    <span class="new-badge">NUEVO</span>
+    <span class="val">🏷️</span>
+    <span class="lbl">Por Tipo</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL FILTRAR POR TIPO
+══════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-tipo">
+  <div class="modal-box">
+
+    <!-- Cabecera -->
+    <div class="modal-head">
+      <h3>🏷️ Filtrar actividades por categoría</h3>
+      <button class="close-btn" onclick="document.getElementById('modal-tipo').style.display='none'">✕</button>
+    </div>
+
+    <!-- Controles: dropdown + contador + imprimir -->
+    <div class="modal-controls">
+      <span class="ctrl-label">Categoría:</span>
+      <select class="tipo-select" id="sel-tipo" onchange="filtrarTipo()">
+        <option value="">— Selecciona un tipo —</option>
+        <option value="revision">Revisión</option>
+        <option value="vco" selected>VCO</option>
+        <option value="entrega">ENTREGA</option>
+        <option value="clases">Clases</option>
+        <option value="otro">Otro</option>
+      </select>
+      <span class="count-badge" id="cnt-badge">4 actividades</span>
+      <button class="btn-print" onclick="alert('🖨️ Se abriría la vista de impresión con estas actividades')">
+        🖨️ Imprimir listado
+      </button>
+    </div>
+
+    <!-- Tabla de resultados -->
+    <div class="modal-body">
+      <table class="res-table">
+        <thead>
+          <tr>
+            <th>Fecha término</th>
+            <th>Actividad</th>
+            <th>OBS</th>
+            <th>Días</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-tipo">
+          <!-- Datos de ejemplo para VCO -->
+          <tr>
+            <td class="td-fecha">27/abr/26</td>
+            <td><span class="td-flag">⚑</span><span class="td-act">DEPTO I, 2DA. REVISIÓN PROCESOS - 14:00</span></td>
+            <td><span class="td-obs-no">NO</span></td>
+            <td><span class="dias-badge dias-venc">VENCIDO</span></td>
+          </tr>
+          <tr>
+            <td class="td-fecha">06/may/26</td>
+            <td><span class="td-flag">⚑</span><span class="td-act">DEPTO IV, 2DA. REVISIÓN PROCESOS - 14:00</span></td>
+            <td><span class="td-obs-no">NO</span></td>
+            <td><span class="dias-badge dias-venc">VENCIDO</span></td>
+          </tr>
+          <tr>
+            <td class="td-fecha">08/may/26</td>
+            <td><span class="td-flag">⚑</span><span class="td-act">DEPTO V, 2DA. REVISIÓN PROCESOS - 11:00</span></td>
+            <td><span class="td-obs-no">NO</span></td>
+            <td><span class="dias-badge dias-venc">VENCIDO</span></td>
+          </tr>
+          <tr>
+            <td class="td-fecha">25/may/26</td>
+            <td><span class="td-flag">⚑</span><span class="td-act">DEPTO I, ENTREGA ARCH. PROCESOS - 14:00</span></td>
+            <td><span class="td-obs-txt">PENDIENTE</span></td>
+            <td><span class="dias-badge dias-near">+3d</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-foot">
+      <span class="foot-info">Mostrando actividades de tipo <strong>VCO</strong> — todas las fechas</span>
+      <span class="foot-info" style="color:#718096;font-size:10px;">Ordenadas por fecha de término ↑</span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Interactividad mínima para el mockup
+function filtrarTipo(){
+  const v = document.getElementById('sel-tipo').value;
+  const labels = {
+    revision:'Revisión', vco:'VCO', entrega:'ENTREGA', clases:'Clases', otro:'Otro', '':'—'
+  };
+  const counts = {revision:8, vco:4, entrega:3, clases:2, otro:5, '':0};
+  document.getElementById('cnt-badge').textContent =
+    v ? (counts[v]||2)+' actividades' : '— elige categoría';
+  const foot = document.querySelector('.foot-info strong');
+  if(foot) foot.textContent = labels[v]||'—';
+}
+</script>
+</body>
+</html>
