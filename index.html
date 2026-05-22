@@ -1858,6 +1858,7 @@ function saveEdit(){
   if(!actTxt||!fv){alert('Complete la descripción y la fecha.');return;}
   const [yr,mo,da]=fv.split('-').map(Number);
   const nuevaFecha=new Date(yr,mo-1,da);
+  const esRecurrente = (editFreq==='semanal'||editFreq==='mensual'||editFreq==='anual');
 
   // Fecha de inicio — aplica a cualquier frecuencia si se ingresó
   let nuevaFechaInicio = null;
