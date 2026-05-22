@@ -92,6 +92,20 @@ select.month-select:focus{outline:none;border-color:#1a3f6f;}
 .tipo-add-modal .hint{font-size:10px;color:#718096;margin-top:8px;text-align:center;}
 .tipo-add-modal .err{color:#c0392b;font-size:11px;margin-top:-6px;margin-bottom:8px;display:none;}
 .tipo-add-modal .err.visible{display:block;}
+.tipo-add-modal .manage-link{font-size:10px;color:#0f766e;cursor:pointer;text-decoration:underline;text-align:center;display:block;margin-top:10px;font-weight:600;}
+/* GESTIONAR TIPOS */
+.tipo-manage-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10000;display:none;align-items:center;justify-content:center;}
+.tipo-manage-overlay.open{display:flex;}
+.tipo-manage-modal{background:#fff;border-radius:10px;padding:20px;width:340px;max-width:92vw;box-shadow:0 12px 40px rgba(0,0,0,.3);max-height:80vh;overflow-y:auto;}
+.tipo-manage-modal h4{font-size:14px;color:#1a3f6f;margin-bottom:12px;font-weight:700;}
+.tipo-manage-row{display:flex;align-items:center;gap:6px;padding:7px 0;border-bottom:1px solid #f0f0f0;}
+.tipo-manage-row:last-child{border-bottom:none;}
+.tipo-manage-label{flex:1;font-size:12px;font-weight:600;color:#2d3748;text-transform:uppercase;}
+.btn-tipo-edit{background:#e0f2fe;border:none;cursor:pointer;font-size:12px;padding:3px 8px;border-radius:4px;color:#0369a1;font-weight:700;}
+.btn-tipo-edit:hover{background:#bae6fd;}
+.btn-tipo-del{background:#fee2e2;border:none;cursor:pointer;font-size:12px;padding:3px 8px;border-radius:4px;color:#c53030;font-weight:700;}
+.btn-tipo-del:hover{background:#fecaca;}
+.tipo-edit-input{flex:1;font-size:12px;padding:4px 7px;border:1px solid #cbd5e0;border-radius:4px;text-transform:uppercase;}
 /* Texto de observación + badge en línea separada (más ordenado) */
 .td-obs .obs-text{display:block;line-height:1.25;}
 .td-obs .obs-badge-row{display:block;margin-top:2px;}
@@ -652,13 +666,27 @@ PERS. 11:45 A 15:00</td><td class="td-obs"><span class="obs-text">SABADOS</span>
 <div class="tipo-add-overlay" id="tipo-add-overlay">
   <div class="tipo-add-modal">
     <h4>Nueva categoría de tipo</h4>
-    <input type="text" id="tipo-add-input" placeholder="Ej: Capacitación, Reunión..." maxlength="30" onkeydown="if(event.key===&#39;Enter&#39;)confirmTipoAdd();">
+    <input type="text" id="tipo-add-input" placeholder="Ej: CAPACITACIÓN, REUNIÓN..." maxlength="30"
+      oninput="this.value=this.value.toUpperCase()"
+      onkeydown="if(event.key==='Enter')confirmTipoAdd();">
     <div class="err" id="tipo-add-err">Esa categoría ya existe.</div>
     <div class="btns">
       <button class="btn-cancel" onclick="closeTipoAddModal()">Cancelar</button>
       <button class="btn-ok" onclick="confirmTipoAdd()">Agregar</button>
     </div>
-    <div class="hint">Las categorías agregadas quedan guardadas para próximas actividades.</div>
+    <div class="hint">Las categorías se guardan en mayúsculas y ordenadas alfabéticamente.</div>
+    <span class="manage-link" id="tipo-manage-link" onclick="openTipoManageModal()" style="display:none;">✏️ Editar o borrar categorías existentes</span>
+  </div>
+</div>
+
+<!-- MODAL GESTIONAR TIPOS -->
+<div class="tipo-manage-overlay" id="tipo-manage-overlay">
+  <div class="tipo-manage-modal">
+    <h4>✏️ Gestionar categorías personalizadas</h4>
+    <div id="tipo-manage-list"></div>
+    <div style="margin-top:14px;">
+      <button style="width:100%;padding:8px;font-size:12px;font-weight:600;border-radius:5px;cursor:pointer;border:1px solid #cbd5e0;background:#fff;color:#4a5568;" onclick="closeTipoManageModal()">Cerrar</button>
+    </div>
   </div>
 </div>
 
@@ -1327,7 +1355,8 @@ function saveTiposCustom(){
   try{ localStorage.setItem(TIPOS_CUSTOM_KEY, JSON.stringify(tiposCustom)); }catch(e){}
 }
 function getAllTipos(){
-  return [...TIPOS_BASE, ...tiposCustom];
+  const sorted = [...tiposCustom].sort((a,b)=>a.label.localeCompare(b.label,'es',{sensitivity:'base'}));
+  return [...TIPOS_BASE, ...sorted];
 }
 function tipoLabel(value){
   const t = getAllTipos().find(x=>x.value===value);
@@ -1341,6 +1370,9 @@ function fillTipoSelect(selectEl, currentValue){
     html += '<option value="'+t.value+'"'+(t.value===currentValue?' selected':'')+'>'+t.label+'</option>';
   });
   html += '<option value="__add__">+ Agregar nueva opción...</option>';
+  if(tiposCustom.length > 0){
+    html += '<option value="__manage__">✏️ Editar / Borrar categorías...</option>';
+  }
   selectEl.innerHTML = html;
   if(currentValue && !all.find(t=>t.value===currentValue)){
     selectEl.value = 'revision';
@@ -1359,6 +1391,12 @@ function onTipoSelectChange(sel, where){
     if(where==='add')  sel.value = cType || 'revision';
     else               sel.value = editType || 'revision';
     openTipoAddModal(where);
+    return;
+  }
+  if(v === '__manage__'){
+    if(where==='add')  sel.value = cType || 'revision';
+    else               sel.value = editType || 'revision';
+    openTipoManageModal();
     return;
   }
   if(where==='add')  cType = v;
@@ -1396,8 +1434,10 @@ function openTipoAddModal(where){
   const ov = document.getElementById('tipo-add-overlay');
   const inp = document.getElementById('tipo-add-input');
   const err = document.getElementById('tipo-add-err');
+  const lnk = document.getElementById('tipo-manage-link');
   if(inp) inp.value = '';
   if(err) err.classList.remove('visible');
+  if(lnk) lnk.style.display = tiposCustom.length > 0 ? 'block' : 'none';
   if(ov) ov.classList.add('open');
   setTimeout(()=>{ if(inp) inp.focus(); }, 50);
 }
@@ -1408,12 +1448,12 @@ function closeTipoAddModal(){
 function confirmTipoAdd(){
   const inp = document.getElementById('tipo-add-input');
   const err = document.getElementById('tipo-add-err');
-  const txt = (inp.value||'').trim();
+  const txt = (inp.value||'').trim().toUpperCase();
   if(!txt){ inp.focus(); return; }
   const value = '_c_' + txt.toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
-  const ya = getAllTipos().some(t=> t.value===value || t.label.toLowerCase()===txt.toLowerCase());
+  const ya = getAllTipos().some(t=> t.value===value || t.label.toUpperCase()===txt);
   if(ya){
     err.textContent = 'Esa categoría ya existe.';
     err.classList.add('visible');
@@ -1430,6 +1470,69 @@ function confirmTipoAdd(){
     const es = document.getElementById('edit-tipo');
     if(es){ es.value = value; editType = value; }
   }
+}
+
+// ── GESTIONAR TIPOS (editar / borrar) ──────────────────────────
+function openTipoManageModal(){
+  closeTipoAddModal();
+  renderTipoManageList();
+  const ov = document.getElementById('tipo-manage-overlay');
+  if(ov) ov.classList.add('open');
+}
+function closeTipoManageModal(){
+  const ov = document.getElementById('tipo-manage-overlay');
+  if(ov) ov.classList.remove('open');
+}
+function renderTipoManageList(){
+  const list = document.getElementById('tipo-manage-list');
+  if(!list) return;
+  if(!tiposCustom.length){
+    list.innerHTML = '<p style="color:#718096;font-size:12px;text-align:center;padding:14px 0;">No hay categorías personalizadas aún.</p>';
+    return;
+  }
+  const sorted = [...tiposCustom].sort((a,b)=>a.label.localeCompare(b.label,'es',{sensitivity:'base'}));
+  list.innerHTML = sorted.map(t=>{
+    const sv = t.value.replace(/'/g,"\\'");
+    return '<div class="tipo-manage-row" id="tipo-row-'+t.value+'">'
+      +'<span class="tipo-manage-label">'+t.label+'</span>'
+      +'<button class="btn-tipo-edit" onclick="startEditTipo(\''+sv+'\')">✏️ Editar</button>'
+      +'<button class="btn-tipo-del" onclick="deleteTipoCustom(\''+sv+'\')">🗑️ Borrar</button>'
+      +'</div>';
+  }).join('');
+}
+function deleteTipoCustom(value){
+  if(!confirm('¿Borrar esta categoría?')) return;
+  tiposCustom = tiposCustom.filter(t=>t.value!==value);
+  saveTiposCustom();
+  renderTipoManageList();
+  refreshAllTipoSelects();
+}
+function startEditTipo(value){
+  const t = tiposCustom.find(x=>x.value===value);
+  if(!t) return;
+  const row = document.getElementById('tipo-row-'+value);
+  if(!row) return;
+  const sv = value.replace(/'/g,"\\'");
+  row.innerHTML = '<input type="text" class="tipo-edit-input" id="tipo-edit-inp-'+value+'"'
+    +' value="'+t.label+'" maxlength="30"'
+    +' oninput="this.value=this.value.toUpperCase()"'
+    +' onkeydown="if(event.key===\'Enter\')confirmEditTipo(\''+sv+'\');if(event.key===\'Escape\')renderTipoManageList();">'
+    +'<button class="btn-tipo-edit" onclick="confirmEditTipo(\''+sv+'\')">✓ OK</button>'
+    +'<button class="btn-tipo-del" onclick="renderTipoManageList()">✗</button>';
+  const inp = document.getElementById('tipo-edit-inp-'+value);
+  if(inp){ inp.focus(); inp.select(); }
+}
+function confirmEditTipo(value){
+  const inp = document.getElementById('tipo-edit-inp-'+value);
+  if(!inp) return;
+  const newLabel = inp.value.trim().toUpperCase();
+  if(!newLabel) return;
+  const t = tiposCustom.find(x=>x.value===value);
+  if(!t) return;
+  t.label = newLabel;
+  saveTiposCustom();
+  renderTipoManageList();
+  refreshAllTipoSelects();
 }
 
 // Compatibilidad con llamadas antiguas
