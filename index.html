@@ -93,6 +93,7 @@ select.month-select:focus{outline:none;border-color:#1a3f6f;}
 /* SELECT estilizado para Tipo y Frecuencia */
 .form-group select.select-tipo,.form-group select.select-freq{appearance:none;-webkit-appearance:none;-moz-appearance:none;background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%234a5568' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:22px;font-weight:600;cursor:pointer;}
 .form-group select.select-tipo option[value="__add__"],.form-group select.select-freq option[value="__add__"]{color:#0f766e;font-weight:700;background:#f0fdf4;}
+.form-group select.select-tipo option[value="__delete__"]{color:#c53030;font-weight:700;background:#fff5f5;}
 /* Bloque de fecha de inicio (resaltado para recurrentes) */
 .fecha-inicio-block{display:none;margin-bottom:8px;padding:8px;background:#f0fdf4;border-left:3px solid #16a34a;border-radius:4px;}
 .fecha-inicio-block.visible{display:block;}
@@ -1382,6 +1383,7 @@ function fillTipoSelect(selectEl, currentValue){
     html += '<option value="'+t.value+'"'+(t.value===currentValue?' selected':'')+'>'+t.label+'</option>';
   });
   html += '<option value="__add__">+ Agregar nueva opción...</option>';
+  if(tiposCustom.length) html += '<option value="__delete__">− Eliminar categoría...</option>';
   selectEl.innerHTML = html;
   if(currentValue && !all.find(t=>t.value===currentValue)){
     selectEl.value = 'revision';
@@ -1400,6 +1402,12 @@ function onTipoSelectChange(sel, where){
     if(where==='add')  sel.value = cType || 'revision';
     else               sel.value = editType || 'revision';
     openTipoAddModal(where);
+    return;
+  }
+  if(v === '__delete__'){
+    if(where==='add')  sel.value = cType || 'revision';
+    else               sel.value = editType || 'revision';
+    openTipoDeleteModal();
     return;
   }
   if(where==='add')  cType = v;
@@ -1466,6 +1474,16 @@ function deleteCustomTipo(value){
   saveTiposCustom();
   renderTipoCustomList();
   refreshAllTipoSelects();
+  if(!tiposCustom.length) closeTipoDeleteModal();
+}
+
+function openTipoDeleteModal(){
+  renderTipoCustomList();
+  const ov = document.getElementById('tipo-add-overlay');
+  if(ov) ov.classList.add('open');
+}
+function closeTipoDeleteModal(){
+  closeTipoAddModal();
 }
 function closeTipoAddModal(){
   const ov = document.getElementById('tipo-add-overlay');
