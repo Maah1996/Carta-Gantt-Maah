@@ -11,6 +11,7 @@
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
 <meta name="theme-color" content="#1a3f6f">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -338,14 +339,14 @@ table.gantt tr.row-priori td.td-act::before{content:'⚑ ';}
     </div>
     <div style="margin-bottom:12px;">
       <label style="display:block;font-size:11px;font-weight:600;color:#4a5568;margin-bottom:4px;">Usuario</label>
-      <select id="login-usuario" style="width:100%;font-size:13px;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;background:#fff;"><option value="">— Selecciona tu usuario —</option><option value="-OqDuWldQ3W-Lp1UPN9_">ADMIN ★</option><option value="-Oqh7ryVVKXE6Iz7ibpi">BB</option></select>
+      <select id="login-usuario" style="width:100%;font-size:13px;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;background:#fff;"><option value="">⏳ Cargando usuarios...</option></select>
     </div>
     <div style="margin-bottom:14px;">
       <label style="display:block;font-size:11px;font-weight:600;color:#4a5568;margin-bottom:4px;">Clave</label>
       <input type="password" id="login-clave" placeholder="••••" maxlength="20" style="width:100%;font-size:14px;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;letter-spacing:2px;text-align:center;" onkeydown="if(event.key===&#39;Enter&#39;)doLogin()">
     </div>
     <div id="login-error" style="display:none;color:#c0392b;font-size:11px;background:#ffebee;border:1px solid #ffcdd2;border-radius:5px;padding:6px 9px;margin-bottom:10px;text-align:center;"></div>
-    <button onclick="doLogin()" style="width:100%;padding:10px;font-size:13px;font-weight:700;background:#1a3f6f;color:#fff;border:none;border-radius:6px;cursor:pointer;">Ingresar a mi Gantt</button>
+    <button id="login-btn" onclick="doLogin()" style="width:100%;padding:10px;font-size:13px;font-weight:700;background:#1a3f6f;color:#fff;border:none;border-radius:6px;cursor:pointer;">Ingresar a mi Gantt</button>
     <p style="font-size:10px;color:#a0aec0;text-align:center;margin-top:12px;line-height:1.5;">Cada usuario tiene su propia carta Gantt privada.<br>Usa la misma clave de la Agenda MAAH.</p>
   </div>
 </div>
@@ -3275,6 +3276,8 @@ let fbOnline = false;
 // Usuario actualmente logueado (se setea desde login)
 let currentUser = null;
 let usuariosCache = []; // Lista cargada desde la agenda
+let pendingAuthUid = null; // Auth UID recibido antes de que usuariosCache termine de cargar
+let usuariosCargados = false;
 // Admin: seguimiento de qué usuario se está viendo
 let viewingUserId = null;
 let viewingUserName = null;
@@ -3297,6 +3300,10 @@ function initFirebase(){
       updateStatusBadge(fbOnline);
     });
 
+    // Iniciar listener de auth ANTES de cargar usuarios
+    // (onAuthStateChanged puede disparar antes que el fetch de usuarios — se maneja con pendingAuthUid)
+    initAuth();
+
     // Cargar lista de usuarios de la AGENDA (compartida)
     cargarUsuariosAgenda();
   }catch(e){
@@ -3316,15 +3323,17 @@ function cargarUsuariosAgenda(){
     const data=snap.val();
     sel.disabled=false;
     if(!data){
-      sel.innerHTML='<option value="">Sin usuarios registrados en la Agenda.</option>';
-      bootstrapSession(); // igual intentamos restaurar sesión
+      sel.innerHTML='<option value="">Sin usuarios registrados.</option>';
+      showLoginOverlay();
       return;
     }
+    // Cargamos sin 'pass' — la autenticación la maneja Firebase Auth
     usuariosCache=Object.entries(data).map(([id,u])=>({
       id,
-      nombre: u.nombre||id,
-      pass:   u.pass!=null ? String(u.pass).trim() : '',
-      rol:    u.rol||'user'
+      nombre:  u.nombre||id,
+      rol:     u.rol||'user',
+      email:   u.email||'',
+      authUid: u.authUid||''
     })).sort((a,b)=>a.nombre.localeCompare(b.nombre));
 
     sel.innerHTML='<option value="">— Selecciona tu usuario —</option>'+
@@ -3332,18 +3341,72 @@ function cargarUsuariosAgenda(){
         '<option value="'+u.id+'">'+u.nombre+(u.rol==='admin'?' ★':'')+'</option>'
       ).join('');
 
-    // CLAVE: solo AHORA que los usuarios cargaron, intentar restaurar sesión
-    bootstrapSession();
+    usuariosCargados = true;
+
+    // Si Firebase Auth ya disparó onAuthStateChanged antes de que cargaran los usuarios
+    if(pendingAuthUid){
+      procesarAuthUser(pendingAuthUid);
+      pendingAuthUid = null;
+    } else {
+      // Si no hay sesión activa, mostrar login
+      const authUser = firebase.auth().currentUser;
+      if(!authUser) showLoginOverlay();
+    }
 
   }, err=>{
     console.error('Error cargando usuarios:', err);
     sel.disabled=false;
-    sel.innerHTML='<option value="">⚠ Error de conexion</option>';
+    sel.innerHTML='<option value="">⚠ Error de conexión</option>';
     const errBox=document.getElementById('login-error');
-    errBox.textContent='No se pudo cargar usuarios. Verifica tu conexion y recarga la pagina.';
+    errBox.textContent='No se pudo cargar usuarios. Verifica tu conexión y recarga la página.';
     errBox.style.display='block';
-    showLoginOverlay(); // mostrar login de todas formas
+    showLoginOverlay();
   });
+}
+
+// ── FIREBASE AUTH ────────────────────────────────────────────
+function initAuth(){
+  firebase.auth().onAuthStateChanged(authUser=>{
+    if(authUser){
+      // Usuario autenticado: recuperar perfil del cache
+      if(usuariosCargados){
+        procesarAuthUser(authUser.uid);
+      } else {
+        // Cache aún cargando — guardar uid para cuando termine
+        pendingAuthUid = authUser.uid;
+      }
+    } else {
+      // Sin sesión: mostrar login (solo si la app ya estaba cargada)
+      if(usuariosCargados && !currentUser){
+        showLoginOverlay();
+      }
+    }
+  });
+}
+
+function procesarAuthUser(authUid){
+  const u = usuariosCache.find(x => x.authUid === authUid);
+  if(!u){
+    // uid autenticado pero sin perfil en DB — cerrar sesión
+    console.warn('[Auth] UID sin perfil en maah_usuarios:', authUid);
+    firebase.auth().signOut();
+    return;
+  }
+  // Verificar permiso de Gantt (admin siempre puede)
+  if(u.rol !== 'admin'){
+    const tienePermiso = u.permisos && u.permisos.gantt === true;
+    if(!tienePermiso){
+      alert('Tu cuenta no tiene acceso al servicio Gantt.\nSolicita la activación al administrador.');
+      firebase.auth().signOut();
+      return;
+    }
+  }
+  currentUser = u;
+  hideLoginOverlay();
+  // Restaurar estado del botón login por si estaba bloqueado
+  const btn = document.getElementById('login-btn');
+  if(btn){ btn.textContent='Ingresar a mi Gantt'; btn.disabled=false; }
+  iniciarGanttDelUsuario();
 }
 
 function showLoginOverlay(){
@@ -3354,50 +3417,56 @@ function hideLoginOverlay(){
 }
 
 function doLogin(){
-  const userId=document.getElementById('login-usuario').value;
-  const clave=document.getElementById('login-clave').value.trim();
-  const errBox=document.getElementById('login-error');
-  errBox.style.display='none';
+  const userId  = document.getElementById('login-usuario').value;
+  const clave   = document.getElementById('login-clave').value.trim();
+  const errBox  = document.getElementById('login-error');
+  const btn     = document.getElementById('login-btn');
+  errBox.style.display = 'none';
 
-  if(!userId){ errBox.textContent='Selecciona un usuario.';errBox.style.display='block';return; }
-  if(!clave){ errBox.textContent='Ingresa tu clave.';errBox.style.display='block';return; }
-
-  // Si los usuarios aún no cargaron desde Firebase, esperar
+  if(!userId){ errBox.textContent='Selecciona un usuario.'; errBox.style.display='block'; return; }
+  if(!clave){  errBox.textContent='Ingresa tu clave.';       errBox.style.display='block'; return; }
   if(!usuariosCache.length){
     errBox.textContent='Aún cargando usuarios, intenta en un momento.';
-    errBox.style.display='block';
-    return;
+    errBox.style.display='block'; return;
   }
 
-  const u=usuariosCache.find(x=>x.id===userId);
-  if(!u){ errBox.textContent='Usuario no encontrado. Recarga la página.';errBox.style.display='block';return; }
+  const u = usuariosCache.find(x=>x.id===userId);
+  if(!u){ errBox.textContent='Usuario no encontrado. Recarga la página.'; errBox.style.display='block'; return; }
 
-  // Comparar claves: trim en ambos lados, siempre como string
-  const passGuardada = String(u.pass||'').trim();
-  const passIngresada = String(clave).trim();
-
-  if(passGuardada !== passIngresada){
-    errBox.textContent='Clave incorrecta. Verifica y vuelve a intentar.';
-    errBox.style.display='block';
-    document.getElementById('login-clave').value='';
-    document.getElementById('login-clave').focus();
-    return;
+  if(!u.email){
+    errBox.textContent='Este usuario no tiene email configurado. Contacta al administrador.';
+    errBox.style.display='block'; return;
   }
 
-  // Login OK
-  currentUser=u;
-  try{ sessionStorage.setItem('gantt_user', JSON.stringify({id:u.id,nombre:u.nombre,pass:u.pass,rol:u.rol})); }catch(e){}
-  iniciarGanttDelUsuario();
+  // Mostrar estado de carga
+  btn.textContent='⏳ Verificando...';
+  btn.disabled=true;
+
+  firebase.auth().signInWithEmailAndPassword(u.email, clave)
+    .then(()=>{
+      // onAuthStateChanged manejará el resto — nada que hacer aquí
+    })
+    .catch(err=>{
+      btn.textContent='Ingresar a mi Gantt';
+      btn.disabled=false;
+      document.getElementById('login-clave').value='';
+      document.getElementById('login-clave').focus();
+      const msgs={
+        'auth/wrong-password':         'Clave incorrecta. Verifica y vuelve a intentar.',
+        'auth/invalid-credential':     'Clave incorrecta. Verifica y vuelve a intentar.',
+        'auth/too-many-requests':      'Demasiados intentos fallidos. Espera unos minutos.',
+        'auth/user-not-found':         'Usuario no configurado en el sistema. Contacta al administrador.',
+        'auth/user-disabled':          'Esta cuenta fue desactivada. Contacta al administrador.',
+        'auth/network-request-failed': 'Sin conexión. Verifica tu red e intenta nuevamente.'
+      };
+      errBox.textContent = msgs[err.code] || 'Error al ingresar ('+err.code+'). Intenta nuevamente.';
+      errBox.style.display='block';
+    });
 }
 
 function doLogout(){
-  try{ sessionStorage.removeItem('gantt_user'); }catch(e){}
-  currentUser=null;
-  // Limpiar listeners y estado
   if(dbRef){ try{ dbRef.off(); }catch(e){} }
-  acts=[];
-  // Recargar para empezar de cero
-  location.reload();
+  firebase.auth().signOut().finally(()=>{ location.reload(); });
 }
 
 function iniciarGanttDelUsuario(){
@@ -3767,76 +3836,6 @@ function setTipoFilter(tipoValue){
   render();
 }
 
-// Restaurar sesión — se llama SOLO cuando usuariosCache ya está cargado
-function intentarRestaurarSesion(){
-  try{
-    // ── SSO desde sistema MAAH ──
-    // Si el usuario hizo clic en "Abrir Carta Gantt" desde el sistema MAAH,
-    // este último dejó un ticket de sesión en localStorage. Si existe y es válido,
-    // lo usamos directo y no pedimos clave.
-    const ssoRaw = localStorage.getItem('maah_session');
-    if(ssoRaw){
-      try{
-        const sso = JSON.parse(ssoRaw);
-        // Validar que el ticket no haya expirado (válido 30 minutos)
-        const ahora = Date.now();
-        if(sso && sso.userId && sso.expira && ahora < sso.expira){
-          const vivoSSO = usuariosCache.find(x => x.id === sso.userId);
-          if(vivoSSO){
-            // Verificar permiso de Gantt (admin siempre puede)
-            const tienePermiso = (vivoSSO.rol === 'admin') ||
-                                 (vivoSSO.permisos && vivoSSO.permisos.gantt === true);
-            if(!tienePermiso){
-              alert('Tu cuenta no tiene acceso al servicio Gantt.\n\nSolicita la activación al administrador.');
-              localStorage.removeItem('maah_session');
-              return false;
-            }
-            // Login OK vía SSO
-            currentUser = vivoSSO;
-            try{ sessionStorage.setItem('gantt_user', JSON.stringify({id:vivoSSO.id,nombre:vivoSSO.nombre,pass:vivoSSO.pass,rol:vivoSSO.rol})); }catch(e){}
-            iniciarGanttDelUsuario();
-            return true;
-          }
-        }
-      }catch(eSso){
-        console.warn('[MAAH] Ticket SSO inválido, ignorando.', eSso);
-      }
-    }
-
-    // ── Restauración normal por sessionStorage ──
-    const raw=sessionStorage.getItem('gantt_user');
-    if(!raw) return false;
-    const u=JSON.parse(raw);
-    if(!u||!u.id) return false;
-    // Siempre revalidar contra usuariosCache (ya está cargado al llegar aquí)
-    const vivo=usuariosCache.find(x=>x.id===u.id);
-    if(!vivo){
-      sessionStorage.removeItem('gantt_user');
-      return false;
-    }
-    // Verificar que la clave sigue siendo correcta
-    if(String(vivo.pass||'').trim() !== String(u.pass||'').trim()){
-      sessionStorage.removeItem('gantt_user');
-      return false;
-    }
-    // Verificar permiso de Gantt para usuarios no-admin
-    if(vivo.rol !== 'admin'){
-      const tienePermiso = vivo.permisos && vivo.permisos.gantt === true;
-      if(!tienePermiso){
-        sessionStorage.removeItem('gantt_user');
-        alert('Tu cuenta ya no tiene acceso al servicio Gantt.');
-        return false;
-      }
-    }
-    currentUser=vivo;
-    iniciarGanttDelUsuario();
-    return true;
-  }catch(e){
-    sessionStorage.removeItem('gantt_user');
-    return false;
-  }
-}
-
 function updateStatusBadge(online){
   const b = document.getElementById('fb-status');
   if(!b) return;
@@ -4092,21 +4091,6 @@ document.addEventListener('click', function(){
 
 // Inicializar firebase y cargar usuarios; mostrar login (o restaurar sesión)
 initFirebase();
-
-// bootstrapSession: se llama desde cargarUsuariosAgenda cuando los usuarios ya cargaron.
-// NO usa setInterval — se ejecuta síncronamente una vez que usuariosCache está listo.
-function bootstrapSession(){
-  if(currentUser) return; // ya logueado (evitar doble ejecución)
-  const restaurada = intentarRestaurarSesion();
-  if(!restaurada){
-    showLoginOverlay();
-    setTimeout(()=>{
-      const cl = document.getElementById('login-clave');
-      if(cl) cl.focus();
-    }, 150);
-  }
-}
-// NO llamar bootstrapSession aquí — se llama desde cargarUsuariosAgenda al terminar
 
 // Inicialización extra: cargar tipos personalizados y poblar selects de Tipo
 loadTiposCustom();
