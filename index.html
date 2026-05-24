@@ -3449,11 +3449,13 @@ function doLogin(){
 
   // Email sintético — el usuario nunca lo ve
   const syntheticEmail = userId.toLowerCase() + '@maah.app';
+  // Sufijo fijo para cumplir mínimo de Firebase (6 chars) sin que el usuario lo sepa
+  const fbPass = clave + '@@maah';
 
   btn.textContent='⏳ Verificando...';
   btn.disabled=true;
 
-  firebase.auth().signInWithEmailAndPassword(syntheticEmail, clave)
+  firebase.auth().signInWithEmailAndPassword(syntheticEmail, fbPass)
     .then(()=>{ /* onAuthStateChanged maneja el resto */ })
     .catch(err=>{
       // Primer login: usuario aún no existe en Firebase Auth → verificar clave en DB y auto-registrar
@@ -3461,7 +3463,7 @@ function doLogin(){
         db.ref('maah_usuarios/'+userId+'/pass').once('value', snap=>{
           const passDB = String(snap.val()||'').trim();
           if(passDB && passDB === clave){
-            firebase.auth().createUserWithEmailAndPassword(syntheticEmail, clave)
+            firebase.auth().createUserWithEmailAndPassword(syntheticEmail, fbPass)
               .then(()=>{ /* onAuthStateChanged maneja el resto */ })
               .catch(createErr=>{
                 btn.textContent='Ingresar a mi Gantt'; btn.disabled=false;
