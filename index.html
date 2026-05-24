@@ -684,14 +684,19 @@ PERS. 11:45 A 15:00</td><td class="td-obs"><span class="obs-text">SABADOS</span>
   </div>
 </div>
 
-<!-- MODAL PARA AGREGAR NUEVA CATEGORÍA DE TIPO -->
+<!-- MODAL PARA AGREGAR / ELIMINAR CATEGORÍA DE TIPO -->
 <div class="tipo-add-overlay" id="tipo-add-overlay">
   <div class="tipo-add-modal">
-    <h4>Nueva categoría de tipo</h4>
+    <h4>Gestionar categorías de tipo</h4>
+
+    <!-- Lista de categorías custom para eliminar -->
+    <div id="tipo-custom-list" style="margin-bottom:10px;"></div>
+
+    <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Agregar nueva</div>
     <input type="text" id="tipo-add-input" placeholder="Ej: Capacitación, Reunión..." maxlength="30" onkeydown="if(event.key===&#39;Enter&#39;)confirmTipoAdd();">
     <div class="err" id="tipo-add-err">Esa categoría ya existe.</div>
     <div class="btns">
-      <button class="btn-cancel" onclick="closeTipoAddModal()">Cancelar</button>
+      <button class="btn-cancel" onclick="closeTipoAddModal()">Cerrar</button>
       <button class="btn-ok" onclick="confirmTipoAdd()">Agregar</button>
     </div>
     <div class="hint">Las categorías agregadas quedan guardadas para próximas actividades.</div>
@@ -1434,8 +1439,33 @@ function openTipoAddModal(where){
   const err = document.getElementById('tipo-add-err');
   if(inp) inp.value = '';
   if(err) err.classList.remove('visible');
+  renderTipoCustomList();
   if(ov) ov.classList.add('open');
   setTimeout(()=>{ if(inp) inp.focus(); }, 50);
+}
+
+function renderTipoCustomList(){
+  const container = document.getElementById('tipo-custom-list');
+  if(!container) return;
+  if(!tiposCustom.length){
+    container.innerHTML = '';
+    return;
+  }
+  container.innerHTML =
+    '<div style="font-size:11px;color:#888;margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Categorías personalizadas</div>' +
+    tiposCustom.map(t=>
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:#f1f5f9;border-radius:5px;margin-bottom:4px;font-size:13px;">' +
+        '<span>' + t.label + '</span>' +
+        '<button onclick="deleteCustomTipo(\'' + t.value + '\')" style="background:#e53e3e;color:#fff;border:none;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;">✕ Eliminar</button>' +
+      '</div>'
+    ).join('');
+}
+
+function deleteCustomTipo(value){
+  tiposCustom = tiposCustom.filter(t => t.value !== value);
+  saveTiposCustom();
+  renderTipoCustomList();
+  refreshAllTipoSelects();
 }
 function closeTipoAddModal(){
   const ov = document.getElementById('tipo-add-overlay');
