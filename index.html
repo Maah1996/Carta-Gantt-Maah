@@ -46,6 +46,27 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#eef2f7;min-height:100vh
 .stat-divider{width:1px;height:30px;background:rgba(255,255,255,.15);margin:0 2px;}
 .filter-clear{font-size:10px;color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:2px 8px;cursor:pointer;align-self:center;}
 .filter-clear:hover{background:rgba(255,255,255,.2);}
+/* ── POR TIPO filter ── */
+.stat-tipo-wrap{position:relative;display:inline-flex;align-items:center;}
+.stat-tipo-btn{background:rgba(113,63,135,.3);border:1px solid rgba(171,71,188,.4);border-radius:14px;padding:3px 10px;cursor:pointer;font-size:9px;font-weight:700;color:#ce93d8;text-transform:uppercase;letter-spacing:.3px;display:inline-flex;align-items:center;gap:3px;transition:all .15s;white-space:nowrap;}
+.stat-tipo-btn:hover,.stat-tipo-btn.active{background:rgba(113,63,135,.65);color:#fff;border-color:#ab47bc;}
+#tipo-filter-dropdown{display:none;position:absolute;top:calc(100% + 5px);left:0;background:#1a2a4a;border:1px solid rgba(255,255,255,.18);border-radius:7px;box-shadow:0 8px 24px rgba(0,0,0,.45);min-width:170px;z-index:9001;overflow:hidden;}
+#tipo-filter-dropdown.open{display:block;}
+.tipo-filter-item{padding:7px 14px;font-size:11px;color:#cbd5e0;cursor:pointer;transition:background .12s;}
+.tipo-filter-item:hover{background:rgba(255,255,255,.1);color:#fff;}
+.tipo-filter-item.active{color:#ce93d8;font-weight:700;}
+/* ── Admin user chips ── */
+.stat-divider-v{width:1px;background:rgba(255,255,255,.22);height:22px;align-self:center;margin:0 3px;}
+.admin-user-chip{background:rgba(21,101,192,.25);border:1px solid rgba(66,165,245,.35);border-radius:14px;padding:3px 11px;cursor:pointer;transition:all .15s;font-size:9px;font-weight:700;color:#90caf9;text-transform:uppercase;letter-spacing:.3px;display:inline-flex;align-items:center;gap:3px;white-space:nowrap;}
+.admin-user-chip:hover{background:rgba(21,101,192,.5);transform:translateY(-1px);}
+.admin-user-chip.viewing{background:rgba(21,101,192,.8);color:#fff;border-color:#42a5f5;outline:2px solid #42a5f5;}
+#admin-users-wrap{display:none;align-items:center;gap:4px;}
+#admin-users-wrap.visible{display:inline-flex;}
+/* ── Admin viendo otra Gantt ── */
+#admin-back-banner{display:none;background:#0d3b1e;border-bottom:2px solid #2e7d32;padding:5px 20px;align-items:center;gap:12px;font-size:11px;color:#a5d6a7;}
+#admin-back-banner.visible{display:flex;}
+#admin-back-btn{background:#2e7d32;border:none;color:#fff;font-weight:700;font-size:11px;padding:5px 14px;border-radius:5px;cursor:pointer;transition:background .15s;}
+#admin-back-btn:hover{background:#388e3c;}
 
 /* ── TOOLBAR ── */
 .toolbar{background:#fff;border-bottom:1px solid #dde3ed;padding:7px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
@@ -92,59 +113,6 @@ select.month-select:focus{outline:none;border-color:#1a3f6f;}
 .tipo-add-modal .hint{font-size:10px;color:#718096;margin-top:8px;text-align:center;}
 .tipo-add-modal .err{color:#c0392b;font-size:11px;margin-top:-6px;margin-bottom:8px;display:none;}
 .tipo-add-modal .err.visible{display:block;}
-.tipo-add-modal .manage-link{font-size:10px;color:#0f766e;cursor:pointer;text-decoration:underline;text-align:center;display:block;margin-top:10px;font-weight:600;}
-/* GESTIONAR TIPOS */
-.tipo-manage-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10000;display:none;align-items:center;justify-content:center;}
-.tipo-manage-overlay.open{display:flex;}
-.tipo-manage-modal{background:#fff;border-radius:10px;padding:20px;width:340px;max-width:92vw;box-shadow:0 12px 40px rgba(0,0,0,.3);max-height:80vh;overflow-y:auto;}
-.tipo-manage-modal h4{font-size:14px;color:#1a3f6f;margin-bottom:12px;font-weight:700;}
-.tipo-manage-row{display:flex;align-items:center;gap:6px;padding:7px 0;border-bottom:1px solid #f0f0f0;}
-.tipo-manage-row:last-child{border-bottom:none;}
-.tipo-manage-label{flex:1;font-size:12px;font-weight:600;color:#2d3748;text-transform:uppercase;}
-.btn-tipo-edit{background:#e0f2fe;border:none;cursor:pointer;font-size:12px;padding:3px 8px;border-radius:4px;color:#0369a1;font-weight:700;}
-.btn-tipo-edit:hover{background:#bae6fd;}
-.btn-tipo-del{background:#fee2e2;border:none;cursor:pointer;font-size:12px;padding:3px 8px;border-radius:4px;color:#c53030;font-weight:700;}
-.btn-tipo-del:hover{background:#fecaca;}
-.tipo-edit-input{flex:1;font-size:12px;padding:4px 7px;border:1px solid #cbd5e0;border-radius:4px;text-transform:uppercase;}
-/* ── FILTRO POR TIPO ── */
-.stat-card-tipo{background:rgba(139,92,246,.22);border:1px solid rgba(139,92,246,.45);border-radius:6px;padding:4px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;min-width:62px;transition:all .15s;}
-.stat-card-tipo:hover{background:rgba(139,92,246,.4);transform:translateY(-1px);}
-.stat-card-tipo .val{font-size:15px;font-weight:800;line-height:1.1;color:#d8b4fe;}
-.stat-card-tipo .lbl{font-size:8px;color:rgba(216,180,254,.8);margin-top:1px;text-transform:uppercase;letter-spacing:.3px;text-align:center;}
-.ft-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9998;display:none;align-items:center;justify-content:center;}
-.ft-overlay.open{display:flex;}
-.ft-box{background:#fff;border-radius:12px;width:720px;max-width:96vw;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35);}
-.ft-head{background:#1a3f6f;color:#fff;padding:13px 18px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;}
-.ft-head h3{font-size:13px;font-weight:700;letter-spacing:.3px;}
-.ft-close{background:rgba(255,255,255,.15);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
-.ft-ctrl{padding:12px 16px 10px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.ft-ctrl-label{font-size:10px;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:.4px;}
-.ft-select{font-size:13px;padding:6px 26px 6px 9px;border:1.5px solid #cbd5e0;border-radius:6px;color:#2d3748;font-weight:600;background:#fff;cursor:pointer;min-width:170px;appearance:none;background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%234a5568' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
-.ft-select:focus{outline:none;border-color:#1a3f6f;}
-.ft-cnt-badge{background:#1a3f6f;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;white-space:nowrap;}
-.ft-btn{border:none;border-radius:6px;padding:6px 13px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;}
-.ft-btn-print{background:#0f766e;color:#fff;}.ft-btn-print:hover{background:#0a5240;}
-.ft-btn-send{background:#1a3f6f;color:#fff;}.ft-btn-send:hover{background:#142e51;}
-.ft-body{overflow-y:auto;flex:1;}
-.ft-table{width:100%;border-collapse:collapse;}
-.ft-table thead th{background:#f0f4f8;color:#4a5568;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:7px 11px;border-bottom:2px solid #e2e8f0;text-align:left;position:sticky;top:0;}
-.ft-table tbody tr{border-bottom:1px solid #f0f0f0;transition:background .1s;}
-.ft-table tbody tr:hover{background:#f8fafc;}
-.ft-table tbody td{padding:8px 11px;font-size:12px;color:#2d3748;vertical-align:middle;}
-.ft-td-fecha{font-weight:700;color:#1a3f6f;white-space:nowrap;}
-.ft-td-act{font-weight:600;}
-.ft-td-flag{color:#e53e3e;font-size:11px;margin-right:3px;}
-.ft-obs-no{background:#c53030;color:#fff;font-weight:700;font-size:10px;padding:2px 7px;border-radius:4px;display:inline-block;}
-.ft-obs-si{color:#718096;font-size:11px;}
-.ft-dias{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;white-space:nowrap;}
-.ft-dias-venc{background:#c53030;color:#fff;}
-.ft-dias-rojo{background:#e53e3e;color:#fff;}
-.ft-dias-naranja{background:#dd6b20;color:#fff;}
-.ft-dias-ok{background:#276749;color:#fff;}
-.ft-foot{padding:9px 16px;border-top:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:0 0 12px 12px;}
-.ft-foot-info{font-size:11px;color:#718096;}
-.ft-foot-info strong{color:#1a3f6f;}
-.ft-empty{text-align:center;padding:28px;color:#a0aec0;font-size:13px;}
 /* Texto de observación + badge en línea separada (más ordenado) */
 .td-obs .obs-text{display:block;line-height:1.25;}
 .td-obs .obs-badge-row{display:block;margin-top:2px;}
@@ -427,12 +395,21 @@ table.gantt tr.row-priori td.td-act::before{content:'⚑ ';}
     <span class="val" id="s-anivs">5</span>
     <span class="lbl">Aniversarios</span>
   </div>
-  <div class="stat-divider"></div>
-  <div class="stat-card-tipo" onclick="openFiltroTipoModal()" title="Filtrar actividades por categoría">
-    <span class="val">🏷️</span>
-    <span class="lbl">Por Tipo</span>
+  <div class="stat-divider-v"></div>
+  <!-- Filtro POR TIPO -->
+  <div class="stat-tipo-wrap" id="stat-tipo-wrap">
+    <button class="stat-tipo-btn" id="stat-tipo-btn" onclick="toggleTipoFilterDropdown(event)" title="Filtrar por tipo de actividad">🏷️ POR TIPO <span style="font-size:8px;">▾</span></button>
+    <div id="tipo-filter-dropdown"></div>
   </div>
+  <!-- Admin: chips de otros usuarios (solo para admin) -->
+  <div id="admin-users-wrap"></div>
   <button class="filter-clear" id="filter-clear-btn" onclick="setFilter(&#39;all&#39;)" style="display: none;">✕ Quitar filtro</button>
+</div>
+
+<!-- ══ BANNER ADMIN VIENDO OTRA GANTT ══ -->
+<div id="admin-back-banner">
+  <span>👁 VIENDO GANTT DE: <strong id="admin-back-name">—</strong></span>
+  <button id="admin-back-btn" onclick="adminVolverAMiGantt()">← Volver a mi Gantt</button>
 </div>
 
 <!-- ══ TOOLBAR ══ -->
@@ -710,65 +687,13 @@ PERS. 11:45 A 15:00</td><td class="td-obs"><span class="obs-text">SABADOS</span>
 <div class="tipo-add-overlay" id="tipo-add-overlay">
   <div class="tipo-add-modal">
     <h4>Nueva categoría de tipo</h4>
-    <input type="text" id="tipo-add-input" placeholder="Ej: CAPACITACIÓN, REUNIÓN..." maxlength="30"
-      oninput="this.value=this.value.toUpperCase()"
-      onkeydown="if(event.key==='Enter')confirmTipoAdd();">
+    <input type="text" id="tipo-add-input" placeholder="Ej: Capacitación, Reunión..." maxlength="30" onkeydown="if(event.key===&#39;Enter&#39;)confirmTipoAdd();">
     <div class="err" id="tipo-add-err">Esa categoría ya existe.</div>
     <div class="btns">
       <button class="btn-cancel" onclick="closeTipoAddModal()">Cancelar</button>
       <button class="btn-ok" onclick="confirmTipoAdd()">Agregar</button>
     </div>
-    <div class="hint">Las categorías se guardan en mayúsculas y ordenadas alfabéticamente.</div>
-    <span class="manage-link" id="tipo-manage-link" onclick="openTipoManageModal()" style="display:none;">✏️ Editar o borrar categorías existentes</span>
-  </div>
-</div>
-
-<!-- MODAL GESTIONAR TIPOS -->
-<div class="tipo-manage-overlay" id="tipo-manage-overlay">
-  <div class="tipo-manage-modal">
-    <h4>✏️ Gestionar categorías personalizadas</h4>
-    <div id="tipo-manage-list"></div>
-    <div style="margin-top:14px;">
-      <button style="width:100%;padding:8px;font-size:12px;font-weight:600;border-radius:5px;cursor:pointer;border:1px solid #cbd5e0;background:#fff;color:#4a5568;" onclick="closeTipoManageModal()">Cerrar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL FILTRO POR TIPO -->
-<div class="ft-overlay" id="ft-overlay">
-  <div class="ft-box">
-    <div class="ft-head">
-      <h3>🏷️ Filtrar actividades por categoría</h3>
-      <button class="ft-close" onclick="closeFiltroTipoModal()">✕</button>
-    </div>
-    <div class="ft-ctrl">
-      <span class="ft-ctrl-label">Categoría:</span>
-      <select class="ft-select" id="ft-select" onchange="onFiltroTipoChange()">
-        <option value="">— Selecciona una categoría —</option>
-      </select>
-      <span class="ft-cnt-badge" id="ft-cnt">0 actividades</span>
-      <button class="ft-btn ft-btn-print" onclick="imprimirListadoTipo()">🖨️ Imprimir</button>
-      <button class="ft-btn ft-btn-send" onclick="enviarListadoTipo()">📤 Enviar</button>
-    </div>
-    <div class="ft-body">
-      <table class="ft-table">
-        <thead>
-          <tr>
-            <th style="width:110px;">Fecha término</th>
-            <th>Actividad</th>
-            <th style="width:90px;">OBS</th>
-            <th style="width:80px;">Días</th>
-          </tr>
-        </thead>
-        <tbody id="ft-tbody">
-          <tr><td colspan="4" class="ft-empty">Selecciona una categoría para ver las actividades</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="ft-foot">
-      <span class="ft-foot-info">Categoría: <strong id="ft-foot-label">—</strong></span>
-      <span class="ft-foot-info" style="font-size:10px;">Ordenadas por fecha de término ↑</span>
-    </div>
+    <div class="hint">Las categorías agregadas quedan guardadas para próximas actividades.</div>
   </div>
 </div>
 
@@ -887,6 +812,7 @@ function filterGroup(diff, isAniv){
 }
 // Función separada para el filtro 'aniv' (solo por tipo)
 function matchesFilter(a, filterKey){
+  if(currentTipoFilter !== null && a.type !== currentTipoFilter) return false;
   if(filterKey==='all') return true;
   if(filterKey==='aniv') return a.type==='aniversario';
   const diff=diasRest(a.fecha);
@@ -1437,8 +1363,7 @@ function saveTiposCustom(){
   try{ localStorage.setItem(TIPOS_CUSTOM_KEY, JSON.stringify(tiposCustom)); }catch(e){}
 }
 function getAllTipos(){
-  const sorted = [...tiposCustom].sort((a,b)=>a.label.localeCompare(b.label,'es',{sensitivity:'base'}));
-  return [...TIPOS_BASE, ...sorted];
+  return [...TIPOS_BASE, ...tiposCustom];
 }
 function tipoLabel(value){
   const t = getAllTipos().find(x=>x.value===value);
@@ -1452,9 +1377,6 @@ function fillTipoSelect(selectEl, currentValue){
     html += '<option value="'+t.value+'"'+(t.value===currentValue?' selected':'')+'>'+t.label+'</option>';
   });
   html += '<option value="__add__">+ Agregar nueva opción...</option>';
-  if(tiposCustom.length > 0){
-    html += '<option value="__manage__">✏️ Editar / Borrar categorías...</option>';
-  }
   selectEl.innerHTML = html;
   if(currentValue && !all.find(t=>t.value===currentValue)){
     selectEl.value = 'revision';
@@ -1467,139 +1389,12 @@ function refreshAllTipoSelects(){
   if(eSel) fillTipoSelect(eSel, eSel.value || editType);
 }
 
-// ── FILTRO POR TIPO ──────────────────────────────────────────
-function openFiltroTipoModal(){
-  const sel = document.getElementById('ft-select');
-  if(!sel) return;
-  const allTipos = getAllTipos();
-  let html = '<option value="">— Selecciona una categoría —</option>';
-  allTipos.forEach(t=>{
-    const count = acts.filter(a=>a.type===t.value).length;
-    if(count>0) html += '<option value="'+t.value+'">'+t.label+' ('+count+')</option>';
-  });
-  sel.innerHTML = html;
-  sel.value = '';
-  document.getElementById('ft-cnt').textContent = '0 actividades';
-  document.getElementById('ft-foot-label').textContent = '—';
-  document.getElementById('ft-tbody').innerHTML = '<tr><td colspan="4" class="ft-empty">Selecciona una categoría para ver las actividades</td></tr>';
-  document.getElementById('ft-overlay').classList.add('open');
-}
-function closeFiltroTipoModal(){
-  document.getElementById('ft-overlay').classList.remove('open');
-}
-function onFiltroTipoChange(){
-  const sel = document.getElementById('ft-select');
-  const val = sel ? sel.value : '';
-  document.getElementById('ft-foot-label').textContent = val ? tipoLabel(val) : '—';
-  const tbody = document.getElementById('ft-tbody');
-  const cntBadge = document.getElementById('ft-cnt');
-  if(!val){
-    cntBadge.textContent = '0 actividades';
-    tbody.innerHTML = '<tr><td colspan="4" class="ft-empty">Selecciona una categoría para ver las actividades</td></tr>';
-    return;
-  }
-  // Filtrar EXACTAMENTE por tipo — sin mezclar con otros
-  const filtradas = acts.filter(a=>a.type===val).sort((a,b)=>a.fecha-b.fecha);
-  cntBadge.textContent = filtradas.length+' actividad'+(filtradas.length!==1?'es':'');
-  if(!filtradas.length){
-    tbody.innerHTML = '<tr><td colspan="4" class="ft-empty">No hay actividades de esta categoría</td></tr>';
-    return;
-  }
-  tbody.innerHTML = filtradas.map(a=>{
-    const d = diasRest(a.fecha);
-    let diasHtml;
-    if(d<0)        diasHtml='<span class="ft-dias ft-dias-venc">VENCIDO</span>';
-    else if(d<=5)  diasHtml='<span class="ft-dias ft-dias-rojo">+'+d+'d</span>';
-    else if(d<=10) diasHtml='<span class="ft-dias ft-dias-naranja">+'+d+'d</span>';
-    else           diasHtml='<span class="ft-dias ft-dias-ok">+'+d+'d</span>';
-    const obsVal=(a.obs||'').trim().toUpperCase();
-    const obsHtml=obsVal==='NO'
-      ?'<span class="ft-obs-no">NO</span>'
-      :'<span class="ft-obs-si">'+(a.obs||'')+'</span>';
-    const flag=a.priori?'<span class="ft-td-flag">⚑</span>':'';
-    return '<tr>'
-      +'<td class="ft-td-fecha">'+fmtDate(a.fecha)+'</td>'
-      +'<td>'+flag+'<span class="ft-td-act">'+(a.act||'')+'</span></td>'
-      +'<td>'+obsHtml+'</td>'
-      +'<td>'+diasHtml+'</td>'
-      +'</tr>';
-  }).join('');
-}
-function _ftGetData(){
-  const sel = document.getElementById('ft-select');
-  const val = sel ? sel.value : '';
-  const lbl = val ? (tipoLabel(val)||val) : '';
-  const filtradas = val ? acts.filter(a=>a.type===val).sort((a,b)=>a.fecha-b.fecha) : [];
-  return {val, lbl, filtradas};
-}
-function _ftBuildWindowContent(filtradas, lbl, conInstruccion){
-  const hoy = new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'long',year:'numeric'});
-  const rows = filtradas.map(a=>{
-    const d = diasRest(a.fecha);
-    const diasTxt = d<0 ? 'VENCIDO' : '+'+d+' días';
-    const diasColor = d<0?'#c53030':(d<=5?'#e53e3e':(d<=10?'#dd6b20':'#276749'));
-    const obsVal=(a.obs||'').trim().toUpperCase();
-    const obsCel=obsVal==='NO'
-      ?'<td style="background:#c53030;color:#fff;font-weight:700;text-align:center;padding:6px 10px;">NO</td>'
-      :'<td style="color:#718096;padding:6px 10px;">'+(a.obs||'')+'</td>';
-    return '<tr style="border-bottom:1px solid #e2e8f0;">'
-      +'<td style="font-weight:700;color:#1a3f6f;padding:6px 10px;white-space:nowrap;">'+fmtDate(a.fecha)+'</td>'
-      +'<td style="font-weight:600;padding:6px 10px;">'+(a.priori?'⚑ ':'')+(a.act||'')+'</td>'
-      +obsCel
-      +'<td style="font-weight:700;color:'+diasColor+';padding:6px 10px;text-align:center;">'+diasTxt+'</td>'
-      +'</tr>';
-  }).join('');
-  const instruccion = conInstruccion
-    ?'<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:12px 14px;margin-bottom:18px;font-size:12px;color:#856404;"><strong>📄 Para enviar como PDF:</strong> Presiona <strong>Ctrl+P</strong> → selecciona <strong>"Guardar como PDF"</strong> → adjunta el archivo en tu correo.</div>'
-    :'';
-  return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
-    +'<title>Actividades '+lbl+' — Carta Gantt MAAH</title>'
-    +'<style>body{font-family:Segoe UI,Arial,sans-serif;padding:24px;color:#2d3748;}'
-    +'h2{color:#1a3f6f;margin-bottom:4px;}p.sub{font-size:12px;color:#718096;margin-bottom:16px;}'
-    +'table{width:100%;border-collapse:collapse;}'
-    +'thead th{background:#1a3f6f;color:#fff;font-size:11px;font-weight:700;padding:7px 10px;text-align:left;text-transform:uppercase;letter-spacing:.4px;}'
-    +'tbody tr:nth-child(even){background:#f7fafc;}'
-    +'@media print{.no-print{display:none!important;}@page{margin:15mm;}}'
-    +'</style></head><body>'
-    +'<div class="no-print">'+instruccion+'</div>'
-    +'<h2>🏷️ Actividades — '+lbl+'</h2>'
-    +'<p class="sub">Generado el '+hoy+' · '+filtradas.length+' actividad'+(filtradas.length!==1?'es':'')+'</p>'
-    +'<table><thead><tr><th>Fecha término</th><th>Actividad</th><th>OBS</th><th>Días</th></tr></thead>'
-    +'<tbody>'+rows+'</tbody></table>'
-    +'</body></html>';
-}
-function imprimirListadoTipo(){
-  const {val, lbl, filtradas} = _ftGetData();
-  if(!val){ alert('Selecciona una categoría primero.'); return; }
-  const win = window.open('','_blank','width=820,height=640');
-  if(!win){ alert('El navegador bloqueó la ventana emergente. Permite pop-ups para este sitio.'); return; }
-  win.document.write(_ftBuildWindowContent(filtradas, lbl, false));
-  win.document.close();
-  win.focus();
-  setTimeout(()=>win.print(), 400);
-}
-function enviarListadoTipo(){
-  const {val, lbl, filtradas} = _ftGetData();
-  if(!val){ alert('Selecciona una categoría primero.'); return; }
-  const win = window.open('','_blank','width=820,height=640');
-  if(!win){ alert('El navegador bloqueó la ventana emergente. Permite pop-ups para este sitio.'); return; }
-  win.document.write(_ftBuildWindowContent(filtradas, lbl, true));
-  win.document.close();
-  win.focus();
-}
-
 function onTipoSelectChange(sel, where){
   const v = sel.value;
   if(v === '__add__'){
     if(where==='add')  sel.value = cType || 'revision';
     else               sel.value = editType || 'revision';
     openTipoAddModal(where);
-    return;
-  }
-  if(v === '__manage__'){
-    if(where==='add')  sel.value = cType || 'revision';
-    else               sel.value = editType || 'revision';
-    openTipoManageModal();
     return;
   }
   if(where==='add')  cType = v;
@@ -1637,10 +1432,8 @@ function openTipoAddModal(where){
   const ov = document.getElementById('tipo-add-overlay');
   const inp = document.getElementById('tipo-add-input');
   const err = document.getElementById('tipo-add-err');
-  const lnk = document.getElementById('tipo-manage-link');
   if(inp) inp.value = '';
   if(err) err.classList.remove('visible');
-  if(lnk) lnk.style.display = tiposCustom.length > 0 ? 'block' : 'none';
   if(ov) ov.classList.add('open');
   setTimeout(()=>{ if(inp) inp.focus(); }, 50);
 }
@@ -1651,12 +1444,12 @@ function closeTipoAddModal(){
 function confirmTipoAdd(){
   const inp = document.getElementById('tipo-add-input');
   const err = document.getElementById('tipo-add-err');
-  const txt = (inp.value||'').trim().toUpperCase();
+  const txt = (inp.value||'').trim();
   if(!txt){ inp.focus(); return; }
   const value = '_c_' + txt.toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
-  const ya = getAllTipos().some(t=> t.value===value || t.label.toUpperCase()===txt);
+  const ya = getAllTipos().some(t=> t.value===value || t.label.toLowerCase()===txt.toLowerCase());
   if(ya){
     err.textContent = 'Esa categoría ya existe.';
     err.classList.add('visible');
@@ -1673,69 +1466,6 @@ function confirmTipoAdd(){
     const es = document.getElementById('edit-tipo');
     if(es){ es.value = value; editType = value; }
   }
-}
-
-// ── GESTIONAR TIPOS (editar / borrar) ──────────────────────────
-function openTipoManageModal(){
-  closeTipoAddModal();
-  renderTipoManageList();
-  const ov = document.getElementById('tipo-manage-overlay');
-  if(ov) ov.classList.add('open');
-}
-function closeTipoManageModal(){
-  const ov = document.getElementById('tipo-manage-overlay');
-  if(ov) ov.classList.remove('open');
-}
-function renderTipoManageList(){
-  const list = document.getElementById('tipo-manage-list');
-  if(!list) return;
-  if(!tiposCustom.length){
-    list.innerHTML = '<p style="color:#718096;font-size:12px;text-align:center;padding:14px 0;">No hay categorías personalizadas aún.</p>';
-    return;
-  }
-  const sorted = [...tiposCustom].sort((a,b)=>a.label.localeCompare(b.label,'es',{sensitivity:'base'}));
-  list.innerHTML = sorted.map(t=>{
-    const sv = t.value.replace(/'/g,"\\'");
-    return '<div class="tipo-manage-row" id="tipo-row-'+t.value+'">'
-      +'<span class="tipo-manage-label">'+t.label+'</span>'
-      +'<button class="btn-tipo-edit" onclick="startEditTipo(\''+sv+'\')">✏️ Editar</button>'
-      +'<button class="btn-tipo-del" onclick="deleteTipoCustom(\''+sv+'\')">🗑️ Borrar</button>'
-      +'</div>';
-  }).join('');
-}
-function deleteTipoCustom(value){
-  if(!confirm('¿Borrar esta categoría?')) return;
-  tiposCustom = tiposCustom.filter(t=>t.value!==value);
-  saveTiposCustom();
-  renderTipoManageList();
-  refreshAllTipoSelects();
-}
-function startEditTipo(value){
-  const t = tiposCustom.find(x=>x.value===value);
-  if(!t) return;
-  const row = document.getElementById('tipo-row-'+value);
-  if(!row) return;
-  const sv = value.replace(/'/g,"\\'");
-  row.innerHTML = '<input type="text" class="tipo-edit-input" id="tipo-edit-inp-'+value+'"'
-    +' value="'+t.label+'" maxlength="30"'
-    +' oninput="this.value=this.value.toUpperCase()"'
-    +' onkeydown="if(event.key===\'Enter\')confirmEditTipo(\''+sv+'\');if(event.key===\'Escape\')renderTipoManageList();">'
-    +'<button class="btn-tipo-edit" onclick="confirmEditTipo(\''+sv+'\')">✓ OK</button>'
-    +'<button class="btn-tipo-del" onclick="renderTipoManageList()">✗</button>';
-  const inp = document.getElementById('tipo-edit-inp-'+value);
-  if(inp){ inp.focus(); inp.select(); }
-}
-function confirmEditTipo(value){
-  const inp = document.getElementById('tipo-edit-inp-'+value);
-  if(!inp) return;
-  const newLabel = inp.value.trim().toUpperCase();
-  if(!newLabel) return;
-  const t = tiposCustom.find(x=>x.value===value);
-  if(!t) return;
-  t.label = newLabel;
-  saveTiposCustom();
-  renderTipoManageList();
-  refreshAllTipoSelects();
 }
 
 // Compatibilidad con llamadas antiguas
@@ -2061,7 +1791,6 @@ function saveEdit(){
   if(!actTxt||!fv){alert('Complete la descripción y la fecha.');return;}
   const [yr,mo,da]=fv.split('-').map(Number);
   const nuevaFecha=new Date(yr,mo-1,da);
-  const esRecurrente = (editFreq==='semanal'||editFreq==='mensual'||editFreq==='anual');
 
   // Fecha de inicio — aplica a cualquier frecuencia si se ingresó
   let nuevaFechaInicio = null;
@@ -3242,21 +2971,12 @@ function render(){
     byMonth = [...normales, ...expandidas].sort((a,b)=>a.fecha-b.fecha);
   } else {
     const targetKey = viewYear+'-'+viewMonth;
-    // Detectar meses extra cuando hay semanas del mes siguiente seleccionadas
-    const extraMonthKeys = new Set();
-    if(selectedWeekKeys && selectedWeekKeys.size > 0){
-      selectedWeekKeys.forEach(wk=>{
-        const p = wk.split('-');
-        const mk = Number(p[0])+'-'+(Number(p[1])-1);
-        if(mk !== targetKey) extraMonthKeys.add(mk);
-      });
-    }
     const normales = acts.filter(a=>{
       const fr = getFrecuencia(a);
       if(fr!=='puntual') return false;
       if(!(a.fecha instanceof Date) || isNaN(a.fecha.getTime())) return false;
       const k = a.fecha.getFullYear()+'-'+a.fecha.getMonth();
-      return k === targetKey || extraMonthKeys.has(k);
+      return k === targetKey;
     });
     const expandidas = [];
     acts.forEach(a=>{
@@ -3284,20 +3004,6 @@ function render(){
         const occ = makeSemanalOcurrencias(a, rIniEff, rFinEff);
         occ.forEach(o=>{ expandidas.push(o); });
       }
-      // Actividades del mes extra (semanas del mes siguiente seleccionadas)
-      extraMonthKeys.forEach(eMK=>{
-        const ep = eMK.split('-');
-        const eYear = Number(ep[0]);
-        const eMonth = Number(ep[1]);
-        if(fr==='anual' && a.mes===eMonth){
-          const occ = makeAnualOcurrencia(a, eYear);
-          if((!fi || occ.fecha >= fi) && (!ft || occ.fecha <= ft)) expandidas.push(occ);
-        } else if(fr==='mensual'){
-          const occ = makeMensualOcurrencia(a, eYear, eMonth);
-          if((!fi || occ.fecha >= fi) && (!ft || occ.fecha <= ft)) expandidas.push(occ);
-        }
-        // semanal ya cubierto por rangoVista()
-      });
     });
     byMonth = [...normales, ...expandidas].sort((a,b)=>a.fecha-b.fecha);
   }
@@ -3428,27 +3134,18 @@ function render(){
       html+='<td class="td-obs"><span class="plazo-badge">PLAZO</span></td>';
     } else if(r.isVirtualAnual){
       const obsTxt = r.obs ? r.obs : '';
-      if(obsTxt.trim().toUpperCase()==='NO'){
-        html+='<td class="td-obs" style="background:#c53030 !important;color:#fff !important;font-weight:700 !important;text-align:center !important;">NO</td>';
-      } else {
-        const fr = getFrecuencia(r);
-        let badge='';
-        if(fr==='anual')        badge='<span class="anual-badge" title="Se repite todos los años">ANUAL</span>';
-        else if(fr==='mensual') badge='<span class="mensual-badge" title="Se repite todos los meses">MENSUAL</span>';
-        else if(fr==='semanal') badge='<span class="semanal-badge" title="Se repite todas las semanas">SEMANAL</span>';
-        // Badge va en una línea separada, debajo del texto, para que se vea más ordenado
-        let cellInner = '';
-        if(obsTxt) cellInner += '<span class="obs-text">'+obsTxt+'</span>';
-        if(badge)  cellInner += '<span class="obs-badge-row">'+badge+'</span>';
-        html+='<td class="td-obs">'+cellInner+'</td>';
-      }
+      const fr = getFrecuencia(r);
+      let badge='';
+      if(fr==='anual')        badge='<span class="anual-badge" title="Se repite todos los años">ANUAL</span>';
+      else if(fr==='mensual') badge='<span class="mensual-badge" title="Se repite todos los meses">MENSUAL</span>';
+      else if(fr==='semanal') badge='<span class="semanal-badge" title="Se repite todas las semanas">SEMANAL</span>';
+      // Badge va en una línea separada, debajo del texto, para que se vea más ordenado
+      let cellInner = '';
+      if(obsTxt) cellInner += '<span class="obs-text">'+obsTxt+'</span>';
+      if(badge)  cellInner += '<span class="obs-badge-row">'+badge+'</span>';
+      html+='<td class="td-obs">'+cellInner+'</td>';
     } else {
-      const obsVal=(r.obs||'').trim().toUpperCase();
-      if(obsVal==='NO'){
-        html+='<td class="td-obs" style="background:#c53030 !important;color:#fff !important;font-weight:700 !important;text-align:center !important;">NO</td>';
-      } else {
-        html+='<td class="td-obs">'+(r.obs||'')+'</td>';
-      }
+      html+='<td class="td-obs">'+(r.obs||'')+'</td>';
     }
     html+='<td class="td-term">'+fmtDate(r.fecha)+'</td>';
     html+='<td class="td-d" style="background:'+col.bg+';color:'+col.fg+';'+(col.hideNum?'border:1px solid #7AB034;':'')+'" title="'+(col.hideNum?'Vencido':dl)+'">'+(col.hideNum?'':dl)+'</td>';
@@ -3578,6 +3275,11 @@ let fbOnline = false;
 // Usuario actualmente logueado (se setea desde login)
 let currentUser = null;
 let usuariosCache = []; // Lista cargada desde la agenda
+// Admin: seguimiento de qué usuario se está viendo
+let viewingUserId = null;
+let viewingUserName = null;
+// Filtro por tipo de actividad (null = sin filtro)
+let currentTipoFilter = null;
 
 function initFirebase(){
   if(!FB_CONFIGURED){
@@ -3713,6 +3415,11 @@ function iniciarGanttDelUsuario(){
 
   hideLoginOverlay();
 
+  // Si es admin, construir chips de navegación a otras Gantt
+  if(currentUser.rol === 'admin'){
+    buildAdminUserChips();
+  }
+
   // Conectar a la ruta de ESTE usuario (cada uno tiene la suya)
   dbRef = db.ref('gantt_maah/actividades_por_usuario/'+currentUser.id);
 
@@ -3820,6 +3527,145 @@ function migrarDatosViejosAMaah(){
   }, err=>{
     console.error('[MAAH] Error leyendo datos viejos:', err);
   });
+}
+
+// ── ADMIN: NAVEGACIÓN ENTRE GANTT ────────────────────────────
+
+function buildAdminUserChips(){
+  if(!currentUser || currentUser.rol !== 'admin') return;
+  const wrap = document.getElementById('admin-users-wrap');
+  if(!wrap) return;
+  const others = usuariosCache.filter(u => u.id !== currentUser.id);
+  if(!others.length){ wrap.classList.remove('visible'); return; }
+  let html = '<div class="stat-divider-v"></div>';
+  others.forEach(u => {
+    const nom = u.nombre.replace(/'/g,'&#39;');
+    html += '<div class="admin-user-chip" id="admin-chip-'+u.id+'" onclick="adminVerGanttDeUsuario(\''+u.id+'\',\''+nom+'\')" title="Ver Gantt de '+nom+'">👤 '+u.nombre+'</div>';
+  });
+  wrap.innerHTML = html;
+  wrap.classList.add('visible');
+}
+
+function _parsearActsDeSnap(data){
+  if(!data) return [];
+  return Object.values(data).map(a=>{
+    let f = new Date(a.fecha);
+    const esRec = !!(a.anual||a.mensual||a.semanal||(a.freq&&a.freq!=='puntual'));
+    if(esRec && (isNaN(f.getTime())||!a.fecha)) f = new Date();
+    let fi = null;
+    if(a.fechaInicio){
+      const p = new Date(a.fechaInicio);
+      if(!isNaN(p.getTime())){ p.setHours(0,0,0,0); fi = p; }
+    }
+    const out = {...a, act:(a.act||'').toUpperCase().trim(), obs:(a.obs||'').toUpperCase().trim(), fecha:f};
+    if(fi) out.fechaInicio = fi; else delete out.fechaInicio;
+    return out;
+  }).sort((a,b)=>a.fecha-b.fecha);
+}
+
+function adminVerGanttDeUsuario(userId, userName){
+  if(!currentUser || currentUser.rol !== 'admin') return;
+  if(viewingUserId === userId) return;
+  if(dbRef) dbRef.off();
+  viewingUserId = userId;
+  viewingUserName = userName;
+  // Marcar chip activo
+  document.querySelectorAll('.admin-user-chip').forEach(c=>c.classList.remove('viewing'));
+  const chip = document.getElementById('admin-chip-'+userId);
+  if(chip) chip.classList.add('viewing');
+  // Header
+  const badge = document.getElementById('user-badge');
+  if(badge) badge.textContent = '👁 GANTT: '+userName;
+  // Banner
+  document.getElementById('admin-back-name').textContent = userName;
+  document.getElementById('admin-back-banner').classList.add('visible');
+  // Conectar a Firebase del otro usuario
+  dbRef = db.ref('gantt_maah/actividades_por_usuario/'+userId);
+  dbRef.on('value', snap=>{
+    const data = snap.val();
+    acts = _parsearActsDeSnap(data);
+    if(acts.length){
+      const maxId = acts.reduce((m,a)=>{ const n=Number(a.id); return (Number.isFinite(n)&&n>m)?n:m; },0);
+      if(maxId >= nextId) nextId = maxId+1;
+    }
+    rebuildMonthSelect();
+    rebuildWeekSelect();
+    render();
+  }, err=>{ console.error('[ADMIN] Error Firebase otro usuario:',err); });
+}
+
+function adminVolverAMiGantt(){
+  if(!currentUser || currentUser.rol !== 'admin') return;
+  if(dbRef) dbRef.off();
+  viewingUserId = null;
+  viewingUserName = null;
+  // Desmarcar chips
+  document.querySelectorAll('.admin-user-chip').forEach(c=>c.classList.remove('viewing'));
+  // Header
+  const badge = document.getElementById('user-badge');
+  if(badge) badge.textContent = '👤 '+currentUser.nombre+(currentUser.rol==='admin'?' ★':'');
+  // Ocultar banner
+  document.getElementById('admin-back-banner').classList.remove('visible');
+  // Reconectar a los datos del admin
+  dbRef = db.ref('gantt_maah/actividades_por_usuario/'+currentUser.id);
+  dbRef.on('value', snap=>{
+    const data = snap.val();
+    acts = _parsearActsDeSnap(data);
+    if(acts.length){
+      const maxId = acts.reduce((m,a)=>{ const n=Number(a.id); return (Number.isFinite(n)&&n>m)?n:m; },0);
+      if(maxId >= nextId) nextId = maxId+1;
+    }
+    rebuildMonthSelect();
+    rebuildWeekSelect();
+    db.ref('maah_agenda/'+currentUser.id).once('value').then(agSnap=>{
+      const agData = agSnap.val()||{};
+      acts.forEach(a=>{
+        if(a.fromAgenda&&a.agendaFecha){
+          const dayActs=agData[a.agendaFecha]||{};
+          const match=Object.values(dayActs).find(ag=>ag&&ag.hora===a.agendaHora&&ag.priori);
+          if(match) a.priori=true; else delete a.priori;
+        }
+      });
+      render();
+    }).catch(()=>render());
+  }, err=>{ console.error('[ADMIN] Error Firebase volviendo:',err); });
+}
+
+// ── FILTRO POR TIPO ───────────────────────────────────────────
+
+function toggleTipoFilterDropdown(e){
+  e.stopPropagation();
+  const dd = document.getElementById('tipo-filter-dropdown');
+  if(!dd) return;
+  const allTipos = getAllTipos();
+  const counts = {};
+  allTipos.forEach(t=>{ counts[t.value] = acts.filter(a=>a.type===t.value).length; });
+  let html = '<div class="tipo-filter-item'+(currentTipoFilter===null?' active':'')+'" onclick="setTipoFilter(null)">— Todos los tipos</div>';
+  allTipos.forEach(t=>{
+    const cnt = counts[t.value]||0;
+    if(cnt===0) return;
+    html += '<div class="tipo-filter-item'+(currentTipoFilter===t.value?' active':'')+'" onclick="setTipoFilter(\''+t.value+'\')">'+t.label+' ('+cnt+')</div>';
+  });
+  dd.innerHTML = html;
+  const isOpen = dd.classList.toggle('open');
+  document.getElementById('stat-tipo-btn').classList.toggle('active', isOpen);
+}
+
+function setTipoFilter(tipoValue){
+  currentTipoFilter = tipoValue;
+  const dd = document.getElementById('tipo-filter-dropdown');
+  if(dd) dd.classList.remove('open');
+  const btn = document.getElementById('stat-tipo-btn');
+  if(btn){
+    btn.classList.toggle('active', tipoValue !== null);
+    if(tipoValue !== null){
+      const t = getAllTipos().find(x=>x.value===tipoValue);
+      btn.innerHTML = '🏷️ '+(t ? t.label.toUpperCase() : 'TIPO')+' <span style="font-size:8px;">▾</span>';
+    } else {
+      btn.innerHTML = '🏷️ POR TIPO <span style="font-size:8px;">▾</span>';
+    }
+  }
+  render();
 }
 
 // Restaurar sesión — se llama SOLO cuando usuariosCache ya está cargado
@@ -4134,6 +3980,16 @@ document.getElementById('today-lbl').textContent=
   'HOY: '+String(td2.getDate()).padStart(2,'0')+'/'+MSHORT[td2.getMonth()]+'/'+td2.getFullYear();
 
 setFilter('all');
+
+// Cerrar dropdown de tipo al hacer clic fuera
+document.addEventListener('click', function(){
+  const dd = document.getElementById('tipo-filter-dropdown');
+  if(dd && dd.classList.contains('open')){
+    dd.classList.remove('open');
+    const btn = document.getElementById('stat-tipo-btn');
+    if(btn) btn.classList.remove('active');
+  }
+});
 
 // Inicializar firebase y cargar usuarios; mostrar login (o restaurar sesión)
 initFirebase();
