@@ -3385,9 +3385,24 @@ function initAuth(){
 }
 
 function procesarAuthUser(authUid){
-  const u = usuariosCache.find(x => x.authUid === authUid);
+  // 1. Buscar por authUid guardado (usuarios ya migrados)
+  let u = usuariosCache.find(x => x.authUid === authUid);
+
+  // 2. Si no, derivar userId desde el email sintético (primer login)
   if(!u){
-    // uid autenticado pero sin perfil en DB — cerrar sesión
+    const firebaseUser = firebase.auth().currentUser;
+    if(firebaseUser && firebaseUser.email && firebaseUser.email.endsWith('@maah.app')){
+      const derivedId = firebaseUser.email.split('@')[0];
+      u = usuariosCache.find(x => x.id.toLowerCase() === derivedId);
+      if(u){
+        // Guardar authUid en DB para futuras sesiones (lookup rápido)
+        db.ref('maah_usuarios/'+u.id+'/authUid').set(authUid);
+        u.authUid = authUid;
+      }
+    }
+  }
+
+  if(!u){
     console.warn('[Auth] UID sin perfil en maah_usuarios:', authUid);
     firebase.auth().signOut();
     return;
@@ -3403,7 +3418,6 @@ function procesarAuthUser(authUid){
   }
   currentUser = u;
   hideLoginOverlay();
-  // Restaurar estado del botón login por si estaba bloqueado
   const btn = document.getElementById('login-btn');
   if(btn){ btn.textContent='Ingresar a mi Gantt'; btn.disabled=false; }
   iniciarGanttDelUsuario();
@@ -3433,29 +3447,48 @@ function doLogin(){
   const u = usuariosCache.find(x=>x.id===userId);
   if(!u){ errBox.textContent='Usuario no encontrado. Recarga la página.'; errBox.style.display='block'; return; }
 
-  if(!u.email){
-    errBox.textContent='Este usuario no tiene email configurado. Contacta al administrador.';
-    errBox.style.display='block'; return;
-  }
+  // Email sintético — el usuario nunca lo ve
+  const syntheticEmail = userId.toLowerCase() + '@maah.app';
 
-  // Mostrar estado de carga
   btn.textContent='⏳ Verificando...';
   btn.disabled=true;
 
-  firebase.auth().signInWithEmailAndPassword(u.email, clave)
-    .then(()=>{
-      // onAuthStateChanged manejará el resto — nada que hacer aquí
-    })
+  firebase.auth().signInWithEmailAndPassword(syntheticEmail, clave)
+    .then(()=>{ /* onAuthStateChanged maneja el resto */ })
     .catch(err=>{
+      // Primer login: usuario aún no existe en Firebase Auth → verificar clave en DB y auto-registrar
+      if(err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential'){
+        db.ref('maah_usuarios/'+userId+'/pass').once('value', snap=>{
+          const passDB = String(snap.val()||'').trim();
+          if(passDB && passDB === clave){
+            firebase.auth().createUserWithEmailAndPassword(syntheticEmail, clave)
+              .then(()=>{ /* onAuthStateChanged maneja el resto */ })
+              .catch(createErr=>{
+                btn.textContent='Ingresar a mi Gantt'; btn.disabled=false;
+                errBox.textContent='Error al activar cuenta ('+createErr.code+'). Contacta al administrador.';
+                errBox.style.display='block';
+              });
+          } else {
+            btn.textContent='Ingresar a mi Gantt'; btn.disabled=false;
+            document.getElementById('login-clave').value='';
+            document.getElementById('login-clave').focus();
+            errBox.textContent='Clave incorrecta. Verifica y vuelve a intentar.';
+            errBox.style.display='block';
+          }
+        }, ()=>{
+          btn.textContent='Ingresar a mi Gantt'; btn.disabled=false;
+          errBox.textContent='Sin conexión. Verifica tu red e intenta nuevamente.';
+          errBox.style.display='block';
+        });
+        return;
+      }
       btn.textContent='Ingresar a mi Gantt';
       btn.disabled=false;
       document.getElementById('login-clave').value='';
       document.getElementById('login-clave').focus();
       const msgs={
         'auth/wrong-password':         'Clave incorrecta. Verifica y vuelve a intentar.',
-        'auth/invalid-credential':     'Clave incorrecta. Verifica y vuelve a intentar.',
         'auth/too-many-requests':      'Demasiados intentos fallidos. Espera unos minutos.',
-        'auth/user-not-found':         'Usuario no configurado en el sistema. Contacta al administrador.',
         'auth/user-disabled':          'Esta cuenta fue desactivada. Contacta al administrador.',
         'auth/network-request-failed': 'Sin conexión. Verifica tu red e intenta nuevamente.'
       };
