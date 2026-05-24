@@ -463,6 +463,7 @@ table.gantt tr.row-priori td.td-act::before{content:'⚑ ';}
           <label>Frecuencia</label>
           <select id="f-freq" class="select-freq" onchange="onFreqSelectChange(this,&#39;add&#39;)">
             <option value="puntual" selected="">Puntual</option>
+            <option value="rango">Desde / Hasta</option>
             <option value="semanal">Semanal</option>
             <option value="mensual">Mensual</option>
             <option value="anual">Anual</option>
@@ -476,16 +477,37 @@ table.gantt tr.row-priori td.td-act::before{content:'⚑ ';}
           <label>Observaciones</label>
           <input type="text" id="f-obs" placeholder="Ej: martes 20:15...">
         </div>
-        <div class="fecha-inicio-block visible" id="f-inicio-block" style="display:block;">
-          <label>Fecha de inicio</label>
-          <input type="date" id="f-inicio">
-          <div class="hint">Fecha desde la que aparece la actividad en la carta Gantt.</div>
+        <!-- Semanal: selector día de la semana -->
+        <div class="form-group" id="f-dow-block" style="display:none;">
+          <label>Día de la semana</label>
+          <select id="f-dow-sel" onchange="updateFreqPreview(cFreq)">
+            <option value="1">Lunes</option>
+            <option value="2">Martes</option>
+            <option value="3">Miércoles</option>
+            <option value="4">Jueves</option>
+            <option value="5">Viernes</option>
+            <option value="6">Sábado</option>
+            <option value="0">Domingo</option>
+          </select>
+        </div>
+        <!-- Mensual: selector día del mes -->
+        <div class="form-group" id="f-dia-block" style="display:none;">
+          <label>Día del mes</label>
+          <select id="f-dia-sel" onchange="updateFreqPreview(cFreq)">
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option>
+          </select>
+        </div>
+        <div class="fecha-inicio-block" id="f-inicio-block" style="display:none;">
+          <label><span id="f-inicio-label">Fecha de inicio</span></label>
+          <input type="date" id="f-inicio" oninput="updateFreqPreview(cFreq)">
+          <div class="hint" id="f-inicio-hint"></div>
         </div>
         <div class="form-group">
-          <label>Fecha de término</label>
+          <label><span id="f-fecha-label">Fecha</span></label>
           <input type="date" id="f-fecha" oninput="previewDias()">
         </div>
         <div class="dias-preview prev-neutral" id="dias-preview" style="">Seleccione una fecha</div>
+        <div id="freq-preview" style="display:none;font-size:11px;color:#0c4a6e;background:#e0f2fe;border:1px solid #7dd3fc;border-radius:5px;padding:5px 8px;margin-bottom:6px;"></div>
         <div class="form-group" style="margin-top:8px;">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
             <input type="checkbox" id="f-enviar-agenda" style="width:16px;height:16px;cursor:pointer;">
@@ -1428,19 +1450,90 @@ function onFreqSelectChange(sel, where){
   }
 }
 function toggleFechaInicioBlock(where, freq){
-  const id = where==='add' ? 'f-inicio-block' : 'edit-inicio-block';
-  const el = document.getElementById(id);
+  if(where === 'add'){ updateFormForFreq(freq); return; }
+  // Formulario de edición — sin cambios
+  const el = document.getElementById('edit-inicio-block');
   if(!el) return;
-  // Siempre visible — solo cambia el hint según si es recurrente o no
   el.style.display = 'block';
   el.classList.add('visible');
   const hint = el.querySelector('.hint');
   if(hint){
-    const recurrente = (freq==='semanal' || freq==='mensual' || freq==='anual');
+    const recurrente = (freq==='semanal'||freq==='mensual'||freq==='anual');
     hint.textContent = recurrente
       ? 'La actividad se repetirá desde esta fecha hasta la fecha de término.'
       : 'Fecha desde la que aparece la actividad en la carta Gantt.';
   }
+}
+
+function updateFormForFreq(freq){
+  const inicioBlock = document.getElementById('f-inicio-block');
+  const inicioLabel = document.getElementById('f-inicio-label');
+  const inicioHint  = document.getElementById('f-inicio-hint');
+  const fechaLabel  = document.getElementById('f-fecha-label');
+  const dowBlock    = document.getElementById('f-dow-block');
+  const diaBlock    = document.getElementById('f-dia-block');
+
+  if(dowBlock) dowBlock.style.display = 'none';
+  if(diaBlock) diaBlock.style.display = 'none';
+
+  if(freq === 'puntual'){
+    if(inicioBlock) inicioBlock.style.display = 'none';
+    if(fechaLabel)  fechaLabel.textContent = 'Fecha';
+  } else if(freq === 'rango'){
+    if(inicioBlock){ inicioBlock.style.display='block'; inicioBlock.classList.add('visible'); }
+    if(inicioLabel) inicioLabel.textContent = 'Desde (inicio de barra)';
+    if(inicioHint)  inicioHint.textContent  = 'La barra se pintará desde esta fecha hasta la de término.';
+    if(fechaLabel)  fechaLabel.textContent  = 'Hasta (fin de barra)';
+  } else if(freq === 'semanal'){
+    if(dowBlock) dowBlock.style.display = 'block';
+    if(inicioBlock){ inicioBlock.style.display='block'; inicioBlock.classList.add('visible'); }
+    if(inicioLabel) inicioLabel.textContent = 'Inicia desde (opcional)';
+    if(inicioHint)  inicioHint.textContent  = 'Desde cuándo repetir. Vacío = hoy.';
+    if(fechaLabel)  fechaLabel.textContent  = 'Repetir hasta';
+  } else if(freq === 'mensual'){
+    if(diaBlock) diaBlock.style.display = 'block';
+    if(inicioBlock){ inicioBlock.style.display='block'; inicioBlock.classList.add('visible'); }
+    if(inicioLabel) inicioLabel.textContent = 'Inicia desde (opcional)';
+    if(inicioHint)  inicioHint.textContent  = 'Desde cuándo repetir. Vacío = hoy.';
+    if(fechaLabel)  fechaLabel.textContent  = 'Repetir hasta';
+  } else if(freq === 'anual'){
+    if(inicioBlock) inicioBlock.style.display = 'none';
+    if(fechaLabel)  fechaLabel.textContent = 'Fecha (día y mes)';
+  }
+  updateFreqPreview(freq);
+}
+
+function updateFreqPreview(freq){
+  const preview = document.getElementById('freq-preview');
+  if(!preview) return;
+  const fv  = (document.getElementById('f-fecha')||{}).value||'';
+  const fiv = (document.getElementById('f-inicio')||{}).value||'';
+  const dowSel = document.getElementById('f-dow-sel');
+  const diaSel = document.getElementById('f-dia-sel');
+  const DN = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const MN = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  let txt = '';
+  if(freq==='puntual'){
+    if(fv){ const [y,m,d]=fv.split('-'); txt='📌 Actividad el '+d+'/'+m+'/'+y; }
+  } else if(freq==='rango'){
+    if(fiv && fv){
+      const [yi,mi,di]=fiv.split('-'); const [yf,mf,df]=fv.split('-');
+      const dias=Math.round((new Date(+yf,+mf-1,+df)-new Date(+yi,+mi-1,+di))/86400000)+1;
+      txt='📊 Barra del '+di+'/'+mi+' al '+df+'/'+mf+' ('+dias+(dias===1?' día':' días')+')';
+    } else { txt='📊 Selecciona inicio y fin para ver la barra'; }
+  } else if(freq==='semanal'){
+    const dow = dowSel ? DN[Number(dowSel.value)] : '?';
+    if(fv){ const [yf,mf,df]=fv.split('-'); txt='🔁 Todos los '+dow+' hasta el '+df+'/'+mf+'/'+yf; }
+    else { txt='🔁 Todos los '+dow; }
+  } else if(freq==='mensual'){
+    const dia = diaSel ? diaSel.value : '?';
+    if(fv){ const [yf,mf]=fv.split('-'); txt='🔁 Día '+dia+' de cada mes hasta '+MN[+mf-1]+'/'+yf; }
+    else { txt='🔁 El día '+dia+' de cada mes'; }
+  } else if(freq==='anual'){
+    if(fv){ const [,mf,df]=fv.split('-'); txt='🎂 Cada año el '+df+'/'+MN[+mf-1]; }
+  }
+  if(txt){ preview.textContent=txt; preview.style.display='block'; }
+  else { preview.style.display='none'; }
 }
 
 // ── MODAL "AGREGAR NUEVA CATEGORÍA" ───────────────────────────
@@ -1527,7 +1620,7 @@ function setEditFreq(el,freq){ editFreq=freq; const s=document.getElementById('e
 function previewDias(){
   const v=document.getElementById('f-fecha').value;
   const p=document.getElementById('dias-preview');
-  if(!v){resetPreview();return;}
+  if(!v){resetPreview();updateFreqPreview(cFreq);return;}
   const [yr,mo,da]=v.split('-').map(Number);
   const d=new Date(yr,mo-1,da);
   const diff=diasRest(d);
@@ -1537,6 +1630,7 @@ function previewDias(){
   if(diff<0) p.textContent='VENCIDO hace '+Math.abs(diff)+'d';
   else if(diff===0) p.textContent='Vence HOY';
   else p.textContent='Faltan '+diff+' día'+(diff!==1?'s':'')+' para el término';
+  updateFreqPreview(cFreq);
 }
 function resetPreview(){
   const p=document.getElementById('dias-preview');
@@ -1588,6 +1682,7 @@ function addActivity(){
   const fv=document.getElementById('f-fecha').value;
   const fiv=document.getElementById('f-inicio').value;
   if(!act||!fv){alert('Complete la descripción y la fecha de término.');return;}
+  if(cFreq==='rango' && !fiv){alert('Para "Desde / Hasta" debes ingresar la fecha de inicio.');return;}
   const [yr,mo,da]=fv.split('-').map(Number);
   const fecha=new Date(yr,mo-1,da);
 
@@ -1609,6 +1704,16 @@ function addActivity(){
   if(esPriori) newAct.priori=true;
   if(fechaInicio) newAct.fechaInicio = fechaInicio;
   aplicarFrecuenciaACto(newAct, cFreq, fecha);
+  // Override DOW/DIA desde selectores explícitos
+  if(cFreq==='semanal'){
+    const ds=document.getElementById('f-dow-sel');
+    if(ds) newAct.dow=Number(ds.value);
+  } else if(cFreq==='mensual'){
+    const ds=document.getElementById('f-dia-sel');
+    if(ds) newAct.dia=Number(ds.value);
+  } else if(cFreq==='rango'){
+    newAct.freq='puntual'; // rango = puntual con barra (fechaInicio+fecha ya asignados)
+  }
   acts.push(newAct);
   acts.sort((a,b)=>a.fecha-b.fecha);
   document.getElementById('f-act').value='';
