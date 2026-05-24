@@ -386,9 +386,9 @@ table.gantt tr.row-priori td.td-act::before{content:'⚑ ';}
     <span class="val" id="s-naranja">1</span>
     <span class="lbl">5–10 días</span>
   </div>
-  <div class="stat-card stat-amarillo" onclick="setFilter(&#39;amarillo&#39;)" title="10–365 días">
+  <div class="stat-card stat-amarillo" onclick="setFilter(&#39;amarillo&#39;)" title="Más de 10 días">
     <span class="val" id="s-amarillo">9</span>
-    <span class="lbl">10–365 d</span>
+    <span class="lbl">10+ D</span>
   </div>
   <div class="stat-divider"></div>
   <div class="stat-card stat-aniv" onclick="setFilter(&#39;aniv&#39;)" title="Aniversarios">
@@ -807,8 +807,7 @@ function filterGroup(diff, isAniv){
   if(diff < 0) return 'venc';
   if(diff <= 5) return 'rojo';
   if(diff <= 10) return 'naranja';
-  if(diff <= 365) return 'amarillo';
-  return 'otro';
+  return 'amarillo'; // sin límite superior — incluye todo lo que esté a más de 10 días
 }
 // Función separada para el filtro 'aniv' (solo por tipo)
 function matchesFilter(a, filterKey){
@@ -3190,13 +3189,14 @@ function render(){
   // ── AUTO-AJUSTE: ensanchar columna ACTIVIDAD si algún texto no entra en 2 líneas ──
   ajustarAnchoColumnaActividad();
 
-  // Stats (siempre sobre TODAS las actividades)
-  document.getElementById('s-total').textContent=acts.length;
-  document.getElementById('s-venc').textContent=acts.filter(a=>diasRest(a.fecha)<0).length;
-  document.getElementById('s-rojo').textContent=acts.filter(a=>{const d=diasRest(a.fecha);return d>=0&&d<=5;}).length;
-  document.getElementById('s-naranja').textContent=acts.filter(a=>{const d=diasRest(a.fecha);return d>5&&d<=10;}).length;
-  document.getElementById('s-amarillo').textContent=acts.filter(a=>{const d=diasRest(a.fecha);return d>10&&d<=365;}).length;
-  document.getElementById('s-anivs').textContent=acts.filter(a=>a.type==='aniversario').length;
+  // Stats — se calculan sobre byMonth (período visible) para que cuadren con lo que se ve en pantalla.
+  // Cuando haces clic en un filtro, el número que aparece en el stat = exactamente las filas que se muestran.
+  document.getElementById('s-total').textContent=byMonth.length;
+  document.getElementById('s-venc').textContent=byMonth.filter(a=>diasRest(a.fecha)<0).length;
+  document.getElementById('s-rojo').textContent=byMonth.filter(a=>{const d=diasRest(a.fecha);return d>=0&&d<=5;}).length;
+  document.getElementById('s-naranja').textContent=byMonth.filter(a=>{const d=diasRest(a.fecha);return d>5&&d<=10;}).length;
+  document.getElementById('s-amarillo').textContent=byMonth.filter(a=>{const d=diasRest(a.fecha);return d>10;}).length;
+  document.getElementById('s-anivs').textContent=byMonth.filter(a=>a.type==='aniversario').length;
 }
 
 // ── DATOS INICIALES ──────────────────────────────────────────
