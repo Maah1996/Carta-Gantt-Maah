@@ -3392,12 +3392,26 @@ function render(){
       const esFeriado=!!fmap[fKey];
       const ferNombre=esFeriado?fmap[fKey]:'';
       const ferAttr=esFeriado?' onmouseenter="showFeriadoTip(this,\''+ferNombre.replace(/'/g,'&#39;')+'\')" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,\''+ferNombre.replace(/'/g,'&#39;')+'\')"':'';
+      // Para SEMANAL/MENSUAL solo pintar el día específico de la semana/mes
+      let paintBar=false;
       if(hasBar && i>=effStart && i<=effEnd){
+        if(r.freq==='semanal'){
+          const dow=typeof r.dow==='number'?r.dow:(r.fecha instanceof Date?r.fecha.getDay():-1);
+          paintBar=allDays[i].d.getDay()===dow;
+        } else if(r.freq==='mensual'){
+          const dia=typeof r.dia==='number'?r.dia:(r.fecha instanceof Date?r.fecha.getDate():-1);
+          paintBar=allDays[i].d.getDate()===dia;
+        } else {
+          paintBar=true;
+        }
+      }
+      if(paintBar){
         let barShape;
-        if(effStart===effEnd)  barShape=' bar-single';
-        else if(i===effStart)  barShape=' bar-start';
-        else if(i===effEnd)    barShape=' bar-end';
-        else                   barShape=' bar-mid';
+        if(r.freq==='semanal'||r.freq==='mensual') barShape=' bar-single';
+        else if(effStart===effEnd) barShape=' bar-single';
+        else if(i===effStart)      barShape=' bar-start';
+        else if(i===effEnd)        barShape=' bar-end';
+        else                       barShape=' bar-mid';
         const ferCls=esFeriado?' feriado':'';
         const extCls=isExtra?' extra':'';
         html+='<td class="bar-cell'+barShape+ferCls+extCls+'" style="background:'+col.bg+' !important;'+tlStyle+'"'+ferAttr+'></td>';
