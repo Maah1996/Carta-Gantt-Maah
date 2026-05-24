@@ -2521,6 +2521,16 @@ function printGantt(){
     table.gantt td.td-day.wknd { background: #d0d5dd !important; }
     table.gantt td.td-day.othermonth { background: #cdd2da !important; opacity: .6; }
     table.gantt td.bar-cell { background: inherit; }
+    /* Separadores visibles entre celdas de barra para que se vean como cuadrados individuales */
+    table.gantt td.bar-cell.bar-start,
+    table.gantt td.bar-cell.bar-mid {
+      border-right: 1.5px solid rgba(255,255,255,0.5) !important;
+    }
+    /* Bordes redondeados de la barra respetados en impresión */
+    table.gantt td.bar-cell.bar-single { border-radius: 4px !important; }
+    table.gantt td.bar-cell.bar-start  { border-radius: 4px 0 0 4px !important; }
+    table.gantt td.bar-cell.bar-end    { border-radius: 0 4px 4px 0 !important; }
+    table.gantt td.bar-cell.bar-mid    { border-radius: 0 !important; }
 
     /* Aniversarios */
     table.gantt tr.row-aniv td.td-act {
