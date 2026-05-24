@@ -186,6 +186,10 @@ table.gantt td.td-del{width:20px;background:#fff;vertical-align:middle;text-alig
 
 /* FIX 1 & 3: barra pintada cuadrada, solo color */
 .bar-cell{width:24px;height:24px;vertical-align:middle;text-align:center;padding:0;}
+.bar-cell.bar-single{border-radius:5px;}
+.bar-cell.bar-start{border-radius:5px 0 0 5px;}
+.bar-cell.bar-end{border-radius:0 5px 5px 0;}
+.bar-cell.bar-mid{border-radius:0;}
 
 .plazo-badge{background:#8B0000;color:#fff;font-size:7px;padding:1px 3px;border-radius:2px;font-weight:800;}
 .anual-badge{background:#7c2d12;color:#fff;font-size:7px;padding:1px 3px;border-radius:2px;font-weight:800;letter-spacing:.3px;}
@@ -3175,6 +3179,25 @@ function render(){
       d.d.getDate()===r.fecha.getDate()
     );
 
+    // Calcular rango de barra Gantt real (fechaInicio → fecha)
+    let startIdx=-1;
+    if(r.fechaInicio instanceof Date && !isNaN(r.fechaInicio.getTime())){
+      startIdx=allDays.findIndex(d=>
+        d.d.getFullYear()===r.fechaInicio.getFullYear()&&
+        d.d.getMonth()===r.fechaInicio.getMonth()&&
+        d.d.getDate()===r.fechaInicio.getDate()
+      );
+      // fechaInicio antes del rango visible → barra empieza desde columna 0
+      if(startIdx===-1 && allDays.length>0 && r.fechaInicio<allDays[0].d) startIdx=0;
+    }
+    let effStart=startIdx>=0?startIdx:barIdx;
+    let effEnd=barIdx>=0?barIdx:-1;
+    // fecha después del rango visible pero inicio está en vista → extender barra hasta el final
+    if(barIdx===-1 && startIdx>=0 && allDays.length>0 && r.fecha>allDays[allDays.length-1].d){
+      effEnd=allDays.length-1;
+    }
+    const hasBar=effStart>=0 && effEnd>=0 && effStart<=effEnd;
+
     var rowCls=isAniv?'row-aniv':(r.priori?'row-priori':'');
     html+='<tr class="'+rowCls+'">';
     html+='<td class="td-act">'+r.act+'</td>';
@@ -3218,14 +3241,18 @@ function render(){
       const fKey=feriadoKey(allDays[i].d);
       const esFeriado=!!fmap[fKey];
       const ferNombre=esFeriado?fmap[fKey]:'';
-      if(i===barIdx){
+      const ferAttr=esFeriado?' onmouseenter="showFeriadoTip(this,\''+ferNombre.replace(/'/g,'&#39;')+'\')" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,\''+ferNombre.replace(/'/g,'&#39;')+'\')"':'';
+      if(hasBar && i>=effStart && i<=effEnd){
+        let barShape;
+        if(effStart===effEnd)  barShape=' bar-single';
+        else if(i===effStart)  barShape=' bar-start';
+        else if(i===effEnd)    barShape=' bar-end';
+        else                   barShape=' bar-mid';
         const ferCls=esFeriado?' feriado':'';
         const extCls=isExtra?' extra':'';
-        const ferAttr=esFeriado?' onmouseenter="showFeriadoTip(this,\''+ferNombre.replace(/'/g,'&#39;')+'\')" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,\''+ferNombre.replace(/'/g,'&#39;')+'\')"':'';
-        html+='<td class="bar-cell'+ferCls+extCls+'" style="background:'+col.bg+' !important;'+tlStyle+'"'+ferAttr+'></td>';
+        html+='<td class="bar-cell'+barShape+ferCls+extCls+'" style="background:'+col.bg+' !important;'+tlStyle+'"'+ferAttr+'></td>';
       } else {
         let cls='td-day'+(isWknd?' wknd':'')+(isOther?' othermonth':'')+(isToday?' today-col':'')+(esFeriado?' feriado':'')+(isExtra?' extra':'');
-        const ferAttr=esFeriado?' onmouseenter="showFeriadoTip(this,\''+ferNombre.replace(/'/g,'&#39;')+'\')" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,\''+ferNombre.replace(/'/g,'&#39;')+'\')"':'';
         html+='<td class="'+cls+'" style="'+tlStyle+'"'+ferAttr+'></td>';
       }
     });
