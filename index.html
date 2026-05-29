@@ -3126,7 +3126,11 @@ function render(){
     return {ini, fin};
   }
 
-  if(isTodaGantt || isFullYear){
+  const isMultiWeekCrossMonth = selectedWeekKeys && selectedWeekKeys.size > 0 && !extendedState.active && !isTodaGantt && !isFullYear && (()=>{
+    const meses = new Set(Array.from(selectedWeekKeys).map(k=>{ const p=k.split('-'); return p[0]+'-'+p[1]; }));
+    return meses.size > 1;
+  })();
+  if(isTodaGantt || isFullYear || isMultiWeekCrossMonth){
     const {ini: rIni, fin: rFin} = rangoVista();
     const normales = acts.filter(a=>{
       const fr = getFrecuencia(a);
