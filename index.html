@@ -3886,12 +3886,19 @@ function buildAdminUserChips(){
   const others = usuariosCache.filter(u => u.id !== currentUser.id);
   if(!others.length){ wrap.classList.remove('visible'); return; }
   let html = '<div class="stat-divider-v"></div>';
+  // Chip propio del admin (siempre primero, vuelve a su gantt)
+  html += '<div class="admin-user-chip" id="admin-chip-self" onclick="adminVolverAMiGantt()" title="Ver mi Gantt (ADMIN)">★ '+currentUser.nombre+'</div>';
   others.forEach(u => {
     const nom = u.nombre.replace(/'/g,'&#39;');
     html += '<div class="admin-user-chip" id="admin-chip-'+u.id+'" onclick="adminVerGanttDeUsuario(\''+u.id+'\',\''+nom+'\')" title="Ver Gantt de '+nom+'">👤 '+u.nombre+'</div>';
   });
   wrap.innerHTML = html;
   wrap.classList.add('visible');
+  // Marcar chip propio como activo al cargar (estás en tu propia Gantt)
+  if(!viewingUserId){
+    const selfChip = document.getElementById('admin-chip-self');
+    if(selfChip) selfChip.classList.add('viewing');
+  }
 }
 
 function _parsearActsDeSnap(data){
@@ -4041,8 +4048,10 @@ function adminVolverAMiGantt(){
   // 1. Resetear el estado del otro usuario
   _resetearEstado();
 
-  // Desmarcar chips
+  // Marcar chip propio como activo, desmarcar los demás
   document.querySelectorAll('.admin-user-chip').forEach(c=>c.classList.remove('viewing'));
+  const selfChip = document.getElementById('admin-chip-self');
+  if(selfChip) selfChip.classList.add('viewing');
   // Header y banner
   const badge = document.getElementById('user-badge');
   if(badge) badge.textContent = '👤 '+currentUser.nombre+(currentUser.rol==='admin'?' ★':'');
