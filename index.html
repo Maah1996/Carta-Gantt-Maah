@@ -3665,15 +3665,7 @@ function procesarAuthUser(authUid){
     firebase.auth().signOut();
     return;
   }
-  // Verificar permiso de Gantt (admin siempre puede)
-  if(u.rol !== 'admin'){
-    const tienePermiso = u.permisos && u.permisos.gantt === true;
-    if(!tienePermiso){
-      alert('Tu cuenta no tiene acceso al servicio Gantt.\nSolicita la activación al administrador.');
-      firebase.auth().signOut();
-      return;
-    }
-  }
+  // Todos los usuarios pueden entrar; el rol determina qué ven (admin = completo, resto = solo lectura)
   currentUser = u;
   hideLoginOverlay();
   const btn = document.getElementById('login-btn');
