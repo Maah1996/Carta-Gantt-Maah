@@ -3511,11 +3511,19 @@ function render(){
         else                       barShape=' bar-mid';
         const ferCls=esFeriado?' feriado':'';
         const extCls=isExtra?' extra':'';
-        // Para rango (puntual+fechaInicio): días pasados con opacidad reducida
+        // Para rango (puntual+fechaInicio): días pasados con opacidad reducida + % en transición
         const esRango = r.fechaInicio instanceof Date && !isNaN(r.fechaInicio.getTime()) && r.freq==='puntual';
         const esPasado = esRango && allDays[i].d < TODAY;
         const opacityStyle = esPasado ? 'opacity:0.35;' : '';
-        html+='<td class="bar-cell'+barShape+ferCls+extCls+'" style="background:'+col.bg+' !important;'+opacityStyle+tlStyle+'"'+ferAttr+'></td>';
+        // Mostrar % solo en la celda de hoy (si cae dentro de la barra) o en la primera celda futura
+        let pctLabel = '';
+        if(esRango && !esPasado && (isToday || (i===effStart && allDays[i].d >= TODAY) || (i>effStart && allDays[i-1] && allDays[i-1].d < TODAY))){
+          const totalDias = Math.max(1, Math.round((r.fecha - r.fechaInicio) / 86400000));
+          const diasPasados = Math.max(0, Math.min(totalDias, Math.round((TODAY - r.fechaInicio) / 86400000)));
+          const pct = Math.round(diasPasados / totalDias * 100);
+          if(pct > 0 && pct < 100) pctLabel = '<span style="font-size:7px;font-weight:800;color:#fff;text-shadow:0 0 3px rgba(0,0,0,.6);line-height:1;pointer-events:none;">'+pct+'%</span>';
+        }
+        html+='<td class="bar-cell'+barShape+ferCls+extCls+'" style="background:'+col.bg+' !important;'+opacityStyle+tlStyle+'"'+ferAttr+'>'+pctLabel+'</td>';
       } else {
         let cls='td-day'+(isWknd?' wknd':'')+(isOther?' othermonth':'')+(isToday?' today-col':'')+(esFeriado?' feriado':'')+(isExtra?' extra':'');
         html+='<td class="'+cls+'" style="'+tlStyle+'"'+ferAttr+'></td>';
