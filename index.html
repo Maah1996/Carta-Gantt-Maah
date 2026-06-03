@@ -3466,7 +3466,17 @@ function render(){
       html+='<td class="td-obs">'+(r.obs||'')+'</td>';
     }
     html+='<td class="td-term">'+fmtDate(r.fecha)+'</td>';
-    html+='<td class="td-d" style="background:'+col.bg+';color:'+col.fg+';'+(col.hideNum?'border:1px solid #7AB034;':'')+'" title="'+(col.hideNum?'Vencido':dl)+'">'+(col.hideNum?'':dl)+'</td>';
+    // Para actividades rango (puntual+fechaInicio): mostrar % de avance en DÍAS
+    let diasHtml = col.hideNum ? '' : dl;
+    let diasTitle = col.hideNum ? 'Vencido' : dl;
+    if(r.fechaInicio instanceof Date && !isNaN(r.fechaInicio.getTime()) && r.freq==='puntual'){
+      const totalDias = Math.max(1, Math.round((r.fecha - r.fechaInicio) / 86400000));
+      const diasPasados = Math.max(0, Math.min(totalDias, Math.round((TODAY - r.fechaInicio) / 86400000)));
+      const pct = Math.round(diasPasados / totalDias * 100);
+      diasHtml = pct+'%';
+      diasTitle = 'Avance: '+pct+'% ('+diasPasados+'/'+totalDias+' días)';
+    }
+    html+='<td class="td-d" style="background:'+col.bg+';color:'+col.fg+';'+(col.hideNum?'border:1px solid #7AB034;':'')+'" title="'+diasTitle+'">'+(col.hideNum?'':diasHtml)+'</td>';
     if(r.isVirtualAnual){
       // Fila virtual (recurrente): solo lápiz con menú contextual
       const parentId = r.parentAnualId;
@@ -3511,7 +3521,11 @@ function render(){
         else                       barShape=' bar-mid';
         const ferCls=esFeriado?' feriado':'';
         const extCls=isExtra?' extra':'';
-        html+='<td class="bar-cell'+barShape+ferCls+extCls+'" style="background:'+col.bg+' !important;'+tlStyle+'"'+ferAttr+'></td>';
+        // Para rango (puntual+fechaInicio): días pasados con opacidad reducida
+        const esRango = r.fechaInicio instanceof Date && !isNaN(r.fechaInicio.getTime()) && r.freq==='puntual';
+        const esPasado = esRango && allDays[i].d < TODAY;
+        const opacityStyle = esPasado ? 'opacity:0.35;' : '';
+        html+='<td class="bar-cell'+barShape+ferCls+extCls+'" style="background:'+col.bg+' !important;'+opacityStyle+tlStyle+'"'+ferAttr+'></td>';
       } else {
         let cls='td-day'+(isWknd?' wknd':'')+(isOther?' othermonth':'')+(isToday?' today-col':'')+(esFeriado?' feriado':'')+(isExtra?' extra':'');
         html+='<td class="'+cls+'" style="'+tlStyle+'"'+ferAttr+'></td>';
