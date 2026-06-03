@@ -1479,9 +1479,10 @@ function loadTiposDesdeFirebase(){
   });
 }
 function saveTiposCustom(){
-  // Guardar SOLO en Firebase bajo el userId — nunca en localStorage compartido
-  if(db && currentUser){
-    db.ref('gantt_maah/tipos_usuario/'+currentUser.id).set({
+  // Guardar bajo el usuario VISTO (si admin está viendo otra Gantt) o el propio
+  const targetId = (typeof viewingUserId !== 'undefined' && viewingUserId) ? viewingUserId : (currentUser ? currentUser.id : null);
+  if(db && targetId){
+    db.ref('gantt_maah/tipos_usuario/'+targetId).set({
       custom:  tiposCustom,
       ocultos: [...tiposOcultos]
     });
@@ -4203,7 +4204,15 @@ function adminVerGanttDeUsuario(userId, userName){
   document.getElementById('admin-back-name').textContent = userName;
   document.getElementById('admin-back-banner').classList.add('visible');
 
-  // 3. Conectar a Firebase del otro usuario (estado independiente)
+  // 3. Cargar tipos del usuario visto (independiente del admin)
+  tiposCustom = []; tiposOcultos = new Set();
+  db.ref('gantt_maah/tipos_usuario/'+userId).once('value', snap=>{
+    const d = snap.val();
+    if(d){ if(Array.isArray(d.custom)) tiposCustom=d.custom; if(Array.isArray(d.ocultos)) tiposOcultos=new Set(d.ocultos); }
+    refreshAllTipoSelects();
+  });
+
+  // 4. Conectar a Firebase del otro usuario (estado independiente)
   dbRef = db.ref('gantt_maah/actividades_por_usuario/'+userId);
   dbRef.on('value', snap=>{
     const data = snap.val();
@@ -4236,7 +4245,15 @@ function adminVolverAMiGantt(){
   if(badge) badge.textContent = '👤 '+currentUser.nombre+(currentUser.rol==='admin'?' ★':'');
   document.getElementById('admin-back-banner').classList.remove('visible');
 
-  // 2. Reconectar a los datos del admin
+  // 2. Restaurar tipos del admin
+  tiposCustom = []; tiposOcultos = new Set();
+  db.ref('gantt_maah/tipos_usuario/'+currentUser.id).once('value', snap=>{
+    const d = snap.val();
+    if(d){ if(Array.isArray(d.custom)) tiposCustom=d.custom; if(Array.isArray(d.ocultos)) tiposOcultos=new Set(d.ocultos); }
+    refreshAllTipoSelects();
+  });
+
+  // 3. Reconectar a los datos del admin
   dbRef = db.ref('gantt_maah/actividades_por_usuario/'+currentUser.id);
   dbRef.on('value', snap=>{
     const data = snap.val();
