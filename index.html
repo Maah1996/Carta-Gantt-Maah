@@ -292,6 +292,21 @@ table.gantt tr.row-priori td.td-act::before{content:'⚑ ';}
 /* ── PRINT: se maneja por JS abriendo ventana nueva, no por @media print ── */
 @media print{ body{ display:none !important; } }
 
+/* ── MODO SOLO-LECTURA (usuarios no-admin) ── */
+body.readonly-user #btn-recurrentes,
+body.readonly-user #btn-extended,
+body.readonly-user #btn-exit-extended,
+body.readonly-user #btn-user-mgmt,
+body.readonly-user #fb-status,
+body.readonly-user #app-stats-bar,
+body.readonly-user #app-toolbar,
+body.readonly-user #admin-users-wrap,
+body.readonly-user #admin-back-banner,
+body.readonly-user .sidebar,
+body.readonly-user .td-del,
+body.readonly-user .th-col-del { display:none !important; }
+body.readonly-user #app-main { grid-template-columns: 1fr !important; }
+
 /* ── RESPONSIVE ── */
 /* Tablet y móvil: sidebar arriba, Gantt abajo con scroll */
 @media(max-width:900px){
@@ -397,7 +412,7 @@ table.gantt tr.row-priori td.td-act::before{content:'⚑ ';}
     <span id="user-badge" style="font-size: 11px; padding: 4px 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.18); color: rgb(255, 255, 255); font-weight: 600; display: inline-block;">👤 ADMIN ★</span>
     <button id="logout-btn" onclick="doLogout()" style="font-size: 10px; padding: 4px 10px; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.3); color: rgb(255, 255, 255); border-radius: 5px; cursor: pointer; display: inline-block;" title="Cerrar sesión">↪ Salir</button>
     <!-- FIX 5: botón imprimir -->
-    <button class="btn-print" onclick="openAnualesModal()" title="Ver/editar actividades que se repiten (anuales, mensuales, semanales)">📅 Recurrentes</button>
+    <button class="btn-print" id="btn-recurrentes" onclick="openAnualesModal()" title="Ver/editar actividades que se repiten (anuales, mensuales, semanales)">📅 Recurrentes</button>
     <button class="btn-print" onclick="printGantt()">🖶 Imprimir carta</button>
     <button class="btn-print" id="btn-extended" onclick="openExtendedModal()" style="background:#f39c12;border-color:#f39c12;" title="Imprimir o ver mes completo + semanas extras del mes siguiente">📅+ Imprimir extendido</button>
     <button class="btn-print" id="btn-exit-extended" onclick="exitExtendedView()" style="background:#0F6E56;border-color:#0F6E56;display:none;" title="Volver a la vista normal">↩ Volver a vista normal</button>
@@ -3767,6 +3782,9 @@ function iniciarGanttDelUsuario(){
     buildAdminUserChips();
     const btnUM = document.getElementById('btn-user-mgmt');
     if(btnUM) btnUM.style.display='inline-block';
+  } else {
+    // Usuario normal: modo solo-lectura — CSS se encarga de ocultar todo lo restringido
+    document.body.classList.add('readonly-user');
   }
 
   // Conectar a la ruta de ESTE usuario (cada uno tiene la suya)
