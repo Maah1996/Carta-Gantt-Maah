@@ -1484,7 +1484,7 @@ function fillTipoSelect(selectEl, currentValue){
     html += '<option value="'+t.value+'"'+(t.value===currentValue?' selected':'')+'>'+t.label+'</option>';
   });
   html += '<option value="__add__">+ Agregar nueva opción...</option>';
-  if(tiposCustom.length) html += '<option value="__delete__">− Eliminar categoría...</option>';
+  html += '<option value="__delete__">− Eliminar categoría...</option>';
   selectEl.innerHTML = html;
   if(currentValue && !all.find(t=>t.value===currentValue)){
     selectEl.value = 'revision';
