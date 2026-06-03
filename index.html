@@ -3441,19 +3441,21 @@ function render(){
       d.d.getDate()===r.fecha.getDate()
     );
 
-    // Calcular rango de barra: solo para freq==='rango' se pinta desde fechaInicio hasta fecha
+    // Calcular rango de barra Gantt real (fechaInicio → fecha)
     let startIdx=-1;
-    if(r.freq==='rango' && r.fechaInicio instanceof Date && !isNaN(r.fechaInicio.getTime())){
+    if(r.fechaInicio instanceof Date && !isNaN(r.fechaInicio.getTime())){
       startIdx=allDays.findIndex(d=>
         d.d.getFullYear()===r.fechaInicio.getFullYear()&&
         d.d.getMonth()===r.fechaInicio.getMonth()&&
         d.d.getDate()===r.fechaInicio.getDate()
       );
+      // fechaInicio antes del rango visible → barra empieza desde columna 0
       if(startIdx===-1 && allDays.length>0 && r.fechaInicio<allDays[0].d) startIdx=0;
     }
     let effStart=startIdx>=0?startIdx:barIdx;
     let effEnd=barIdx>=0?barIdx:-1;
-    if(r.freq==='rango' && barIdx===-1 && startIdx>=0 && allDays.length>0 && r.fecha>allDays[allDays.length-1].d){
+    // fecha después del rango visible pero inicio está en vista → extender barra hasta el final
+    if(barIdx===-1 && startIdx>=0 && allDays.length>0 && r.fecha>allDays[allDays.length-1].d){
       effEnd=allDays.length-1;
     }
     const hasBar=effStart>=0 && effEnd>=0 && effStart<=effEnd;
@@ -3525,7 +3527,10 @@ function render(){
         const ferCls=esFeriado?' feriado':'';
         const extCls=isExtra?' extra':'';
         // Para rango (puntual+fechaInicio): días pasados con opacidad reducida + % en transición
-        const esRango = r.freq==='rango' && r.fechaInicio instanceof Date && !isNaN(r.fechaInicio.getTime());
+        // esRango: freq='rango' explícito, O puntual+fechaInicio anterior a fecha (compatibilidad)
+        const esRango = r.fechaInicio instanceof Date && !isNaN(r.fechaInicio.getTime())
+          && r.fechaInicio < r.fecha
+          && (r.freq==='rango' || r.freq==='puntual');
         const esPasado = esRango && allDays[i].d < TODAY;
         const opacityStyle = esPasado ? 'opacity:0.35;' : '';
         // Mostrar % solo en la celda de hoy (si cae dentro de la barra) o en la primera celda futura
