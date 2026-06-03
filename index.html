@@ -394,7 +394,37 @@ body.readonly-user #admin-back-banner { display:none !important; }
     </div>
     <div id="login-error" style="display:none;color:#c0392b;font-size:11px;background:#ffebee;border:1px solid #ffcdd2;border-radius:5px;padding:6px 9px;margin-bottom:10px;text-align:center;"></div>
     <button id="login-btn" onclick="doLogin()" style="width:100%;padding:10px;font-size:13px;font-weight:700;background:#1a3f6f;color:#fff;border:none;border-radius:6px;cursor:pointer;">Ingresar a mi Gantt</button>
-    <p style="font-size:10px;color:#a0aec0;text-align:center;margin-top:12px;line-height:1.5;">Cada usuario tiene su propia carta Gantt privada.<br>Usa la misma clave de la Agenda MAAH.</p>
+    <p style="font-size:10px;color:#a0aec0;text-align:center;margin-top:12px;line-height:1.5;">Cada usuario tiene su propia carta Gantt privada.</p>
+    <p style="text-align:center;margin-top:6px;"><a href="#" onclick="mostrarRecuperarClave(event)" style="font-size:10px;color:#4a90d9;text-decoration:none;">¿Olvidaste tu clave? Haz clic aquí</a></p>
+    <div id="recuperar-clave-msg" style="display:none;margin-top:10px;background:#e8f4fd;border:1px solid #bee3f8;border-radius:6px;padding:8px 12px;font-size:11px;color:#2b6cb0;text-align:center;line-height:1.5;">
+      Contacta al administrador para restablecer tu clave.<br>
+      <strong>No compartas tu clave con nadie.</strong>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAMBIAR CLAVE -->
+<div id="modal-cambiar-clave" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:10px;padding:24px;width:320px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    <h3 style="font-size:14px;font-weight:700;color:#1a3f6f;margin-bottom:4px;">🔑 Cambiar clave</h3>
+    <p style="font-size:11px;color:#718096;margin-bottom:14px;">Ingresa tu clave actual y la nueva clave.</p>
+    <div style="margin-bottom:10px;">
+      <label style="display:block;font-size:11px;font-weight:600;color:#4a5568;margin-bottom:4px;">Clave actual</label>
+      <input type="password" id="cc-actual" placeholder="••••" maxlength="20" style="width:100%;font-size:13px;padding:7px 10px;border:1px solid #cbd5e0;border-radius:5px;text-align:center;letter-spacing:2px;">
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="display:block;font-size:11px;font-weight:600;color:#4a5568;margin-bottom:4px;">Nueva clave</label>
+      <input type="password" id="cc-nueva" placeholder="Mínimo 4 caracteres" maxlength="20" style="width:100%;font-size:13px;padding:7px 10px;border:1px solid #cbd5e0;border-radius:5px;text-align:center;letter-spacing:2px;">
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="display:block;font-size:11px;font-weight:600;color:#4a5568;margin-bottom:4px;">Confirmar nueva clave</label>
+      <input type="password" id="cc-confirma" placeholder="Repite la nueva clave" maxlength="20" style="width:100%;font-size:13px;padding:7px 10px;border:1px solid #cbd5e0;border-radius:5px;text-align:center;letter-spacing:2px;">
+    </div>
+    <div id="cc-msg" style="display:none;font-size:11px;border-radius:5px;padding:6px 9px;margin-bottom:10px;text-align:center;"></div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button onclick="cerrarCambiarClave()" style="flex:1;padding:8px;border-radius:5px;border:none;background:#e2e8f0;color:#4a5568;font-size:11px;font-weight:600;cursor:pointer;">Cancelar</button>
+      <button onclick="guardarNuevaClave()" style="flex:2;padding:8px;border-radius:5px;border:none;background:#1a3f6f;color:#fff;font-size:11px;font-weight:600;cursor:pointer;">Guardar nueva clave</button>
+    </div>
   </div>
 </div>
 
@@ -404,6 +434,7 @@ body.readonly-user #admin-back-banner { display:none !important; }
   <div class="header-right">
     <span id="user-badge" style="font-size: 11px; padding: 4px 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.18); color: rgb(255, 255, 255); font-weight: 600; display: inline-block;">👤 ADMIN ★</span>
     <button id="logout-btn" onclick="doLogout()" style="font-size: 10px; padding: 4px 10px; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.3); color: rgb(255, 255, 255); border-radius: 5px; cursor: pointer; display: inline-block;" title="Cerrar sesión">↪ Salir</button>
+    <button id="btn-cambiar-clave" onclick="abrirCambiarClave()" style="display:none;font-size:10px;padding:4px 10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:5px;cursor:pointer;" title="Cambiar mi clave">🔑 Clave</button>
     <!-- FIX 5: botón imprimir -->
     <button class="btn-print" id="btn-recurrentes" onclick="openAnualesModal()" title="Ver/editar actividades que se repiten (anuales, mensuales, semanales)">📅 Recurrentes</button>
     <button class="btn-print" onclick="printGantt()">🖶 Imprimir carta</button>
@@ -3747,6 +3778,78 @@ function doLogout(){
   firebase.auth().signOut().finally(()=>{ location.reload(); });
 }
 
+// ── RECUPERAR CLAVE (pantalla de login) ──
+function mostrarRecuperarClave(e){
+  e.preventDefault();
+  const msg = document.getElementById('recuperar-clave-msg');
+  msg.style.display = msg.style.display === 'none' ? 'block' : 'none';
+}
+
+// ── CAMBIAR CLAVE (usuario logueado) ──
+function abrirCambiarClave(){
+  document.getElementById('cc-actual').value='';
+  document.getElementById('cc-nueva').value='';
+  document.getElementById('cc-confirma').value='';
+  const msg=document.getElementById('cc-msg');
+  msg.style.display='none';
+  document.getElementById('modal-cambiar-clave').style.display='flex';
+  setTimeout(()=>document.getElementById('cc-actual').focus(),100);
+}
+function cerrarCambiarClave(){
+  document.getElementById('modal-cambiar-clave').style.display='none';
+}
+async function guardarNuevaClave(){
+  const actual   = document.getElementById('cc-actual').value.trim();
+  const nueva    = document.getElementById('cc-nueva').value.trim();
+  const confirma = document.getElementById('cc-confirma').value.trim();
+  const msg      = document.getElementById('cc-msg');
+
+  const showMsg=(txt,ok)=>{
+    msg.textContent=txt;
+    msg.style.cssText='display:block;font-size:11px;border-radius:5px;padding:6px 9px;margin-bottom:10px;text-align:center;'
+      +(ok?'background:#f0fff4;border:1px solid #9ae6b4;color:#276749;':'background:#fff5f5;border:1px solid #fc8181;color:#c53030;');
+  };
+
+  if(!actual){showMsg('Ingresa tu clave actual.',false);return;}
+  if(nueva.length<4){showMsg('La nueva clave debe tener al menos 4 caracteres.',false);return;}
+  if(nueva!==confirma){showMsg('Las claves nuevas no coinciden.',false);return;}
+
+  // Verificar clave actual contra Firebase DB
+  const snap = await db.ref('maah_usuarios/'+currentUser.id+'/pass').once('value');
+  const passDB = String(snap.val()||'').trim();
+  if(passDB !== actual){showMsg('La clave actual es incorrecta.',false);return;}
+
+  // Actualizar en Firebase DB
+  await db.ref('maah_usuarios/'+currentUser.id+'/pass').set(nueva);
+  // Actualizar en Firebase Auth
+  const fbPass = nueva+'@@maah';
+  try{ await firebase.auth().currentUser.updatePassword(fbPass); }catch(e){}
+
+  showMsg('✅ Clave actualizada correctamente.',true);
+  setTimeout(()=>cerrarCambiarClave(),1500);
+}
+
+// ── RESETEAR CLAVE (solo admin, desde panel de usuarios) ──
+async function resetearClaveUsuario(userId, nombre){
+  const nuevaClave = prompt('Nueva clave para '+nombre+' (mínimo 4 caracteres):');
+  if(!nuevaClave || nuevaClave.trim().length < 4){
+    if(nuevaClave !== null) alert('Clave demasiado corta. Mínimo 4 caracteres.');
+    return;
+  }
+  const claveOk = nuevaClave.trim();
+  await db.ref('maah_usuarios/'+userId+'/pass').set(claveOk);
+  // Intentar actualizar Firebase Auth si el usuario ya activó su cuenta
+  const snap = await db.ref('maah_usuarios/'+userId+'/authUid').once('value');
+  if(snap.val()){
+    // No podemos cambiar la contraseña de otro usuario desde el cliente sin re-autenticación.
+    // En el próximo login, la app detectará auth/wrong-password y verificará contra la DB,
+    // auto-creando una nueva cuenta Auth con la clave nueva.
+    await db.ref('maah_usuarios/'+userId+'/authUid').remove();
+  }
+  alert('✅ Clave de '+nombre+' restablecida. El usuario deberá ingresar con la nueva clave.');
+  renderUserMgmtList();
+}
+
 function iniciarGanttDelUsuario(){
   // Mostrar toda la app (estaba oculta hasta autenticarse)
   ['app-header','app-stats-bar','app-toolbar','app-main'].forEach(id=>{
@@ -3759,6 +3862,8 @@ function iniciarGanttDelUsuario(){
   badge.textContent='👤 '+currentUser.nombre+(currentUser.rol==='admin'?' ★':'');
   badge.style.display='inline-block';
   document.getElementById('logout-btn').style.display='inline-block';
+  const btnClave=document.getElementById('btn-cambiar-clave');
+  if(btnClave) btnClave.style.display='inline-block';
 
   hideLoginOverlay();
 
@@ -4484,6 +4589,7 @@ function renderUserMgmtList(){
       +rolBadge
       +'<span class="um-user-auth">'+authSt+'</span>'
       +'<button class="um-btn um-btn-edit" onclick="openEditUserForm(\''+u.id+'\')">Editar</button>'
+      +'<button class="um-btn" style="background:#e8f0fb;color:#1a3f6f;border:1px solid #bee3f8;" onclick="resetearClaveUsuario(\''+u.id+'\',\''+u.nombre.replace(/'/g,"\\'")+'\')" title="Restablecer clave">🔑 Clave</button>'
       +delBtn
       +'</div>';
   });
