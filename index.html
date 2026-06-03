@@ -1882,6 +1882,8 @@ function aplicarFrecuenciaACto(act, freq, fechaBase){
     act.freq='semanal';
     act.semanal=true;
     act.dow=fechaBase.getDay();           // 0=dom..6=sáb
+  } else if(freq==='rango'){
+    act.freq='puntual';                   // rango se guarda como puntual+fechaInicio
   }
 }
 
@@ -2023,6 +2025,10 @@ function fillEditForm(id){
     else if(act.mensual)  freqActual='mensual';
     else if(act.semanal)  freqActual='semanal';
     else                  freqActual='puntual';
+  }
+  // Si es puntual pero tiene fechaInicio → es una actividad Desde/Hasta
+  if(freqActual==='puntual' && act.fechaInicio instanceof Date && !isNaN(act.fechaInicio.getTime())){
+    freqActual='rango';
   }
   editFreq = freqActual;
   const freqSel = document.getElementById('edit-freq');
