@@ -2090,6 +2090,7 @@ function saveEdit(){
   const obsTxt = toUpper(document.getElementById('edit-obs').value);
   const fv     = document.getElementById('edit-fecha').value;
   const fiv    = document.getElementById('edit-inicio').value;
+  const esRecurrente = (editFreq==='semanal'||editFreq==='mensual'||editFreq==='anual');
   if(!actTxt||!fv){alert('Complete la descripción y la fecha.');return;}
   const [yr,mo,da]=fv.split('-').map(Number);
   const nuevaFecha=new Date(yr,mo-1,da);
