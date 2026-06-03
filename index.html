@@ -1445,34 +1445,40 @@ function rangoSemanaActual(){
 
 // ── TIPO / FORMULARIO ─────────────────────────────────────────
 // Tipos por defecto (no se pueden borrar)
-const TIPOS_BASE = [
+const TIPOS_BASE_DEFAULT = [
   {value:'revision',    label:'Revisión'},
   {value:'plazo',       label:'Plazo'},
   {value:'aniversario', label:'Aniversario'},
   {value:'clases',      label:'Clases'},
   {value:'otro',        label:'Otro'}
 ];
-const TIPOS_CUSTOM_KEY = 'gantt_maah_tipos_custom';
-let tiposCustom = [];   // [{value, label}]
+const TIPOS_CUSTOM_KEY   = 'gantt_maah_tipos_custom';
+const TIPOS_OCULTOS_KEY  = 'gantt_maah_tipos_ocultos'; // base types hidden by user
+let tiposCustom  = [];   // [{value, label}] — tipos añadidos
+let tiposOcultos = new Set(); // values de tipos base ocultos
 let tipoAddTarget = 'add';
 
 function loadTiposCustom(){
   try{
     const raw = localStorage.getItem(TIPOS_CUSTOM_KEY);
-    if(raw){
-      const parsed = JSON.parse(raw);
-      if(Array.isArray(parsed)) tiposCustom = parsed;
-    }
-  }catch(e){ tiposCustom = []; }
+    if(raw){ const p=JSON.parse(raw); if(Array.isArray(p)) tiposCustom=p; }
+  }catch(e){ tiposCustom=[]; }
+  try{
+    const raw2 = localStorage.getItem(TIPOS_OCULTOS_KEY);
+    if(raw2){ const p=JSON.parse(raw2); if(Array.isArray(p)) tiposOcultos=new Set(p); }
+  }catch(e){ tiposOcultos=new Set(); }
 }
 function saveTiposCustom(){
   try{ localStorage.setItem(TIPOS_CUSTOM_KEY, JSON.stringify(tiposCustom)); }catch(e){}
+  try{ localStorage.setItem(TIPOS_OCULTOS_KEY, JSON.stringify([...tiposOcultos])); }catch(e){}
 }
 function getAllTipos(){
-  return [...TIPOS_BASE, ...tiposCustom];
+  const base = TIPOS_BASE_DEFAULT.filter(t => !tiposOcultos.has(t.value));
+  return [...base, ...tiposCustom];
 }
 function tipoLabel(value){
-  const t = getAllTipos().find(x=>x.value===value);
+  const all = [...TIPOS_BASE_DEFAULT, ...tiposCustom];
+  const t = all.find(x=>x.value===value);
   return t ? t.label : (value||'').toString();
 }
 function fillTipoSelect(selectEl, currentValue){
@@ -1483,10 +1489,10 @@ function fillTipoSelect(selectEl, currentValue){
     html += '<option value="'+t.value+'"'+(t.value===currentValue?' selected':'')+'>'+t.label+'</option>';
   });
   html += '<option value="__add__">+ Agregar nueva opción...</option>';
-  if(tiposCustom.length) html += '<option value="__delete__">− Eliminar categoría...</option>';
+  html += '<option value="__delete__">− Gestionar categorías...</option>';
   selectEl.innerHTML = html;
   if(currentValue && !all.find(t=>t.value===currentValue)){
-    selectEl.value = 'revision';
+    selectEl.value = all.length ? all[0].value : '';
   }
 }
 function refreshAllTipoSelects(){
@@ -1626,27 +1632,56 @@ function openTipoAddModal(where){
 function renderTipoCustomList(){
   const container = document.getElementById('tipo-custom-list');
   if(!container) return;
-  if(!tiposCustom.length){
-    container.innerHTML = '';
-    return;
-  }
-  container.innerHTML =
-    '<div style="font-size:11px;color:#888;margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Categorías personalizadas</div>' +
-    tiposCustom.map(t=>
+  const baseActivos   = TIPOS_BASE_DEFAULT.filter(t => !tiposOcultos.has(t.value));
+  const baseOcultos   = TIPOS_BASE_DEFAULT.filter(t =>  tiposOcultos.has(t.value));
+  const hayRestaurar  = baseOcultos.length > 0;
+  let html = '';
+
+  if(baseActivos.length){
+    html += '<div style="font-size:10px;color:#888;margin-bottom:5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Tipos por defecto</div>';
+    html += baseActivos.map(t=>
       '<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:#f1f5f9;border-radius:5px;margin-bottom:4px;font-size:13px;">' +
-        '<span>' + t.label + '</span>' +
-        '<button onclick="deleteCustomTipo(\'' + t.value + '\')" style="background:#e53e3e;color:#fff;border:none;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;">✕ Eliminar</button>' +
+        '<span>'+t.label+'</span>' +
+        '<button onclick="deleteTipo(\'base\',\''+t.value+'\')" style="background:#e53e3e;color:#fff;border:none;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;">✕</button>' +
       '</div>'
     ).join('');
+  }
+  if(tiposCustom.length){
+    html += '<div style="font-size:10px;color:#888;margin:8px 0 5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Tipos personalizados</div>';
+    html += tiposCustom.map(t=>
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:#eef6ff;border-radius:5px;margin-bottom:4px;font-size:13px;">' +
+        '<span>'+t.label+'</span>' +
+        '<button onclick="deleteTipo(\'custom\',\''+t.value+'\')" style="background:#e53e3e;color:#fff;border:none;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;">✕</button>' +
+      '</div>'
+    ).join('');
+  }
+  if(!baseActivos.length && !tiposCustom.length){
+    html += '<div style="color:#a0aec0;font-size:12px;text-align:center;padding:10px;">No hay categorías activas.</div>';
+  }
+  if(hayRestaurar){
+    html += '<button onclick="restaurarTiposBase()" style="margin-top:10px;width:100%;padding:7px;background:#2d6a9f;color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;">↺ Restaurar tipos por defecto</button>';
+  }
+  container.innerHTML = html;
 }
 
-function deleteCustomTipo(value){
-  tiposCustom = tiposCustom.filter(t => t.value !== value);
+function deleteTipo(kind, value){
+  if(kind === 'base'){
+    tiposOcultos.add(value);
+  } else {
+    tiposCustom = tiposCustom.filter(t => t.value !== value);
+  }
   saveTiposCustom();
   renderTipoCustomList();
   refreshAllTipoSelects();
-  if(!tiposCustom.length) closeTipoDeleteModal();
 }
+function restaurarTiposBase(){
+  tiposOcultos.clear();
+  saveTiposCustom();
+  renderTipoCustomList();
+  refreshAllTipoSelects();
+}
+// Compat con código antiguo
+function deleteCustomTipo(value){ deleteTipo('custom', value); }
 
 function openTipoDeleteModal(){
   renderTipoCustomList();
