@@ -292,20 +292,13 @@ table.gantt tr.row-priori td.td-act::before{content:'⚑ ';}
 /* ── PRINT: se maneja por JS abriendo ventana nueva, no por @media print ── */
 @media print{ body{ display:none !important; } }
 
-/* ── MODO SOLO-LECTURA (usuarios no-admin) ── */
+/* ── USUARIOS NO-ADMIN: ocultar solo botones de header que no les corresponden ── */
 body.readonly-user #btn-recurrentes,
 body.readonly-user #btn-extended,
 body.readonly-user #btn-exit-extended,
 body.readonly-user #btn-user-mgmt,
-body.readonly-user #fb-status,
-body.readonly-user #app-stats-bar,
-body.readonly-user #app-toolbar,
 body.readonly-user #admin-users-wrap,
-body.readonly-user #admin-back-banner,
-body.readonly-user .sidebar,
-body.readonly-user .td-del,
-body.readonly-user .th-col-del { display:none !important; }
-body.readonly-user #app-main { grid-template-columns: 1fr !important; }
+body.readonly-user #admin-back-banner { display:none !important; }
 
 /* ── RESPONSIVE ── */
 /* Tablet y móvil: sidebar arriba, Gantt abajo con scroll */
@@ -3779,12 +3772,8 @@ function iniciarGanttDelUsuario(){
     document.body.classList.add('readonly-user');
   }
 
-  // Conectar a la ruta de datos:
-  // - Admin → sus propios datos
-  // - Usuario normal → datos del admin (lee la Gantt del admin en modo solo lectura)
-  const adminUser = usuariosCache.find(u => u.rol === 'admin');
-  const dataUserId = (currentUser.rol === 'admin') ? currentUser.id : (adminUser ? adminUser.id : currentUser.id);
-  dbRef = db.ref('gantt_maah/actividades_por_usuario/'+dataUserId);
+  // Conectar a la ruta de ESTE usuario (cada uno tiene la suya)
+  dbRef = db.ref('gantt_maah/actividades_por_usuario/'+currentUser.id);
 
   // Bandera para hacer la migración solo una vez
   let migracionIntentada = false;
