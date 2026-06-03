@@ -3779,8 +3779,12 @@ function iniciarGanttDelUsuario(){
     document.body.classList.add('readonly-user');
   }
 
-  // Conectar a la ruta de ESTE usuario (cada uno tiene la suya)
-  dbRef = db.ref('gantt_maah/actividades_por_usuario/'+currentUser.id);
+  // Conectar a la ruta de datos:
+  // - Admin → sus propios datos
+  // - Usuario normal → datos del admin (lee la Gantt del admin en modo solo lectura)
+  const adminUser = usuariosCache.find(u => u.rol === 'admin');
+  const dataUserId = (currentUser.rol === 'admin') ? currentUser.id : (adminUser ? adminUser.id : currentUser.id);
+  dbRef = db.ref('gantt_maah/actividades_por_usuario/'+dataUserId);
 
   // Bandera para hacer la migración solo una vez
   let migracionIntentada = false;
