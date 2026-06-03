@@ -1854,7 +1854,7 @@ function addActivity(){
     const ds=document.getElementById('f-dia-sel');
     if(ds) newAct.dia=Number(ds.value);
   } else if(cFreq==='rango'){
-    newAct.freq='puntual'; // rango = puntual con barra (fechaInicio+fecha ya asignados)
+    newAct.freq='rango'; // guardamos explícitamente para detectarlo al editar
   }
   acts.push(newAct);
   acts.sort((a,b)=>a.fecha-b.fecha);
@@ -1900,7 +1900,7 @@ function aplicarFrecuenciaACto(act, freq, fechaBase){
     act.semanal=true;
     act.dow=fechaBase.getDay();           // 0=dom..6=sáb
   } else if(freq==='rango'){
-    act.freq='puntual';                   // rango se guarda como puntual+fechaInicio
+    act.freq='rango';                     // guardado explícitamente como rango
   }
 }
 
@@ -2043,10 +2043,7 @@ function fillEditForm(id){
     else if(act.semanal)  freqActual='semanal';
     else                  freqActual='puntual';
   }
-  // Si es puntual pero tiene fechaInicio → es una actividad Desde/Hasta
-  if(freqActual==='puntual' && act.fechaInicio instanceof Date && !isNaN(act.fechaInicio.getTime())){
-    freqActual='rango';
-  }
+  // rango se detecta SOLO si freq === 'rango' en Firebase (no por inferencia)
   editFreq = freqActual;
   const freqSel = document.getElementById('edit-freq');
   if(freqSel) freqSel.value = freqActual;
@@ -3530,7 +3527,7 @@ function render(){
         const ferCls=esFeriado?' feriado':'';
         const extCls=isExtra?' extra':'';
         // Para rango (puntual+fechaInicio): días pasados con opacidad reducida + % en transición
-        const esRango = r.fechaInicio instanceof Date && !isNaN(r.fechaInicio.getTime()) && r.freq==='puntual';
+        const esRango = r.freq==='rango' && r.fechaInicio instanceof Date && !isNaN(r.fechaInicio.getTime());
         const esPasado = esRango && allDays[i].d < TODAY;
         const opacityStyle = esPasado ? 'opacity:0.35;' : '';
         // Mostrar % solo en la celda de hoy (si cae dentro de la barra) o en la primera celda futura
