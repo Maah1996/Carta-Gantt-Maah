@@ -1546,17 +1546,19 @@ function onFreqSelectChange(sel, where){
 }
 function toggleFechaInicioBlock(where, freq){
   if(where === 'add'){ updateFormForFreq(freq); return; }
-  // Formulario de edición — sin cambios
+  // Formulario de edición: solo mostrar fecha de inicio para actividades recurrentes
   const el = document.getElementById('edit-inicio-block');
   if(!el) return;
-  el.style.display = 'block';
-  el.classList.add('visible');
-  const hint = el.querySelector('.hint');
-  if(hint){
-    const recurrente = (freq==='semanal'||freq==='mensual'||freq==='anual');
-    hint.textContent = recurrente
-      ? 'La actividad se repetirá desde esta fecha hasta la fecha de término.'
-      : 'Fecha desde la que aparece la actividad en la carta Gantt.';
+  const esRecurrente = (freq==='semanal'||freq==='mensual'||freq==='anual');
+  if(esRecurrente){
+    el.style.display = 'block';
+    el.classList.add('visible');
+    const hint = el.querySelector('.hint');
+    if(hint) hint.textContent = 'La actividad se repetirá desde esta fecha hasta la fecha de término.';
+  } else {
+    // Puntual: ocultar fecha de inicio, solo mostrar fecha de término
+    el.style.display = 'none';
+    el.classList.remove('visible');
   }
 }
 
@@ -2032,10 +2034,7 @@ function fillEditForm(id){
   const freqSel = document.getElementById('edit-freq');
   if(freqSel) freqSel.value = freqActual;
   toggleFechaInicioBlock('edit', freqActual);
-
-  // Fecha de inicio — siempre visible
-  const inicioBlock = document.getElementById('edit-inicio-block');
-  if(inicioBlock) inicioBlock.style.display = 'block';
+  // La visibilidad del bloque de inicio ya la maneja toggleFechaInicioBlock
 
   const inicioInp = document.getElementById('edit-inicio');
   if(inicioInp){
