@@ -755,6 +755,7 @@ PERS. 11:45 A 15:00</td><td class="td-obs"><span class="obs-text">SABADOS</span>
         <label>Frecuencia</label>
         <select id="edit-freq" class="select-freq" onchange="onFreqSelectChange(this,&#39;edit&#39;)">
           <option value="puntual">Puntual</option>
+          <option value="rango">Desde / Hasta</option>
           <option value="semanal">Semanal</option>
           <option value="mensual">Mensual</option>
           <option value="anual">Anual</option>
@@ -1546,17 +1547,16 @@ function onFreqSelectChange(sel, where){
 }
 function toggleFechaInicioBlock(where, freq){
   if(where === 'add'){ updateFormForFreq(freq); return; }
-  // Formulario de edición: solo mostrar fecha de inicio para actividades recurrentes
+  // Formulario de edición: solo mostrar 2 fechas para Desde/Hasta
   const el = document.getElementById('edit-inicio-block');
   if(!el) return;
-  const esRecurrente = (freq==='semanal'||freq==='mensual'||freq==='anual');
-  if(esRecurrente){
+  if(freq === 'rango'){
     el.style.display = 'block';
     el.classList.add('visible');
     const hint = el.querySelector('.hint');
-    if(hint) hint.textContent = 'La actividad se repetirá desde esta fecha hasta la fecha de término.';
+    if(hint) hint.textContent = 'Fecha de inicio de la actividad.';
   } else {
-    // Puntual: ocultar fecha de inicio, solo mostrar fecha de término
+    // Puntual, Semanal, Mensual, Anual: solo 1 fecha
     el.style.display = 'none';
     el.classList.remove('visible');
   }
@@ -1582,20 +1582,14 @@ function updateFormForFreq(freq){
     if(inicioHint)  inicioHint.textContent  = 'La barra se pintará desde esta fecha hasta la de término.';
     if(fechaLabel)  fechaLabel.textContent  = 'Hasta (fin de barra)';
   } else if(freq === 'semanal'){
-    if(dowBlock) dowBlock.style.display = 'block';
-    if(inicioBlock){ inicioBlock.style.display='block'; inicioBlock.classList.add('visible'); }
-    if(inicioLabel) inicioLabel.textContent = 'Inicia desde (opcional)';
-    if(inicioHint)  inicioHint.textContent  = 'Desde cuándo repetir. Vacío = hoy.';
-    if(fechaLabel)  fechaLabel.textContent  = 'Repetir hasta';
+    if(inicioBlock) inicioBlock.style.display = 'none';
+    if(fechaLabel)  fechaLabel.textContent = 'Fecha (elige el día de la semana)';
   } else if(freq === 'mensual'){
-    if(diaBlock) diaBlock.style.display = 'block';
-    if(inicioBlock){ inicioBlock.style.display='block'; inicioBlock.classList.add('visible'); }
-    if(inicioLabel) inicioLabel.textContent = 'Inicia desde (opcional)';
-    if(inicioHint)  inicioHint.textContent  = 'Desde cuándo repetir. Vacío = hoy.';
-    if(fechaLabel)  fechaLabel.textContent  = 'Repetir hasta';
+    if(inicioBlock) inicioBlock.style.display = 'none';
+    if(fechaLabel)  fechaLabel.textContent = 'Fecha (elige el día del mes)';
   } else if(freq === 'anual'){
     if(inicioBlock) inicioBlock.style.display = 'none';
-    if(fechaLabel)  fechaLabel.textContent = 'Fecha (día y mes)';
+    if(fechaLabel)  fechaLabel.textContent = 'Fecha (día y mes que se repite)';
   }
   updateFreqPreview(freq);
 }
@@ -2034,7 +2028,7 @@ function fillEditForm(id){
   const freqSel = document.getElementById('edit-freq');
   if(freqSel) freqSel.value = freqActual;
   toggleFechaInicioBlock('edit', freqActual);
-  // La visibilidad del bloque de inicio ya la maneja toggleFechaInicioBlock
+  // Visibilidad del bloque inicio ya manejada por toggleFechaInicioBlock
 
   const inicioInp = document.getElementById('edit-inicio');
   if(inicioInp){
