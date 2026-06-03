@@ -4372,10 +4372,17 @@ function abrirModalTipo(tipoValue){
     const col = getColor(diff, a.type==='aniversario');
     const dl = dLabel(diff);
     const bg = idx%2===0?'#fff':'#f8fafc';
+    // Para rango: mostrar inicio → término
+    const esRangoAct = a.fechaInicio instanceof Date && !isNaN(a.fechaInicio.getTime()) && a.fechaInicio < a.fecha;
+    const fechaCell = esRangoAct
+      ? '<span style="color:#7d3c98;font-size:10px;font-weight:600;">'+fmtDate(a.fechaInicio)+'</span>'
+        +'<span style="color:#a0aec0;margin:0 3px;">→</span>'
+        +'<span>'+fmtDate(a.fecha)+'</span>'
+      : fmtDate(a.fecha);
     html += '<tr style="background:'+bg+';border-bottom:1px solid #edf2f7;">'
       + '<td style="padding:8px 10px;font-weight:600;color:#2d3748;">'+(a.priori?'⚑ ':'')+a.act+'</td>'
       + '<td style="padding:8px 10px;color:#718096;font-size:11px;">'+(a.obs||'—')+'</td>'
-      + '<td style="padding:8px 10px;text-align:center;color:#4a5568;font-size:11px;">'+fmtDate(a.fecha)+'</td>'
+      + '<td style="padding:8px 10px;text-align:center;color:#4a5568;font-size:11px;">'+fechaCell+'</td>'
       + '<td style="padding:8px 10px;text-align:center;"><span style="background:'+col.bg+';color:'+col.fg+';border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;">'+dl+'</span></td>'
       + '</tr>';
   });
