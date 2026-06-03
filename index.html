@@ -1459,38 +1459,33 @@ let tiposOcultos = new Set(); // valores de tipos base eliminados
 let tipoAddTarget = 'add';
 
 function loadTiposCustom(){
-  // Carga inicial desde localStorage como respaldo (antes de tener usuario)
-  try{
-    const raw = localStorage.getItem(TIPOS_CUSTOM_KEY);
-    if(raw){ const p=JSON.parse(raw); if(Array.isArray(p)) tiposCustom=p; }
-  }catch(e){ tiposCustom=[]; }
-  try{
-    const raw2 = localStorage.getItem(TIPOS_OCULTOS_KEY);
-    if(raw2){ const p=JSON.parse(raw2); if(Array.isArray(p)) tiposOcultos=new Set(p); }
-  }catch(e){ tiposOcultos=new Set(); }
+  // Solo inicializa en vacío — los tipos reales se cargan desde Firebase al loguearse
+  tiposCustom  = [];
+  tiposOcultos = new Set();
 }
 function loadTiposDesdeFirebase(){
-  // Cargar tipos del usuario actual desde Firebase (independiente por usuario)
+  // Cargar tipos del usuario actual desde Firebase (100% independiente por usuario)
   if(!db || !currentUser) return;
+  // Limpiar primero para no mezclar datos de otro usuario
+  tiposCustom  = [];
+  tiposOcultos = new Set();
   db.ref('gantt_maah/tipos_usuario/'+currentUser.id).once('value', snap=>{
     const data = snap.val();
-    if(!data) return;
-    if(Array.isArray(data.custom))  tiposCustom  = data.custom;
-    if(Array.isArray(data.ocultos)) tiposOcultos = new Set(data.ocultos);
+    if(data){
+      if(Array.isArray(data.custom))  tiposCustom  = data.custom;
+      if(Array.isArray(data.ocultos)) tiposOcultos = new Set(data.ocultos);
+    }
     refreshAllTipoSelects();
   });
 }
 function saveTiposCustom(){
-  // Guardar en Firebase por usuario
+  // Guardar SOLO en Firebase bajo el userId — nunca en localStorage compartido
   if(db && currentUser){
     db.ref('gantt_maah/tipos_usuario/'+currentUser.id).set({
       custom:  tiposCustom,
       ocultos: [...tiposOcultos]
     });
   }
-  // También localStorage como respaldo local
-  try{ localStorage.setItem(TIPOS_CUSTOM_KEY,  JSON.stringify(tiposCustom)); }catch(e){}
-  try{ localStorage.setItem(TIPOS_OCULTOS_KEY, JSON.stringify([...tiposOcultos])); }catch(e){}
 }
 function getAllTipos(){
   return [...TIPOS_BASE.filter(t=>!tiposOcultos.has(t.value)), ...tiposCustom];
