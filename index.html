@@ -3653,7 +3653,13 @@ function cargarUsuariosAgenda(){
       pendingAuthUid = null;
     } else {
       const authUser = firebase.auth().currentUser;
-      if(!authUser) showLoginOverlay();
+      if(authUser){
+        // ya hay sesión Firebase activa
+      } else {
+        // Intentar SSO desde la Agenda MAAH (ticket en localStorage)
+        const ssoOk = intentarSSOdesdeAgenda();
+        if(!ssoOk) showLoginOverlay();
+      }
     }
   }, err=>{
     console.error('Error cargando usuarios:', err);
@@ -3662,6 +3668,28 @@ function cargarUsuariosAgenda(){
     errBox.style.display='block';
     showLoginOverlay();
   });
+}
+
+// ── SSO desde Agenda MAAH ────────────────────────────────────
+// La Agenda guarda un ticket en localStorage('maah_session') al abrir la Gantt.
+// Si el ticket es válido (< 30 min), lo usamos para auto-loguearnos sin pedir clave.
+function intentarSSOdesdeAgenda(){
+  try{
+    const raw = localStorage.getItem('maah_session');
+    if(!raw) return false;
+    const ticket = JSON.parse(raw);
+    if(!ticket || !ticket.userId || !ticket.expira) return false;
+    if(Date.now() > ticket.expira){ localStorage.removeItem('maah_session'); return false; }
+    const u = usuariosCache.find(x => x.id === ticket.userId);
+    if(!u) return false;
+    // Ticket válido → iniciar sesión directamente
+    currentUser = u;
+    hideLoginOverlay();
+    const btn = document.getElementById('login-btn');
+    if(btn){ btn.textContent='Ingresar a mi Gantt'; btn.disabled=false; }
+    iniciarGanttDelUsuario();
+    return true;
+  }catch(e){ return false; }
 }
 
 // ── FIREBASE AUTH ────────────────────────────────────────────
