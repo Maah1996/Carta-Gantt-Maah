@@ -3723,6 +3723,7 @@ function cargarUsuariosAgenda(){
 // estaba abierta o cerrada cuando RegDoc guardó el documento.
 function importarDesdeRGDOC(){
   if(!dbRef) return;
+  if(_rgdocImportado) return; // ya se importó en esta sesión
   const acto = _rgdocPendingPayload || (function(){ try{ return JSON.parse(localStorage.getItem('rgdoc_to_gantt')); }catch(e){ return null; } })();
   if(!acto || !acto.fecha) return;
 
@@ -3737,7 +3738,8 @@ function importarDesdeRGDOC(){
     }
   }
 
-  // Consumir el payload
+  // Consumir el payload — marcar como importado para esta sesión
+  _rgdocImportado = true;
   _rgdocPendingPayload = null;
   localStorage.removeItem('rgdoc_to_gantt');
 
@@ -3799,6 +3801,7 @@ function debugRGDOC(){
 }
 // Payload desde URL hash — guardado en memoria (no localStorage)
 let _rgdocPendingPayload = null;
+let _rgdocImportado = false; // flag de sesión: solo importar una vez por carga de página
 (function(){
   try{
     const hash = window.location.hash
