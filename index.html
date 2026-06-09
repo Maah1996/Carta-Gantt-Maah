@@ -3637,6 +3637,7 @@ const FB_CONFIGURED = FB_CONFIG.apiKey !== "TU_API_KEY";
 
 let db = null;
 let dbRef = null;
+let myDbRef = null; // Siempre apunta al usuario logueado (no cambia al ver otra Gantt)
 let fbListener = null;
 let fbOnline = false;
 
@@ -3721,7 +3722,7 @@ function cargarUsuariosAgenda(){
 // Polling cada 3s: detecta payload en localStorage sin importar si la Gantt
 // estaba abierta o cerrada cuando RegDoc guardó el documento.
 function importarDesdeRGDOC(){
-  if(!dbRef) return;
+  if(!myDbRef) return;
   const raw = localStorage.getItem('rgdoc_to_gantt');
   if(!raw) return;
   try{
@@ -3744,26 +3745,24 @@ function importarDesdeRGDOC(){
     };
     acts.push(newAct);
     acts.sort((a,b)=>a.fecha-b.fecha);
-    saveActToFB(newAct);
+    // Guardar siempre en la Gantt del usuario logueado (myDbRef)
+    const toSave={...newAct, fecha: newAct.fecha.toISOString(), fechaInicio: null};
+    myDbRef.child(String(newAct.id)).set(toSave);
     rebuildMonthSelect();
     rebuildWeekSelect();
     render();
-    // Toast visible
-    (function(){
-      var t=document.createElement('div');
-      t.textContent='📥 Actividad recibida desde Registro Documental';
-      t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a3f6f;color:#fff;padding:12px 24px;border-radius:10px;font-size:13px;font-weight:700;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,.3);';
-      document.body.appendChild(t);
-      setTimeout(function(){t.remove();},5000);
-    })();
+    var t=document.createElement('div');
+    t.textContent='📥 Actividad recibida desde Registro Documental';
+    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a3f6f;color:#fff;padding:12px 24px;border-radius:10px;font-size:13px;font-weight:700;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,.3);';
+    document.body.appendChild(t);
+    setTimeout(function(){t.remove();},5000);
   }catch(e){ console.error('RGDOC import error:',e); }
 }
-setInterval(importarDesdeRGDOC, 3000);
 
 function debugRGDOC(){
   const raw = localStorage.getItem('rgdoc_to_gantt');
   if(!raw){
-    alert('❌ No hay payload en localStorage.\nEsto significa que ambas apps NO comparten storage, o el payload ya fue procesado.\n\nAsegúrate de:\n1. Abrir AMBAS apps en el MISMO navegador\n2. No usar modo privado/incógnito');
+    alert('❌ No hay payload en localStorage.\n\nmyDbRef: '+(myDbRef?'OK':'NULL')+'\ndbRef: '+(dbRef?'OK':'NULL')+'\n\nSi myDbRef es NULL: recarga la Gantt (Ctrl+Shift+R) y vuelve a intentar.');
     return;
   }
   try{
@@ -3773,6 +3772,8 @@ function debugRGDOC(){
     }
   }catch(e){ alert('Error leyendo payload: '+e.message); }
 }
+setInterval(importarDesdeRGDOC, 3000);
+
 // ─────────────────────────────────────────────────────────────
 
 // ── SSO desde Agenda MAAH ────────────────────────────────────
@@ -4035,6 +4036,7 @@ function iniciarGanttDelUsuario(){
 
   // Conectar a la ruta de ESTE usuario (cada uno tiene la suya)
   dbRef = db.ref('gantt_maah/actividades_por_usuario/'+currentUser.id);
+  myDbRef = dbRef; // Siempre apunta al usuario logueado, aunque admin vea otra Gantt
 
   // Bandera para hacer la migración solo una vez
   let migracionIntentada = false;
