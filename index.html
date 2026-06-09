@@ -3778,7 +3778,22 @@ function debugRGDOC(){
     }
   }catch(e){ alert('Error leyendo payload: '+e.message); }
 }
-// Import solo manual via botón 📥 RegDoc (no polling automático)
+// Leer payload desde URL hash al cargar (mecanismo principal)
+function checkUrlHashRGDOC(){
+  try{
+    const hash = window.location.hash
+    if(!hash.startsWith('#rgdoc=')) return
+    const encoded = hash.slice(7)
+    const payload = JSON.parse(decodeURIComponent(escape(atob(encoded))))
+    history.replaceState(null,'',window.location.pathname)
+    localStorage.setItem('rgdoc_to_gantt', JSON.stringify(payload))
+  }catch(e){}
+}
+checkUrlHashRGDOC()
+window.addEventListener('hashchange', function(){
+  checkUrlHashRGDOC()
+  if(dbRef) importarDesdeRGDOC()
+})
 
 // ─────────────────────────────────────────────────────────────
 
