@@ -3747,6 +3747,14 @@ function importarDesdeRGDOC(){
     rebuildMonthSelect();
     rebuildWeekSelect();
     render();
+    // Toast visible
+    (function(){
+      var t=document.createElement('div');
+      t.textContent='📥 Actividad recibida desde Registro Documental';
+      t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a3f6f;color:#fff;padding:12px 24px;border-radius:10px;font-size:13px;font-weight:700;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,.3);';
+      document.body.appendChild(t);
+      setTimeout(function(){t.remove();},5000);
+    })();
   }catch(e){ console.error('RGDOC import error:',e); }
 }
 setInterval(importarDesdeRGDOC, 3000);
