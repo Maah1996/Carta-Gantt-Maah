@@ -442,6 +442,7 @@ body.readonly-user #admin-back-banner { display:none !important; }
     <button class="btn-print" id="btn-extended" onclick="openExtendedModal()" style="background:#f39c12;border-color:#f39c12;" title="Imprimir o ver mes completo + semanas extras del mes siguiente">📅+ Imprimir extendido</button>
     <button class="btn-print" id="btn-exit-extended" onclick="exitExtendedView()" style="background:#0F6E56;border-color:#0F6E56;display:none;" title="Volver a la vista normal">↩ Volver a vista normal</button>
     <button class="btn-print" id="btn-user-mgmt" onclick="openUserMgmtPanel()" style="display:none;background:rgba(74,85,104,.5);border-color:rgba(255,255,255,.4);" title="Gestión de usuarios">⚙️ Usuarios</button>
+    <button class="btn-print" id="btn-rgdoc-import" onclick="debugRGDOC()" style="background:#b3d9f7;color:#1a3f6f;border-color:#b3d9f7;font-weight:800;" title="Importar desde Registro Documental">📥 RegDoc</button>
     <span id="fb-status" style="font-size: 10px; padding: 3px 10px; border-radius: 12px; background: rgba(46, 125, 50, 0.3); color: rgb(165, 214, 167);">● En línea</span>
     <span class="today-badge" id="today-lbl">HOY: 30/abr/2026</span>
   </div>
@@ -3758,6 +3759,20 @@ function importarDesdeRGDOC(){
   }catch(e){ console.error('RGDOC import error:',e); }
 }
 setInterval(importarDesdeRGDOC, 3000);
+
+function debugRGDOC(){
+  const raw = localStorage.getItem('rgdoc_to_gantt');
+  if(!raw){
+    alert('❌ No hay payload en localStorage.\nEsto significa que ambas apps NO comparten storage, o el payload ya fue procesado.\n\nAsegúrate de:\n1. Abrir AMBAS apps en el MISMO navegador\n2. No usar modo privado/incógnito');
+    return;
+  }
+  try{
+    const acto = JSON.parse(raw);
+    if(confirm('✅ Payload encontrado:\n\nActividad: '+acto.act+'\nPlazo: '+acto.fecha+'\nObs: '+acto.obs+'\n\n¿Importar ahora?')){
+      importarDesdeRGDOC();
+    }
+  }catch(e){ alert('Error leyendo payload: '+e.message); }
+}
 // ─────────────────────────────────────────────────────────────
 
 // ── SSO desde Agenda MAAH ────────────────────────────────────
