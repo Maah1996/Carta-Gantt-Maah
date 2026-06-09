@@ -3722,7 +3722,7 @@ function cargarUsuariosAgenda(){
 // Polling cada 3s: detecta payload en localStorage sin importar si la Gantt
 // estaba abierta o cerrada cuando RegDoc guardó el documento.
 function importarDesdeRGDOC(){
-  if(!myDbRef) return;
+  if(!dbRef) return;
   const raw = localStorage.getItem('rgdoc_to_gantt');
   if(!raw) return;
   try{
@@ -3732,8 +3732,10 @@ function importarDesdeRGDOC(){
     if(isNaN(f.getTime())) { localStorage.removeItem('rgdoc_to_gantt'); return; }
     f.setHours(0,0,0,0);
     localStorage.removeItem('rgdoc_to_gantt');
+    // Usar Date.now() como ID para evitar conflictos con IDs existentes
+    const uid = Date.now();
     const newAct = {
-      id: nextId++,
+      id: uid,
       act: (acto.act||'').toUpperCase().trim(),
       obs: (acto.obs||'').toUpperCase().trim(),
       fecha: f,
@@ -3743,19 +3745,15 @@ function importarDesdeRGDOC(){
       fromRGDOC: true,
       rgdocNumero: acto.rgdocNumero || ''
     };
-    acts.push(newAct);
-    acts.sort((a,b)=>a.fecha-b.fecha);
-    // Guardar siempre en la Gantt del usuario logueado (myDbRef)
+    // Guardar directamente en Firebase de la Gantt actualmente visible (dbRef)
     const toSave={...newAct, fecha: newAct.fecha.toISOString(), fechaInicio: null};
-    myDbRef.child(String(newAct.id)).set(toSave);
-    rebuildMonthSelect();
-    rebuildWeekSelect();
-    render();
+    dbRef.child(String(uid)).set(toSave);
+    // Firebase on('value') actualizará acts y render automáticamente
     var t=document.createElement('div');
-    t.textContent='📥 Actividad recibida desde Registro Documental';
+    t.textContent='📥 Actividad recibida desde Registro Documental — revisa Julio';
     t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a3f6f;color:#fff;padding:12px 24px;border-radius:10px;font-size:13px;font-weight:700;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,.3);';
     document.body.appendChild(t);
-    setTimeout(function(){t.remove();},5000);
+    setTimeout(function(){t.remove();},6000);
   }catch(e){ console.error('RGDOC import error:',e); }
 }
 
