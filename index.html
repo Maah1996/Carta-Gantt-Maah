@@ -4063,9 +4063,16 @@ function iniciarGanttDelUsuario(){
     buildAdminUserChips();
     const btnUM = document.getElementById('btn-user-mgmt');
     if(btnUM) btnUM.style.display='inline-block';
-    // Auto-abrir CG OCGR al cargar (el admin trabaja desde esa Gantt por defecto)
-    const ocgr = usuariosCache.find(u => u.nombre === 'CG OCGR');
-    if(ocgr) setTimeout(()=> adminVerGanttDeUsuario(ocgr.id, ocgr.nombre), 300);
+    // Restaurar última Gantt vista, o CG OCGR por defecto
+    setTimeout(()=>{
+      try{
+        const saved = JSON.parse(localStorage.getItem('gantt_admin_viewing'));
+        const target = saved
+          ? usuariosCache.find(u => u.id === saved.id)
+          : usuariosCache.find(u => u.nombre === 'CG OCGR');
+        if(target) adminVerGanttDeUsuario(target.id, target.nombre);
+      }catch(e){}
+    }, 300);
   } else {
     // Usuario normal: modo solo-lectura — CSS se encarga de ocultar todo lo restringido
     document.body.classList.add('readonly-user');
@@ -4313,6 +4320,9 @@ function adminVerGanttDeUsuario(userId, userName){
   if(!currentUser || currentUser.rol !== 'admin') return;
   if(viewingUserId === userId) return;
 
+  // Persistir selección para restaurar al refrescar
+  try{ localStorage.setItem('gantt_admin_viewing', JSON.stringify({id: userId, nombre: userName})); }catch(e){}
+
   // 1. Guardar estado actual del admin ANTES de cambiarlo
   adminSavedState = _capturarEstado();
 
@@ -4362,6 +4372,7 @@ function adminVolverAMiGantt(){
   if(dbRef) dbRef.off();
   viewingUserId  = null;
   viewingUserName = null;
+  try{ localStorage.removeItem('gantt_admin_viewing'); }catch(e){}
 
   // 1. Resetear el estado del otro usuario
   _resetearEstado();
