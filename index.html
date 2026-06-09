@@ -4195,8 +4195,19 @@ function importarDesdeRGDOC(){
   viewYear  = fecha.getFullYear();
   viewMonth = fecha.getMonth();
   render();
+  // Notificación visible al usuario
+  const n = document.createElement("div");
+  n.textContent = "✔ Actividad importada desde Registro Documental: " + newAct.act;
+  Object.assign(n.style,{position:"fixed",bottom:"20px",right:"20px",background:"#2d7d46",color:"#fff",
+    padding:"12px 18px",borderRadius:"8px",zIndex:9999,fontSize:"13px",maxWidth:"420px",boxShadow:"0 2px 10px rgba(0,0,0,.3)"});
+  document.body.appendChild(n);
+  setTimeout(()=>n.remove(), 5000);
   console.log("[RGDOC] Actividad importada:", newAct.act);
 }
+
+// También revisar cuando la pestaña vuelve a estar activa (Gantt ya estaba abierta)
+window.addEventListener("focus", ()=>{ if(dbRef) importarDesdeRGDOC(); });
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden && dbRef) importarDesdeRGDOC(); });
 
 function deleteActFromFB(id){
   if(!dbRef){ saveToLocalStorage(); return; }
