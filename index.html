@@ -3716,6 +3716,43 @@ function cargarUsuariosAgenda(){
   });
 }
 
+// ── Importar actividad desde Registro Documental OCGR ────────
+// El Registro Documental escribe el payload en localStorage('rgdoc_to_gantt').
+// Se lee una sola vez al cargar datos, se crea la actividad y se limpia la clave.
+let _rgdocImportDone = false;
+function importarDesdeRGDOC(){
+  if(_rgdocImportDone) return;
+  const raw = localStorage.getItem('rgdoc_to_gantt');
+  if(!raw) return;
+  try{
+    const acto = JSON.parse(raw);
+    if(!acto || !acto.fecha) return;
+    const f = new Date(acto.fecha);
+    if(isNaN(f.getTime())) return;
+    f.setHours(0,0,0,0);
+    _rgdocImportDone = true;
+    localStorage.removeItem('rgdoc_to_gantt');
+    const newAct = {
+      id: nextId++,
+      act: (acto.act||'').toUpperCase().trim(),
+      obs: (acto.obs||'').toUpperCase().trim(),
+      fecha: f,
+      type: acto.type || 'plazo',
+      freq: 'puntual',
+      priori: true,
+      fromRGDOC: true,
+      rgdocNumero: acto.rgdocNumero || ''
+    };
+    acts.push(newAct);
+    acts.sort((a,b)=>a.fecha-b.fecha);
+    saveActToFB(newAct);
+    rebuildMonthSelect();
+    rebuildWeekSelect();
+    render();
+  }catch(e){ console.error('RGDOC import error:',e); }
+}
+// ─────────────────────────────────────────────────────────────
+
 // ── SSO desde Agenda MAAH ────────────────────────────────────
 // La Agenda guarda un ticket en localStorage('maah_session') al abrir la Gantt.
 // Si el ticket es válido (< 30 min), lo usamos para auto-loguearnos sin pedir clave.
@@ -4027,7 +4064,8 @@ function iniciarGanttDelUsuario(){
           }
         });
         render();
-      }).catch(()=>render());
+        importarDesdeRGDOC();
+      }).catch(()=>{ render(); importarDesdeRGDOC(); });
     } else {
       // Sin datos en la ruta personal del usuario.
       // Para cualquier admin: intentar recuperar datos del respaldo una sola vez.
@@ -4042,6 +4080,7 @@ function iniciarGanttDelUsuario(){
       rebuildMonthSelect();
       rebuildWeekSelect();
       render();
+      importarDesdeRGDOC();
     }
   }, err=>{
     console.error('Firebase error:', err.code, err.message);
