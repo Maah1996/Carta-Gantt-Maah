@@ -3465,7 +3465,10 @@ function render(){
     html+='<tr class="'+rowCls+'">';
     html+='<td class="td-act">'+r.act+'</td>';
     if(isPlazo){
-      html+='<td class="td-obs"><span class="plazo-badge">PLAZO</span></td>';
+      // Extraer procedencia desde obs ("PLAZO | COT" → "COT")
+      const obsRaw = (r.obs||'').replace(/^PLAZO\s*\|\s*/i,'').trim();
+      const obsExtra = obsRaw ? '<span class="obs-text" style="font-size:7px;display:block;margin-top:1px;">'+obsRaw+'</span>' : '';
+      html+='<td class="td-obs"><span class="plazo-badge">PLAZO</span>'+obsExtra+'</td>';
     } else if(r.isVirtualAnual){
       const obsTxt = r.obs ? r.obs : '';
       const fr = getFrecuencia(r);
