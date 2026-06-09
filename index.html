@@ -3717,16 +3717,17 @@ function cargarUsuariosAgenda(){
 }
 
 // ── Importar actividad desde Registro Documental OCGR ────────
-// El Registro Documental escribe el payload en localStorage('rgdoc_to_gantt').
-// Se lee al cargar datos O cuando el storage cambia desde otra pestaña.
+// Polling cada 3s: detecta payload en localStorage sin importar si la Gantt
+// estaba abierta o cerrada cuando RegDoc guardó el documento.
 function importarDesdeRGDOC(){
+  if(!dbRef) return;
   const raw = localStorage.getItem('rgdoc_to_gantt');
-  if(!raw || !dbRef) return;
+  if(!raw) return;
   try{
     const acto = JSON.parse(raw);
-    if(!acto || !acto.fecha) return;
-    const f = new Date(acto.fecha);
-    if(isNaN(f.getTime())) return;
+    if(!acto || !acto.fecha) { localStorage.removeItem('rgdoc_to_gantt'); return; }
+    const f = new Date(acto.fecha+'T12:00:00');
+    if(isNaN(f.getTime())) { localStorage.removeItem('rgdoc_to_gantt'); return; }
     f.setHours(0,0,0,0);
     localStorage.removeItem('rgdoc_to_gantt');
     const newAct = {
@@ -3748,12 +3749,7 @@ function importarDesdeRGDOC(){
     render();
   }catch(e){ console.error('RGDOC import error:',e); }
 }
-// Escuchar cambios de localStorage desde otra pestaña (Registro Documental)
-window.addEventListener('storage', function(e){
-  if(e.key === 'rgdoc_to_gantt' && e.newValue){
-    importarDesdeRGDOC();
-  }
-});
+setInterval(importarDesdeRGDOC, 3000);
 // ─────────────────────────────────────────────────────────────
 
 // ── SSO desde Agenda MAAH ────────────────────────────────────
