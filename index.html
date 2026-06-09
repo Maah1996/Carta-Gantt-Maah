@@ -292,6 +292,14 @@ table.gantt tr.row-priori td.td-act::before{content:'⚑ ';}
 /* ── PRINT: se maneja por JS abriendo ventana nueva, no por @media print ── */
 @media print{ body{ display:none !important; } }
 
+/* ── USUARIOS NO-ADMIN: ocultar solo botones de header que no les corresponden ── */
+body.readonly-user #btn-recurrentes,
+body.readonly-user #btn-extended,
+body.readonly-user #btn-exit-extended,
+body.readonly-user #btn-user-mgmt,
+body.readonly-user #admin-users-wrap,
+body.readonly-user #admin-back-banner { display:none !important; }
+
 /* ── RESPONSIVE ── */
 /* Tablet y móvil: sidebar arriba, Gantt abajo con scroll */
 @media(max-width:900px){
@@ -378,7 +386,8 @@ table.gantt tr.row-priori td.td-act::before{content:'⚑ ';}
     </div>
     <div style="margin-bottom:12px;">
       <label style="display:block;font-size:11px;font-weight:600;color:#4a5568;margin-bottom:4px;">Usuario</label>
-      <select id="login-usuario" style="width:100%;font-size:13px;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;background:#fff;"><option value="">⏳ Cargando usuarios...</option></select>
+      <input type="text" id="login-usuario-txt" placeholder="Escribe tu nombre de usuario" autocomplete="off" style="width:100%;font-size:13px;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;" onkeydown="if(event.key==='Enter')document.getElementById('login-clave').focus()">
+      <select id="login-usuario" style="display:none;"></select>
     </div>
     <div style="margin-bottom:14px;">
       <label style="display:block;font-size:11px;font-weight:600;color:#4a5568;margin-bottom:4px;">Clave</label>
@@ -386,7 +395,37 @@ table.gantt tr.row-priori td.td-act::before{content:'⚑ ';}
     </div>
     <div id="login-error" style="display:none;color:#c0392b;font-size:11px;background:#ffebee;border:1px solid #ffcdd2;border-radius:5px;padding:6px 9px;margin-bottom:10px;text-align:center;"></div>
     <button id="login-btn" onclick="doLogin()" style="width:100%;padding:10px;font-size:13px;font-weight:700;background:#1a3f6f;color:#fff;border:none;border-radius:6px;cursor:pointer;">Ingresar a mi Gantt</button>
-    <p style="font-size:10px;color:#a0aec0;text-align:center;margin-top:12px;line-height:1.5;">Cada usuario tiene su propia carta Gantt privada.<br>Usa la misma clave de la Agenda MAAH.</p>
+    <p style="font-size:10px;color:#a0aec0;text-align:center;margin-top:12px;line-height:1.5;">Cada usuario tiene su propia carta Gantt privada.</p>
+    <p style="text-align:center;margin-top:6px;"><a href="#" onclick="mostrarRecuperarClave(event)" style="font-size:10px;color:#4a90d9;text-decoration:none;">¿Olvidaste tu clave? Haz clic aquí</a></p>
+    <div id="recuperar-clave-msg" style="display:none;margin-top:10px;background:#e8f4fd;border:1px solid #bee3f8;border-radius:6px;padding:8px 12px;font-size:11px;color:#2b6cb0;text-align:center;line-height:1.5;">
+      Contacta al administrador para restablecer tu clave.<br>
+      <strong>No compartas tu clave con nadie.</strong>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAMBIAR CLAVE -->
+<div id="modal-cambiar-clave" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:10px;padding:24px;width:320px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    <h3 style="font-size:14px;font-weight:700;color:#1a3f6f;margin-bottom:4px;">🔑 Cambiar clave</h3>
+    <p style="font-size:11px;color:#718096;margin-bottom:14px;">Ingresa tu clave actual y la nueva clave.</p>
+    <div style="margin-bottom:10px;">
+      <label style="display:block;font-size:11px;font-weight:600;color:#4a5568;margin-bottom:4px;">Clave actual</label>
+      <input type="password" id="cc-actual" placeholder="••••" maxlength="20" style="width:100%;font-size:13px;padding:7px 10px;border:1px solid #cbd5e0;border-radius:5px;text-align:center;letter-spacing:2px;">
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="display:block;font-size:11px;font-weight:600;color:#4a5568;margin-bottom:4px;">Nueva clave</label>
+      <input type="password" id="cc-nueva" placeholder="Mínimo 4 caracteres" maxlength="20" style="width:100%;font-size:13px;padding:7px 10px;border:1px solid #cbd5e0;border-radius:5px;text-align:center;letter-spacing:2px;">
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="display:block;font-size:11px;font-weight:600;color:#4a5568;margin-bottom:4px;">Confirmar nueva clave</label>
+      <input type="password" id="cc-confirma" placeholder="Repite la nueva clave" maxlength="20" style="width:100%;font-size:13px;padding:7px 10px;border:1px solid #cbd5e0;border-radius:5px;text-align:center;letter-spacing:2px;">
+    </div>
+    <div id="cc-msg" style="display:none;font-size:11px;border-radius:5px;padding:6px 9px;margin-bottom:10px;text-align:center;"></div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button onclick="cerrarCambiarClave()" style="flex:1;padding:8px;border-radius:5px;border:none;background:#e2e8f0;color:#4a5568;font-size:11px;font-weight:600;cursor:pointer;">Cancelar</button>
+      <button onclick="guardarNuevaClave()" style="flex:2;padding:8px;border-radius:5px;border:none;background:#1a3f6f;color:#fff;font-size:11px;font-weight:600;cursor:pointer;">Guardar nueva clave</button>
+    </div>
   </div>
 </div>
 
@@ -396,12 +435,14 @@ table.gantt tr.row-priori td.td-act::before{content:'⚑ ';}
   <div class="header-right">
     <span id="user-badge" style="font-size: 11px; padding: 4px 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.18); color: rgb(255, 255, 255); font-weight: 600; display: inline-block;">👤 ADMIN ★</span>
     <button id="logout-btn" onclick="doLogout()" style="font-size: 10px; padding: 4px 10px; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.3); color: rgb(255, 255, 255); border-radius: 5px; cursor: pointer; display: inline-block;" title="Cerrar sesión">↪ Salir</button>
+    <button id="btn-cambiar-clave" onclick="abrirCambiarClave()" style="display:none;font-size:10px;padding:4px 10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:5px;cursor:pointer;" title="Cambiar mi clave">🔑 Clave</button>
     <!-- FIX 5: botón imprimir -->
-    <button class="btn-print" onclick="openAnualesModal()" title="Ver/editar actividades que se repiten (anuales, mensuales, semanales)">📅 Recurrentes</button>
+    <button class="btn-print" id="btn-recurrentes" onclick="openAnualesModal()" title="Ver/editar actividades que se repiten (anuales, mensuales, semanales)">📅 Recurrentes</button>
     <button class="btn-print" onclick="printGantt()">🖶 Imprimir carta</button>
     <button class="btn-print" id="btn-extended" onclick="openExtendedModal()" style="background:#f39c12;border-color:#f39c12;" title="Imprimir o ver mes completo + semanas extras del mes siguiente">📅+ Imprimir extendido</button>
     <button class="btn-print" id="btn-exit-extended" onclick="exitExtendedView()" style="background:#0F6E56;border-color:#0F6E56;display:none;" title="Volver a la vista normal">↩ Volver a vista normal</button>
     <button class="btn-print" id="btn-user-mgmt" onclick="openUserMgmtPanel()" style="display:none;background:rgba(74,85,104,.5);border-color:rgba(255,255,255,.4);" title="Gestión de usuarios">⚙️ Usuarios</button>
+    <button class="btn-print" id="btn-rgdoc-import" onclick="debugRGDOC()" style="background:#b3d9f7;color:#1a3f6f;border-color:#b3d9f7;font-weight:800;" title="Importar desde Registro Documental">📥 RegDoc</button>
     <span id="fb-status" style="font-size: 10px; padding: 3px 10px; border-radius: 12px; background: rgba(46, 125, 50, 0.3); color: rgb(165, 214, 167);">● En línea</span>
     <span class="today-badge" id="today-lbl">HOY: 30/abr/2026</span>
   </div>
@@ -657,6 +698,23 @@ PERS. 11:45 A 15:00</td><td class="td-obs"><span class="obs-text">SABADOS</span>
   <div class="ctx-item danger" id="ctx-del" onclick="ctxDel()">✕ &nbsp;Eliminar actividad</div>
 </div>
 
+<!-- MODAL POR TIPO -->
+<div id="modal-tipo-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;align-items:flex-start;justify-content:center;padding-top:40px;overflow-y:auto;">
+  <div style="background:#fff;border-radius:12px;width:700px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;margin-bottom:40px;">
+    <div id="modal-tipo-header" style="background:#1a3f6f;color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div id="modal-tipo-titulo" style="font-size:14px;font-weight:700;letter-spacing:.3px;"></div>
+        <div id="modal-tipo-subtitulo" style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;"></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="imprimirModalTipo()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:5px 14px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;">🖨️ Imprimir</button>
+        <button onclick="cerrarModalTipo()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:#fff;padding:5px 10px;border-radius:5px;font-size:13px;cursor:pointer;">✕</button>
+      </div>
+    </div>
+    <div id="modal-tipo-body" style="padding:16px 20px;max-height:65vh;overflow-y:auto;"></div>
+  </div>
+</div>
+
 <!-- MODAL CONFIRMACIÓN -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal">
@@ -715,6 +773,7 @@ PERS. 11:45 A 15:00</td><td class="td-obs"><span class="obs-text">SABADOS</span>
         <label>Frecuencia</label>
         <select id="edit-freq" class="select-freq" onchange="onFreqSelectChange(this,&#39;edit&#39;)">
           <option value="puntual">Puntual</option>
+          <option value="rango">Desde / Hasta</option>
           <option value="semanal">Semanal</option>
           <option value="mensual">Mensual</option>
           <option value="anual">Anual</option>
@@ -1405,7 +1464,6 @@ function rangoSemanaActual(){
 
 
 // ── TIPO / FORMULARIO ─────────────────────────────────────────
-// Tipos por defecto (no se pueden borrar)
 const TIPOS_BASE = [
   {value:'revision',    label:'Revisión'},
   {value:'plazo',       label:'Plazo'},
@@ -1413,27 +1471,48 @@ const TIPOS_BASE = [
   {value:'clases',      label:'Clases'},
   {value:'otro',        label:'Otro'}
 ];
-const TIPOS_CUSTOM_KEY = 'gantt_maah_tipos_custom';
-let tiposCustom = [];   // [{value, label}]
+const TIPOS_CUSTOM_KEY  = 'gantt_maah_tipos_custom';
+const TIPOS_OCULTOS_KEY = 'gantt_maah_tipos_ocultos';
+let tiposCustom  = [];        // [{value, label}] tipos añadidos
+let tiposOcultos = new Set(); // valores de tipos base eliminados
 let tipoAddTarget = 'add';
 
 function loadTiposCustom(){
-  try{
-    const raw = localStorage.getItem(TIPOS_CUSTOM_KEY);
-    if(raw){
-      const parsed = JSON.parse(raw);
-      if(Array.isArray(parsed)) tiposCustom = parsed;
+  // Solo inicializa en vacío — los tipos reales se cargan desde Firebase al loguearse
+  tiposCustom  = [];
+  tiposOcultos = new Set();
+}
+function loadTiposDesdeFirebase(){
+  // Cargar tipos del usuario actual desde Firebase (100% independiente por usuario)
+  if(!db || !currentUser) return;
+  // Limpiar primero para no mezclar datos de otro usuario
+  tiposCustom  = [];
+  tiposOcultos = new Set();
+  db.ref('gantt_maah/tipos_usuario/'+currentUser.id).once('value', snap=>{
+    const data = snap.val();
+    if(data){
+      if(Array.isArray(data.custom))  tiposCustom  = data.custom;
+      if(Array.isArray(data.ocultos)) tiposOcultos = new Set(data.ocultos);
     }
-  }catch(e){ tiposCustom = []; }
+    refreshAllTipoSelects();
+  });
 }
 function saveTiposCustom(){
-  try{ localStorage.setItem(TIPOS_CUSTOM_KEY, JSON.stringify(tiposCustom)); }catch(e){}
+  // Guardar bajo el usuario VISTO (si admin está viendo otra Gantt) o el propio
+  const targetId = (typeof viewingUserId !== 'undefined' && viewingUserId) ? viewingUserId : (currentUser ? currentUser.id : null);
+  if(db && targetId){
+    db.ref('gantt_maah/tipos_usuario/'+targetId).set({
+      custom:  tiposCustom,
+      ocultos: [...tiposOcultos]
+    });
+  }
 }
 function getAllTipos(){
-  return [...TIPOS_BASE, ...tiposCustom];
+  return [...TIPOS_BASE.filter(t=>!tiposOcultos.has(t.value)), ...tiposCustom];
 }
 function tipoLabel(value){
-  const t = getAllTipos().find(x=>x.value===value);
+  const all = [...TIPOS_BASE, ...tiposCustom];
+  const t = all.find(x=>x.value===value);
   return t ? t.label : (value||'').toString();
 }
 function fillTipoSelect(selectEl, currentValue){
@@ -1444,10 +1523,10 @@ function fillTipoSelect(selectEl, currentValue){
     html += '<option value="'+t.value+'"'+(t.value===currentValue?' selected':'')+'>'+t.label+'</option>';
   });
   html += '<option value="__add__">+ Agregar nueva opción...</option>';
-  if(tiposCustom.length) html += '<option value="__delete__">− Eliminar categoría...</option>';
+  html += '<option value="__delete__">− Eliminar categoría...</option>';
   selectEl.innerHTML = html;
   if(currentValue && !all.find(t=>t.value===currentValue)){
-    selectEl.value = 'revision';
+    selectEl.value = all.length ? all[0].value : '';
   }
 }
 function refreshAllTipoSelects(){
@@ -1486,17 +1565,18 @@ function onFreqSelectChange(sel, where){
 }
 function toggleFechaInicioBlock(where, freq){
   if(where === 'add'){ updateFormForFreq(freq); return; }
-  // Formulario de edición — sin cambios
+  // Formulario de edición: solo mostrar 2 fechas para Desde/Hasta
   const el = document.getElementById('edit-inicio-block');
   if(!el) return;
-  el.style.display = 'block';
-  el.classList.add('visible');
-  const hint = el.querySelector('.hint');
-  if(hint){
-    const recurrente = (freq==='semanal'||freq==='mensual'||freq==='anual');
-    hint.textContent = recurrente
-      ? 'La actividad se repetirá desde esta fecha hasta la fecha de término.'
-      : 'Fecha desde la que aparece la actividad en la carta Gantt.';
+  if(freq === 'rango'){
+    el.style.display = 'block';
+    el.classList.add('visible');
+    const hint = el.querySelector('.hint');
+    if(hint) hint.textContent = 'Fecha de inicio de la actividad.';
+  } else {
+    // Puntual, Semanal, Mensual, Anual: solo 1 fecha
+    el.style.display = 'none';
+    el.classList.remove('visible');
   }
 }
 
@@ -1520,20 +1600,14 @@ function updateFormForFreq(freq){
     if(inicioHint)  inicioHint.textContent  = 'La barra se pintará desde esta fecha hasta la de término.';
     if(fechaLabel)  fechaLabel.textContent  = 'Hasta (fin de barra)';
   } else if(freq === 'semanal'){
-    if(dowBlock) dowBlock.style.display = 'block';
-    if(inicioBlock){ inicioBlock.style.display='block'; inicioBlock.classList.add('visible'); }
-    if(inicioLabel) inicioLabel.textContent = 'Inicia desde (opcional)';
-    if(inicioHint)  inicioHint.textContent  = 'Desde cuándo repetir. Vacío = hoy.';
-    if(fechaLabel)  fechaLabel.textContent  = 'Repetir hasta';
+    if(inicioBlock) inicioBlock.style.display = 'none';
+    if(fechaLabel)  fechaLabel.textContent = 'Fecha (elige el día de la semana)';
   } else if(freq === 'mensual'){
-    if(diaBlock) diaBlock.style.display = 'block';
-    if(inicioBlock){ inicioBlock.style.display='block'; inicioBlock.classList.add('visible'); }
-    if(inicioLabel) inicioLabel.textContent = 'Inicia desde (opcional)';
-    if(inicioHint)  inicioHint.textContent  = 'Desde cuándo repetir. Vacío = hoy.';
-    if(fechaLabel)  fechaLabel.textContent  = 'Repetir hasta';
+    if(inicioBlock) inicioBlock.style.display = 'none';
+    if(fechaLabel)  fechaLabel.textContent = 'Fecha (elige el día del mes)';
   } else if(freq === 'anual'){
     if(inicioBlock) inicioBlock.style.display = 'none';
-    if(fechaLabel)  fechaLabel.textContent = 'Fecha (día y mes)';
+    if(fechaLabel)  fechaLabel.textContent = 'Fecha (día y mes que se repite)';
   }
   updateFreqPreview(freq);
 }
@@ -1587,26 +1661,60 @@ function openTipoAddModal(where){
 function renderTipoCustomList(){
   const container = document.getElementById('tipo-custom-list');
   if(!container) return;
-  if(!tiposCustom.length){
-    container.innerHTML = '';
-    return;
-  }
-  container.innerHTML =
-    '<div style="font-size:11px;color:#888;margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Categorías personalizadas</div>' +
-    tiposCustom.map(t=>
-      '<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:#f1f5f9;border-radius:5px;margin-bottom:4px;font-size:13px;">' +
-        '<span>' + t.label + '</span>' +
-        '<button onclick="deleteCustomTipo(\'' + t.value + '\')" style="background:#e53e3e;color:#fff;border:none;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;">✕ Eliminar</button>' +
-      '</div>'
+  const baseActivos = TIPOS_BASE.filter(t => !tiposOcultos.has(t.value));
+  const hayOcultos  = tiposOcultos.size > 0;
+  const rowStyle = 'display:flex;align-items:center;padding:6px 10px;border-radius:6px;margin-bottom:5px;';
+  const btnStyle = 'flex-shrink:0;background:none;border:1px solid #e53e3e;color:#e53e3e;border-radius:4px;width:24px;height:24px;font-size:13px;line-height:1;cursor:pointer;transition:all .15s;margin-left:8px;'
+    +'display:flex;align-items:center;justify-content:center;';
+  let html = '';
+
+  if(baseActivos.length){
+    html += '<div style="font-size:10px;color:#718096;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Tipos por defecto</div>';
+    html += baseActivos.map(t=>
+      '<div style="'+rowStyle+'background:#f8fafc;border:1px solid #e2e8f0;">'
+        +'<span style="flex:1;font-size:12px;color:#2d3748;font-weight:500;">'+t.label+'</span>'
+        +'<button onclick="deleteTipoBase(\''+t.value+'\')" style="'+btnStyle+'" title="Eliminar \''+t.label+'\'">✕</button>'
+      +'</div>'
     ).join('');
+  }
+
+  if(tiposCustom.length){
+    html += '<div style="font-size:10px;color:#718096;margin:10px 0 6px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Tipos personalizados</div>';
+    html += tiposCustom.map(t=>
+      '<div style="'+rowStyle+'background:#ebf4ff;border:1px solid #bee3f8;">'
+        +'<span style="flex:1;font-size:12px;color:#2c5282;font-weight:500;">'+t.label+'</span>'
+        +'<button onclick="deleteCustomTipo(\''+t.value+'\')" style="'+btnStyle+'border-color:#3182ce;color:#3182ce;" title="Eliminar \''+t.label+'\'">✕</button>'
+      +'</div>'
+    ).join('');
+  }
+
+  if(!baseActivos.length && !tiposCustom.length){
+    html += '<div style="color:#a0aec0;font-size:12px;text-align:center;padding:10px 0;">No hay categorías activas.</div>';
+  }
+
+  if(hayOcultos){
+    html += '<button onclick="restaurarTiposBase()" style="margin-top:12px;width:100%;padding:7px;background:#fff;color:#2d6a9f;border:1px solid #2d6a9f;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;">↺ Restaurar tipos por defecto</button>';
+  }
+  container.innerHTML = html;
 }
 
+function deleteTipoBase(value){
+  tiposOcultos.add(value);
+  saveTiposCustom();
+  renderTipoCustomList();
+  refreshAllTipoSelects();
+}
 function deleteCustomTipo(value){
   tiposCustom = tiposCustom.filter(t => t.value !== value);
   saveTiposCustom();
   renderTipoCustomList();
   refreshAllTipoSelects();
-  if(!tiposCustom.length) closeTipoDeleteModal();
+}
+function restaurarTiposBase(){
+  tiposOcultos.clear();
+  saveTiposCustom();
+  renderTipoCustomList();
+  refreshAllTipoSelects();
 }
 
 function openTipoDeleteModal(){
@@ -1747,7 +1855,7 @@ function addActivity(){
     const ds=document.getElementById('f-dia-sel');
     if(ds) newAct.dia=Number(ds.value);
   } else if(cFreq==='rango'){
-    newAct.freq='puntual'; // rango = puntual con barra (fechaInicio+fecha ya asignados)
+    newAct.freq='rango'; // guardamos explícitamente para detectarlo al editar
   }
   acts.push(newAct);
   acts.sort((a,b)=>a.fecha-b.fecha);
@@ -1792,6 +1900,8 @@ function aplicarFrecuenciaACto(act, freq, fechaBase){
     act.freq='semanal';
     act.semanal=true;
     act.dow=fechaBase.getDay();           // 0=dom..6=sáb
+  } else if(freq==='rango'){
+    act.freq='rango';                     // guardado explícitamente como rango
   }
 }
 
@@ -1934,14 +2044,12 @@ function fillEditForm(id){
     else if(act.semanal)  freqActual='semanal';
     else                  freqActual='puntual';
   }
+  // rango se detecta SOLO si freq === 'rango' en Firebase (no por inferencia)
   editFreq = freqActual;
   const freqSel = document.getElementById('edit-freq');
   if(freqSel) freqSel.value = freqActual;
   toggleFechaInicioBlock('edit', freqActual);
-
-  // Fecha de inicio — siempre visible
-  const inicioBlock = document.getElementById('edit-inicio-block');
-  if(inicioBlock) inicioBlock.style.display = 'block';
+  // Visibilidad del bloque inicio ya manejada por toggleFechaInicioBlock
 
   const inicioInp = document.getElementById('edit-inicio');
   if(inicioInp){
@@ -1980,6 +2088,7 @@ function saveEdit(){
   const obsTxt = toUpper(document.getElementById('edit-obs').value);
   const fv     = document.getElementById('edit-fecha').value;
   const fiv    = document.getElementById('edit-inicio').value;
+  const esRecurrente = (editFreq==='semanal'||editFreq==='mensual'||editFreq==='anual');
   if(!actTxt||!fv){alert('Complete la descripción y la fecha.');return;}
   const [yr,mo,da]=fv.split('-').map(Number);
   const nuevaFecha=new Date(yr,mo-1,da);
@@ -3126,7 +3235,11 @@ function render(){
     return {ini, fin};
   }
 
-  if(isTodaGantt || isFullYear){
+  const isMultiWeekCrossMonth = selectedWeekKeys && selectedWeekKeys.size > 0 && !extendedState.active && !isTodaGantt && !isFullYear && (()=>{
+    const meses = new Set(Array.from(selectedWeekKeys).map(k=>{ const p=k.split('-'); return p[0]+'-'+p[1]; }));
+    return meses.size > 1;
+  })();
+  if(isTodaGantt || isFullYear || isMultiWeekCrossMonth){
     const {ini: rIni, fin: rFin} = rangoVista();
     const normales = acts.filter(a=>{
       const fr = getFrecuencia(a);
@@ -3414,7 +3527,22 @@ function render(){
         else                       barShape=' bar-mid';
         const ferCls=esFeriado?' feriado':'';
         const extCls=isExtra?' extra':'';
-        html+='<td class="bar-cell'+barShape+ferCls+extCls+'" style="background:'+col.bg+' !important;'+tlStyle+'"'+ferAttr+'></td>';
+        // Para rango (puntual+fechaInicio): días pasados con opacidad reducida + % en transición
+        // esRango: freq='rango' explícito, O puntual+fechaInicio anterior a fecha (compatibilidad)
+        const esRango = r.fechaInicio instanceof Date && !isNaN(r.fechaInicio.getTime())
+          && r.fechaInicio < r.fecha
+          && (r.freq==='rango' || r.freq==='puntual');
+        const esPasado = esRango && allDays[i].d < TODAY;
+        const opacityStyle = esPasado ? 'opacity:0.35;' : '';
+        // Mostrar % solo en la celda de hoy (si cae dentro de la barra) o en la primera celda futura
+        let pctLabel = '';
+        if(esRango && !esPasado && (isToday || (i===effStart && allDays[i].d >= TODAY) || (i>effStart && allDays[i-1] && allDays[i-1].d < TODAY))){
+          const totalDias = Math.max(1, Math.round((r.fecha - r.fechaInicio) / 86400000));
+          const diasPasados = Math.max(0, Math.min(totalDias, Math.round((TODAY - r.fechaInicio) / 86400000)));
+          const pct = Math.round(diasPasados / totalDias * 100);
+          if(pct > 0 && pct < 100) pctLabel = '<span style="font-size:7px;font-weight:800;color:#fff;text-shadow:0 0 3px rgba(0,0,0,.6);line-height:1;pointer-events:none;">'+pct+'%</span>';
+        }
+        html+='<td class="bar-cell'+barShape+ferCls+extCls+'" style="background:'+col.bg+' !important;'+opacityStyle+tlStyle+'"'+ferAttr+'>'+pctLabel+'</td>';
       } else {
         let cls='td-day'+(isWknd?' wknd':'')+(isOther?' othermonth':'')+(isToday?' today-col':'')+(esFeriado?' feriado':'')+(isExtra?' extra':'');
         html+='<td class="'+cls+'" style="'+tlStyle+'"'+ferAttr+'></td>';
@@ -3509,6 +3637,7 @@ const FB_CONFIGURED = FB_CONFIG.apiKey !== "TU_API_KEY";
 
 let db = null;
 let dbRef = null;
+let myDbRef = null; // Siempre apunta al usuario logueado (no cambia al ver otra Gantt)
 let fbListener = null;
 let fbOnline = false;
 
@@ -3554,19 +3683,9 @@ function initFirebase(){
 
 // Cargar usuarios desde la base de la agenda
 function cargarUsuariosAgenda(){
-  const sel=document.getElementById('login-usuario');
-  sel.innerHTML='<option value="">⏳ Cargando usuarios...</option>';
-  sel.disabled=true;
-
   db.ref('maah_usuarios').once('value', snap=>{
     const data=snap.val();
-    sel.disabled=false;
-    if(!data){
-      sel.innerHTML='<option value="">Sin usuarios registrados.</option>';
-      showLoginOverlay();
-      return;
-    }
-    // Cargamos sin 'pass' — la autenticación la maneja Firebase Auth
+    if(!data){ showLoginOverlay(); return; }
     usuariosCache=Object.entries(data).map(([id,u])=>({
       id,
       nombre:  u.nombre||id,
@@ -3575,32 +3694,128 @@ function cargarUsuariosAgenda(){
       authUid: u.authUid||''
     })).sort((a,b)=>a.nombre.localeCompare(b.nombre));
 
-    sel.innerHTML='<option value="">— Selecciona tu usuario —</option>'+
-      usuariosCache.map(u=>
-        '<option value="'+u.id+'">'+u.nombre+(u.rol==='admin'?' ★':'')+'</option>'
-      ).join('');
-
     usuariosCargados = true;
 
-    // Si Firebase Auth ya disparó onAuthStateChanged antes de que cargaran los usuarios
     if(pendingAuthUid){
       procesarAuthUser(pendingAuthUid);
       pendingAuthUid = null;
     } else {
-      // Si no hay sesión activa, mostrar login
       const authUser = firebase.auth().currentUser;
-      if(!authUser) showLoginOverlay();
+      if(authUser){
+        // ya hay sesión Firebase activa
+      } else {
+        // Intentar SSO desde la Agenda MAAH (ticket en localStorage)
+        const ssoOk = intentarSSOdesdeAgenda();
+        if(!ssoOk) showLoginOverlay();
+      }
     }
-
   }, err=>{
     console.error('Error cargando usuarios:', err);
-    sel.disabled=false;
-    sel.innerHTML='<option value="">⚠ Error de conexión</option>';
     const errBox=document.getElementById('login-error');
     errBox.textContent='No se pudo cargar usuarios. Verifica tu conexión y recarga la página.';
     errBox.style.display='block';
     showLoginOverlay();
   });
+}
+
+// ── Importar actividad desde Registro Documental OCGR ────────
+// Polling cada 3s: detecta payload en localStorage sin importar si la Gantt
+// estaba abierta o cerrada cuando RegDoc guardó el documento.
+function importarDesdeRGDOC(){
+  if(!dbRef) return;
+  const acto = _rgdocPendingPayload || (function(){ try{ return JSON.parse(localStorage.getItem('rgdoc_to_gantt')); }catch(e){ return null; } })();
+  _rgdocPendingPayload = null;
+  localStorage.removeItem('rgdoc_to_gantt');
+  if(!acto || !acto.fecha) return;
+  // Evitar duplicados: si ya existe una actividad con el mismo rgdocNumero, no importar
+  const rgdocKey = acto.rgdocNumero || '';
+  if(rgdocKey && acts.some(a=>a.fromRGDOC && String(a.rgdocNumero)===rgdocKey)){
+    console.log('[RGDOC] Ya existe actividad con rgdocNumero:', rgdocKey);
+    return;
+  }
+  try{
+    const f = new Date(acto.fecha+'T12:00:00');
+    if(isNaN(f.getTime())) return;
+    f.setHours(0,0,0,0);
+    // Usar Date.now() como ID para evitar conflictos con IDs existentes
+    const uid = Date.now();
+    const newAct = {
+      id: uid,
+      act: (acto.act||'').toUpperCase().trim(),
+      obs: (acto.obs||'').toUpperCase().trim(),
+      fecha: f,
+      type: acto.type || 'plazo',
+      freq: 'puntual',
+      priori: true,
+      fromRGDOC: true,
+      rgdocNumero: acto.rgdocNumero || ''
+    };
+    // Agregar a acts y guardar en Firebase de la Gantt visible
+    const toSave={...newAct, fecha: newAct.fecha.toISOString(), fechaInicio: null};
+    dbRef.child(String(uid)).set(toSave);
+    acts.push(newAct);
+    acts.sort((a,b)=>a.fecha-b.fecha);
+    // Navegar al mes del plazo automáticamente
+    const mesStr = f.getFullYear()+'-'+(f.getMonth()+1);
+    const sel = document.getElementById('month-select');
+    if(sel){ sel.value = mesStr; sel.dispatchEvent(new Event('change')); }
+    rebuildMonthSelect();
+    rebuildWeekSelect();
+    render();
+    var t=document.createElement('div');
+    t.textContent='📥 Actividad recibida desde Registro Documental — revisa Julio';
+    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a3f6f;color:#fff;padding:12px 24px;border-radius:10px;font-size:13px;font-weight:700;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,.3);';
+    document.body.appendChild(t);
+    setTimeout(function(){t.remove();},6000);
+  }catch(e){ console.error('RGDOC import error:',e); }
+}
+
+function debugRGDOC(){
+  const raw = localStorage.getItem('rgdoc_to_gantt');
+  if(!raw){
+    alert('❌ No hay payload en localStorage.\n\nmyDbRef: '+(myDbRef?'OK':'NULL')+'\ndbRef: '+(dbRef?'OK':'NULL')+'\n\nSi myDbRef es NULL: recarga la Gantt (Ctrl+Shift+R) y vuelve a intentar.');
+    return;
+  }
+  try{
+    const acto = JSON.parse(raw);
+    if(confirm('✅ Payload encontrado:\n\nActividad: '+acto.act+'\nPlazo: '+acto.fecha+'\nObs: '+acto.obs+'\n\n¿Importar ahora?')){
+      importarDesdeRGDOC();
+    }
+  }catch(e){ alert('Error leyendo payload: '+e.message); }
+}
+// Payload desde URL hash — guardado en memoria (no localStorage)
+let _rgdocPendingPayload = null;
+(function(){
+  try{
+    const hash = window.location.hash
+    if(!hash.startsWith('#rgdoc=')) return
+    _rgdocPendingPayload = JSON.parse(decodeURIComponent(escape(atob(hash.slice(7)))))
+    history.replaceState(null,'',window.location.pathname)
+  }catch(e){}
+})()
+
+// ─────────────────────────────────────────────────────────────
+
+// ── SSO desde Agenda MAAH ────────────────────────────────────
+// La Agenda guarda un ticket en localStorage('maah_session') al abrir la Gantt.
+// Si el ticket es válido (< 30 min), lo usamos para auto-loguearnos sin pedir clave.
+function intentarSSOdesdeAgenda(){
+  try{
+    const raw = localStorage.getItem('maah_session');
+    if(!raw) return false;
+    const ticket = JSON.parse(raw);
+    if(!ticket || !ticket.userId || !ticket.expira) return false;
+    if(Date.now() > ticket.expira){ localStorage.removeItem('maah_session'); return false; }
+    const u = usuariosCache.find(x => x.id === ticket.userId);
+    if(!u) return false;
+    // Ticket válido → iniciar sesión directamente
+    currentUser = u;
+    hideLoginOverlay();
+    const btn = document.getElementById('login-btn');
+    if(btn){ btn.textContent='Ingresar a mi Gantt'; btn.disabled=false; }
+    iniciarGanttDelUsuario();
+    return true;
+  }catch(e){ return false; }
 }
 
 // ── FIREBASE AUTH ────────────────────────────────────────────
@@ -3646,15 +3861,7 @@ function procesarAuthUser(authUid){
     firebase.auth().signOut();
     return;
   }
-  // Verificar permiso de Gantt (admin siempre puede)
-  if(u.rol !== 'admin'){
-    const tienePermiso = u.permisos && u.permisos.gantt === true;
-    if(!tienePermiso){
-      alert('Tu cuenta no tiene acceso al servicio Gantt.\nSolicita la activación al administrador.');
-      firebase.auth().signOut();
-      return;
-    }
-  }
+  // Todos los usuarios pueden entrar; el rol determina qué ven (admin = completo, resto = solo lectura)
   currentUser = u;
   hideLoginOverlay();
   const btn = document.getElementById('login-btn');
@@ -3670,21 +3877,23 @@ function hideLoginOverlay(){
 }
 
 function doLogin(){
-  const userId  = document.getElementById('login-usuario').value;
+  const nombreTxt = (document.getElementById('login-usuario-txt').value||'').trim().toUpperCase();
   const clave   = document.getElementById('login-clave').value.trim();
   const errBox  = document.getElementById('login-error');
   const btn     = document.getElementById('login-btn');
   errBox.style.display = 'none';
 
-  if(!userId){ errBox.textContent='Selecciona un usuario.'; errBox.style.display='block'; return; }
-  if(!clave){  errBox.textContent='Ingresa tu clave.';       errBox.style.display='block'; return; }
+  if(!nombreTxt){ errBox.textContent='Ingresa tu nombre de usuario.'; errBox.style.display='block'; return; }
+  if(!clave){     errBox.textContent='Ingresa tu clave.';              errBox.style.display='block'; return; }
   if(!usuariosCache.length){
     errBox.textContent='Aún cargando usuarios, intenta en un momento.';
     errBox.style.display='block'; return;
   }
 
-  const u = usuariosCache.find(x=>x.id===userId);
-  if(!u){ errBox.textContent='Usuario no encontrado. Recarga la página.'; errBox.style.display='block'; return; }
+  // Buscar por nombre exacto (sin distinción mayúsculas)
+  const u = usuariosCache.find(x=> x.nombre.toUpperCase() === nombreTxt);
+  if(!u){ errBox.textContent='Usuario no encontrado. Verifica tu nombre e intenta nuevamente.'; errBox.style.display='block'; return; }
+  const userId = u.id;
 
   // Email sintético — el usuario nunca lo ve
   const syntheticEmail = userId.toLowerCase() + '@maah.app';
@@ -3743,7 +3952,82 @@ function doLogout(){
   firebase.auth().signOut().finally(()=>{ location.reload(); });
 }
 
+// ── RECUPERAR CLAVE (pantalla de login) ──
+function mostrarRecuperarClave(e){
+  e.preventDefault();
+  const msg = document.getElementById('recuperar-clave-msg');
+  msg.style.display = msg.style.display === 'none' ? 'block' : 'none';
+}
+
+// ── CAMBIAR CLAVE (usuario logueado) ──
+function abrirCambiarClave(){
+  document.getElementById('cc-actual').value='';
+  document.getElementById('cc-nueva').value='';
+  document.getElementById('cc-confirma').value='';
+  const msg=document.getElementById('cc-msg');
+  msg.style.display='none';
+  document.getElementById('modal-cambiar-clave').style.display='flex';
+  setTimeout(()=>document.getElementById('cc-actual').focus(),100);
+}
+function cerrarCambiarClave(){
+  document.getElementById('modal-cambiar-clave').style.display='none';
+}
+async function guardarNuevaClave(){
+  const actual   = document.getElementById('cc-actual').value.trim();
+  const nueva    = document.getElementById('cc-nueva').value.trim();
+  const confirma = document.getElementById('cc-confirma').value.trim();
+  const msg      = document.getElementById('cc-msg');
+
+  const showMsg=(txt,ok)=>{
+    msg.textContent=txt;
+    msg.style.cssText='display:block;font-size:11px;border-radius:5px;padding:6px 9px;margin-bottom:10px;text-align:center;'
+      +(ok?'background:#f0fff4;border:1px solid #9ae6b4;color:#276749;':'background:#fff5f5;border:1px solid #fc8181;color:#c53030;');
+  };
+
+  if(!actual){showMsg('Ingresa tu clave actual.',false);return;}
+  if(nueva.length<4){showMsg('La nueva clave debe tener al menos 4 caracteres.',false);return;}
+  if(nueva!==confirma){showMsg('Las claves nuevas no coinciden.',false);return;}
+
+  // Verificar clave actual contra Firebase DB
+  const snap = await db.ref('maah_usuarios/'+currentUser.id+'/pass').once('value');
+  const passDB = String(snap.val()||'').trim();
+  if(passDB !== actual){showMsg('La clave actual es incorrecta.',false);return;}
+
+  // Actualizar en Firebase DB
+  await db.ref('maah_usuarios/'+currentUser.id+'/pass').set(nueva);
+  // Actualizar en Firebase Auth
+  const fbPass = nueva+'@@maah';
+  try{ await firebase.auth().currentUser.updatePassword(fbPass); }catch(e){}
+
+  showMsg('✅ Clave actualizada correctamente.',true);
+  setTimeout(()=>cerrarCambiarClave(),1500);
+}
+
+// ── RESETEAR CLAVE (solo admin, desde panel de usuarios) ──
+async function resetearClaveUsuario(userId, nombre){
+  const nuevaClave = prompt('Nueva clave para '+nombre+' (mínimo 4 caracteres):');
+  if(!nuevaClave || nuevaClave.trim().length < 4){
+    if(nuevaClave !== null) alert('Clave demasiado corta. Mínimo 4 caracteres.');
+    return;
+  }
+  const claveOk = nuevaClave.trim();
+  await db.ref('maah_usuarios/'+userId+'/pass').set(claveOk);
+  // Intentar actualizar Firebase Auth si el usuario ya activó su cuenta
+  const snap = await db.ref('maah_usuarios/'+userId+'/authUid').once('value');
+  if(snap.val()){
+    // No podemos cambiar la contraseña de otro usuario desde el cliente sin re-autenticación.
+    // En el próximo login, la app detectará auth/wrong-password y verificará contra la DB,
+    // auto-creando una nueva cuenta Auth con la clave nueva.
+    await db.ref('maah_usuarios/'+userId+'/authUid').remove();
+  }
+  alert('✅ Clave de '+nombre+' restablecida. El usuario deberá ingresar con la nueva clave.');
+  renderUserMgmtList();
+}
+
 function iniciarGanttDelUsuario(){
+  // Cargar tipos personalizados del usuario desde Firebase
+  loadTiposDesdeFirebase();
+
   // Mostrar toda la app (estaba oculta hasta autenticarse)
   ['app-header','app-stats-bar','app-toolbar','app-main'].forEach(id=>{
     const el=document.getElementById(id);
@@ -3755,6 +4039,8 @@ function iniciarGanttDelUsuario(){
   badge.textContent='👤 '+currentUser.nombre+(currentUser.rol==='admin'?' ★':'');
   badge.style.display='inline-block';
   document.getElementById('logout-btn').style.display='inline-block';
+  const btnClave=document.getElementById('btn-cambiar-clave');
+  if(btnClave) btnClave.style.display='inline-block';
 
   hideLoginOverlay();
 
@@ -3763,10 +4049,14 @@ function iniciarGanttDelUsuario(){
     buildAdminUserChips();
     const btnUM = document.getElementById('btn-user-mgmt');
     if(btnUM) btnUM.style.display='inline-block';
+  } else {
+    // Usuario normal: modo solo-lectura — CSS se encarga de ocultar todo lo restringido
+    document.body.classList.add('readonly-user');
   }
 
   // Conectar a la ruta de ESTE usuario (cada uno tiene la suya)
   dbRef = db.ref('gantt_maah/actividades_por_usuario/'+currentUser.id);
+  myDbRef = dbRef; // Siempre apunta al usuario logueado, aunque admin vea otra Gantt
 
   // Bandera para hacer la migración solo una vez
   let migracionIntentada = false;
@@ -3888,12 +4178,19 @@ function buildAdminUserChips(){
   const others = usuariosCache.filter(u => u.id !== currentUser.id);
   if(!others.length){ wrap.classList.remove('visible'); return; }
   let html = '<div class="stat-divider-v"></div>';
+  // Chip propio del admin (siempre primero, vuelve a su gantt)
+  html += '<div class="admin-user-chip" id="admin-chip-self" onclick="adminVolverAMiGantt()" title="Ver mi Gantt (ADMIN)">★ '+currentUser.nombre+'</div>';
   others.forEach(u => {
     const nom = u.nombre.replace(/'/g,'&#39;');
     html += '<div class="admin-user-chip" id="admin-chip-'+u.id+'" onclick="adminVerGanttDeUsuario(\''+u.id+'\',\''+nom+'\')" title="Ver Gantt de '+nom+'">👤 '+u.nombre+'</div>';
   });
   wrap.innerHTML = html;
   wrap.classList.add('visible');
+  // Marcar chip propio como activo al cargar (estás en tu propia Gantt)
+  if(!viewingUserId){
+    const selfChip = document.getElementById('admin-chip-self');
+    if(selfChip) selfChip.classList.add('viewing');
+  }
 }
 
 function _parsearActsDeSnap(data){
@@ -4019,7 +4316,15 @@ function adminVerGanttDeUsuario(userId, userName){
   document.getElementById('admin-back-name').textContent = userName;
   document.getElementById('admin-back-banner').classList.add('visible');
 
-  // 3. Conectar a Firebase del otro usuario (estado independiente)
+  // 3. Cargar tipos del usuario visto (independiente del admin)
+  tiposCustom = []; tiposOcultos = new Set();
+  db.ref('gantt_maah/tipos_usuario/'+userId).once('value', snap=>{
+    const d = snap.val();
+    if(d){ if(Array.isArray(d.custom)) tiposCustom=d.custom; if(Array.isArray(d.ocultos)) tiposOcultos=new Set(d.ocultos); }
+    refreshAllTipoSelects();
+  });
+
+  // 4. Conectar a Firebase del otro usuario (estado independiente)
   dbRef = db.ref('gantt_maah/actividades_por_usuario/'+userId);
   dbRef.on('value', snap=>{
     const data = snap.val();
@@ -4043,14 +4348,24 @@ function adminVolverAMiGantt(){
   // 1. Resetear el estado del otro usuario
   _resetearEstado();
 
-  // Desmarcar chips
+  // Marcar chip propio como activo, desmarcar los demás
   document.querySelectorAll('.admin-user-chip').forEach(c=>c.classList.remove('viewing'));
+  const selfChip = document.getElementById('admin-chip-self');
+  if(selfChip) selfChip.classList.add('viewing');
   // Header y banner
   const badge = document.getElementById('user-badge');
   if(badge) badge.textContent = '👤 '+currentUser.nombre+(currentUser.rol==='admin'?' ★':'');
   document.getElementById('admin-back-banner').classList.remove('visible');
 
-  // 2. Reconectar a los datos del admin
+  // 2. Restaurar tipos del admin
+  tiposCustom = []; tiposOcultos = new Set();
+  db.ref('gantt_maah/tipos_usuario/'+currentUser.id).once('value', snap=>{
+    const d = snap.val();
+    if(d){ if(Array.isArray(d.custom)) tiposCustom=d.custom; if(Array.isArray(d.ocultos)) tiposOcultos=new Set(d.ocultos); }
+    refreshAllTipoSelects();
+  });
+
+  // 3. Reconectar a los datos del admin
   dbRef = db.ref('gantt_maah/actividades_por_usuario/'+currentUser.id);
   dbRef.on('value', snap=>{
     const data = snap.val();
@@ -4098,20 +4413,103 @@ function toggleTipoFilterDropdown(e){
 }
 
 function setTipoFilter(tipoValue){
-  currentTipoFilter = tipoValue;
   const dd = document.getElementById('tipo-filter-dropdown');
   if(dd) dd.classList.remove('open');
-  const btn = document.getElementById('stat-tipo-btn');
-  if(btn){
-    btn.classList.toggle('active', tipoValue !== null);
-    if(tipoValue !== null){
-      const t = getAllTipos().find(x=>x.value===tipoValue);
-      btn.innerHTML = '🏷️ '+(t ? t.label.toUpperCase() : 'TIPO')+' <span style="font-size:8px;">▾</span>';
-    } else {
-      btn.innerHTML = '🏷️ POR TIPO <span style="font-size:8px;">▾</span>';
-    }
+  if(tipoValue === null){
+    currentTipoFilter = null;
+    const btn = document.getElementById('stat-tipo-btn');
+    if(btn){ btn.classList.remove('active'); btn.innerHTML = '🏷️ POR TIPO <span style="font-size:8px;">▾</span>'; }
+    render();
+    return;
   }
-  render();
+  // Abrir modal con tabla de actividades del tipo seleccionado
+  abrirModalTipo(tipoValue);
+}
+
+function abrirModalTipo(tipoValue){
+  const tipo = getAllTipos().find(t=>t.value===tipoValue);
+  const label = tipo ? tipo.label : tipoValue;
+  const lista = acts.filter(a=>a.type===tipoValue).sort((a,b)=>a.fecha-b.fecha);
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+
+  document.getElementById('modal-tipo-titulo').textContent = '🏷️ ' + label.toUpperCase();
+  document.getElementById('modal-tipo-subtitulo').textContent = lista.length + ' actividad' + (lista.length!==1?'es':'') + ' · ordenadas por fecha de término';
+  document.getElementById('modal-tipo-header').dataset.tipo = tipoValue;
+
+  if(!lista.length){
+    document.getElementById('modal-tipo-body').innerHTML = '<p style="color:#a0aec0;text-align:center;padding:30px;font-size:13px;">No hay actividades de este tipo.</p>';
+    document.getElementById('modal-tipo-overlay').style.display='flex';
+    return;
+  }
+
+  let html = '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  html += '<thead><tr style="background:#f1f5f9;">'
+    + '<th style="padding:8px 10px;text-align:left;font-size:10px;color:#4a5568;font-weight:700;text-transform:uppercase;border-bottom:2px solid #e2e8f0;">Actividad</th>'
+    + '<th style="padding:8px 10px;text-align:left;font-size:10px;color:#4a5568;font-weight:700;text-transform:uppercase;border-bottom:2px solid #e2e8f0;width:90px;">OBS</th>'
+    + '<th style="padding:8px 10px;text-align:center;font-size:10px;color:#4a5568;font-weight:700;text-transform:uppercase;border-bottom:2px solid #e2e8f0;width:80px;">Término</th>'
+    + '<th style="padding:8px 10px;text-align:center;font-size:10px;color:#4a5568;font-weight:700;text-transform:uppercase;border-bottom:2px solid #e2e8f0;width:60px;">Días</th>'
+    + '</tr></thead><tbody>';
+
+  lista.forEach((a,idx)=>{
+    const diff = diasRest(a.fecha);
+    const col = getColor(diff, a.type==='aniversario');
+    const dl = dLabel(diff);
+    const bg = idx%2===0?'#fff':'#f8fafc';
+    // Para rango: mostrar inicio → término
+    const esRangoAct = a.fechaInicio instanceof Date && !isNaN(a.fechaInicio.getTime()) && a.fechaInicio < a.fecha;
+    const fechaCell = esRangoAct
+      ? '<span style="color:#7d3c98;font-size:10px;font-weight:600;">'+fmtDate(a.fechaInicio)+'</span>'
+        +'<span style="color:#a0aec0;margin:0 3px;">→</span>'
+        +'<span>'+fmtDate(a.fecha)+'</span>'
+      : fmtDate(a.fecha);
+    html += '<tr style="background:'+bg+';border-bottom:1px solid #edf2f7;">'
+      + '<td style="padding:8px 10px;font-weight:600;color:#2d3748;">'+(a.priori?'⚑ ':'')+a.act+'</td>'
+      + '<td style="padding:8px 10px;color:#718096;font-size:11px;">'+(a.obs||'—')+'</td>'
+      + '<td style="padding:8px 10px;text-align:center;color:#4a5568;font-size:11px;">'+fechaCell+'</td>'
+      + '<td style="padding:8px 10px;text-align:center;"><span style="background:'+col.bg+';color:'+col.fg+';border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;">'+dl+'</span></td>'
+      + '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('modal-tipo-body').innerHTML = html;
+  document.getElementById('modal-tipo-overlay').style.display='flex';
+}
+
+function cerrarModalTipo(){
+  document.getElementById('modal-tipo-overlay').style.display='none';
+}
+
+function imprimirModalTipo(){
+  const tipoValue = document.getElementById('modal-tipo-header').dataset.tipo;
+  const tipo = getAllTipos().find(t=>t.value===tipoValue);
+  const label = tipo ? tipo.label : tipoValue;
+  const lista = acts.filter(a=>a.type===tipoValue).sort((a,b)=>a.fecha-b.fecha);
+  const hoy = new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'long',year:'numeric'});
+  let rows = lista.map((a,i)=>{
+    const diff = diasRest(a.fecha);
+    const col = getColor(diff, a.type==='aniversario');
+    const dl = dLabel(diff);
+    return '<tr style="background:'+(i%2===0?'#fff':'#f8fafc')+';">'
+      +'<td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:600;">'+(a.priori?'⚑ ':'')+a.act+'</td>'
+      +'<td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#718096;">'+(a.obs||'—')+'</td>'
+      +'<td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;text-align:center;">'+fmtDate(a.fecha)+'</td>'
+      +'<td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;text-align:center;"><span style="background:'+col.bg+';color:'+col.fg+';border-radius:4px;padding:2px 8px;font-weight:700;font-size:11px;">'+dl+'</span></td>'
+      +'</tr>';
+  }).join('');
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${label} — Carta Gantt MAAH</title>
+  <style>body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:24px;color:#2d3748;}
+  h1{font-size:18px;color:#1a3f6f;margin-bottom:4px;}
+  .sub{font-size:11px;color:#718096;margin-bottom:16px;}
+  table{width:100%;border-collapse:collapse;}
+  th{background:#1a3f6f;color:#fff;padding:8px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;}
+  @media print{@page{margin:15mm;}}
+  </style></head><body>
+  <h1>🏷️ ${label.toUpperCase()}</h1>
+  <div class="sub">Carta Gantt MAAH · ${lista.length} actividades · ${hoy}</div>
+  <table><thead><tr><th>Actividad</th><th>OBS</th><th style="width:90px;text-align:center;">Término</th><th style="width:70px;text-align:center;">Días</th></tr></thead>
+  <tbody>${rows}</tbody></table></body></html>`);
+  w.document.close();
+  setTimeout(()=>w.print(),400);
 }
 
 function updateStatusBadge(online){
@@ -4139,94 +4537,6 @@ function saveActToFB(act){
   }
   dbRef.child(String(act.id)).set(toSave);
   saveToLocalStorage(); // respaldo local también
-}
-
-// ── IMPORTAR DESDE REGISTRO DOCUMENTAL ───────────────────────
-let _rgdocYaImportado = new Set(); // evita duplicados en esta sesión
-
-function importarDesdeRGDOC(){
-  // Primero: limpiar duplicados que hayan quedado de sesiones anteriores
-  _limpiarDuplicadosRGDOC();
-
-  let payload = null;
-  // Canal 1: localStorage
-  try{
-    const raw = localStorage.getItem("rgdoc_to_gantt");
-    if(raw){ payload = JSON.parse(raw); localStorage.removeItem("rgdoc_to_gantt"); }
-  }catch(e){}
-  // Canal 2: hash URL  #rgdoc=base64json
-  if(!payload){
-    try{
-      const hash = window.location.hash;
-      if(hash && hash.startsWith("#rgdoc=")){
-        const b64 = hash.slice(7);
-        payload = JSON.parse(decodeURIComponent(escape(atob(b64))));
-        history.replaceState(null,"",window.location.pathname+window.location.search);
-      }
-    }catch(e){}
-  }
-  if(!payload) return;
-
-  // Clave única del payload para deduplicar en esta sesión
-  const clavePayload = String(payload.rgdocNumero||"") + "|" + String(payload.fecha||"") + "|" + String(payload.act||"");
-  if(_rgdocYaImportado.has(clavePayload)){ console.log("[RGDOC] Ya importado en esta sesión, omitiendo."); return; }
-  _rgdocYaImportado.add(clavePayload);
-
-  // Verificar que no esté ya guardado en Firebase
-  const yaExiste = acts.some(a=>
-    a.fromRGDOC && payload.rgdocNumero && String(a.rgdocNumero)===String(payload.rgdocNumero)
-  );
-  if(yaExiste){ console.log("[RGDOC] Actividad ya existe en Firebase, omitiendo."); return; }
-
-  // Construir actividad compatible con la Gantt
-  let fecha = payload.fecha ? new Date(payload.fecha) : null;
-  if(!fecha || isNaN(fecha.getTime())) fecha = new Date();
-  fecha.setHours(12,0,0,0);
-
-  const newAct = {
-    id:         nextId++,
-    act:        (payload.act||"SIN MATERIA").toUpperCase().trim(),
-    obs:        (payload.obs||"").toUpperCase().trim(),
-    fecha:      fecha,
-    type:       payload.type || "plazo",
-    freq:       "puntual",
-    priori:     payload.priori === true,
-    fromRGDOC:  true,
-    rgdocNumero: payload.rgdocNumero || ""
-  };
-
-  acts.push(newAct);
-  acts.sort((a,b)=>a.fecha-b.fecha);
-  saveActToFB(newAct);
-  rebuildMonthSelect();
-  viewYear  = fecha.getFullYear();
-  viewMonth = fecha.getMonth();
-  render();
-  const n = document.createElement("div");
-  n.textContent = "✔ Importado desde Registro Documental: " + newAct.act;
-  Object.assign(n.style,{position:"fixed",bottom:"20px",right:"20px",background:"#2d7d46",color:"#fff",
-    padding:"12px 18px",borderRadius:"8px",zIndex:9999,fontSize:"13px",maxWidth:"420px",boxShadow:"0 2px 10px rgba(0,0,0,.3)"});
-  document.body.appendChild(n);
-  setTimeout(()=>n.remove(), 5000);
-  console.log("[RGDOC] Actividad importada:", newAct.act);
-}
-
-// Elimina duplicados fromRGDOC con mismo rgdocNumero (deja el de mayor id)
-function _limpiarDuplicadosRGDOC(){
-  if(!dbRef) return;
-  const vistos = new Map();
-  acts.filter(a=>a.fromRGDOC && a.rgdocNumero).forEach(a=>{
-    const k = String(a.rgdocNumero);
-    if(!vistos.has(k) || a.id > vistos.get(k).id) vistos.set(k, a);
-  });
-  acts.filter(a=>a.fromRGDOC && a.rgdocNumero).forEach(a=>{
-    const k = String(a.rgdocNumero);
-    if(vistos.get(k).id !== a.id){
-      dbRef.child(String(a.id)).remove();
-      console.log("[RGDOC] Duplicado eliminado id:", a.id);
-    }
-  });
-  acts = acts.filter(a=>!(a.fromRGDOC && a.rgdocNumero && vistos.get(String(a.rgdocNumero))?.id !== a.id));
 }
 
 function deleteActFromFB(id){
@@ -4558,6 +4868,7 @@ function renderUserMgmtList(){
       +rolBadge
       +'<span class="um-user-auth">'+authSt+'</span>'
       +'<button class="um-btn um-btn-edit" onclick="openEditUserForm(\''+u.id+'\')">Editar</button>'
+      +'<button class="um-btn" style="background:#e8f0fb;color:#1a3f6f;border:1px solid #bee3f8;" onclick="resetearClaveUsuario(\''+u.id+'\',\''+u.nombre.replace(/'/g,"\\'")+'\')" title="Restablecer clave">🔑 Clave</button>'
       +delBtn
       +'</div>';
   });
