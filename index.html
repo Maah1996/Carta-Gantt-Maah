@@ -4142,9 +4142,12 @@ function saveActToFB(act){
 }
 
 // ── IMPORTAR DESDE REGISTRO DOCUMENTAL ───────────────────────
-// Lee localStorage["rgdoc_to_gantt"] (puesto por registro-documental al guardar con checkbox Gantt).
-// También acepta hash URL #rgdoc=base64json como canal alternativo.
+let _rgdocYaImportado = new Set(); // evita duplicados en esta sesión
+
 function importarDesdeRGDOC(){
+  // Primero: limpiar duplicados que hayan quedado de sesiones anteriores
+  _limpiarDuplicadosRGDOC();
+
   let payload = null;
   // Canal 1: localStorage
   try{
@@ -4164,11 +4167,16 @@ function importarDesdeRGDOC(){
   }
   if(!payload) return;
 
-  // Verificar que no esté ya guardado (por rgdocNumero o materia+fecha)
+  // Clave única del payload para deduplicar en esta sesión
+  const clavePayload = String(payload.rgdocNumero||"") + "|" + String(payload.fecha||"") + "|" + String(payload.act||"");
+  if(_rgdocYaImportado.has(clavePayload)){ console.log("[RGDOC] Ya importado en esta sesión, omitiendo."); return; }
+  _rgdocYaImportado.add(clavePayload);
+
+  // Verificar que no esté ya guardado en Firebase
   const yaExiste = acts.some(a=>
     a.fromRGDOC && payload.rgdocNumero && String(a.rgdocNumero)===String(payload.rgdocNumero)
   );
-  if(yaExiste){ console.log("[RGDOC] Actividad ya existe, omitiendo."); return; }
+  if(yaExiste){ console.log("[RGDOC] Actividad ya existe en Firebase, omitiendo."); return; }
 
   // Construir actividad compatible con la Gantt
   let fecha = payload.fecha ? new Date(payload.fecha) : null;
@@ -4191,13 +4199,11 @@ function importarDesdeRGDOC(){
   acts.sort((a,b)=>a.fecha-b.fecha);
   saveActToFB(newAct);
   rebuildMonthSelect();
-  // Navegar al mes de la actividad para que quede visible
   viewYear  = fecha.getFullYear();
   viewMonth = fecha.getMonth();
   render();
-  // Notificación visible al usuario
   const n = document.createElement("div");
-  n.textContent = "✔ Actividad importada desde Registro Documental: " + newAct.act;
+  n.textContent = "✔ Importado desde Registro Documental: " + newAct.act;
   Object.assign(n.style,{position:"fixed",bottom:"20px",right:"20px",background:"#2d7d46",color:"#fff",
     padding:"12px 18px",borderRadius:"8px",zIndex:9999,fontSize:"13px",maxWidth:"420px",boxShadow:"0 2px 10px rgba(0,0,0,.3)"});
   document.body.appendChild(n);
@@ -4205,9 +4211,23 @@ function importarDesdeRGDOC(){
   console.log("[RGDOC] Actividad importada:", newAct.act);
 }
 
-// También revisar cuando la pestaña vuelve a estar activa (Gantt ya estaba abierta)
-window.addEventListener("focus", ()=>{ if(dbRef) importarDesdeRGDOC(); });
-document.addEventListener("visibilitychange", ()=>{ if(!document.hidden && dbRef) importarDesdeRGDOC(); });
+// Elimina duplicados fromRGDOC con mismo rgdocNumero (deja el de mayor id)
+function _limpiarDuplicadosRGDOC(){
+  if(!dbRef) return;
+  const vistos = new Map();
+  acts.filter(a=>a.fromRGDOC && a.rgdocNumero).forEach(a=>{
+    const k = String(a.rgdocNumero);
+    if(!vistos.has(k) || a.id > vistos.get(k).id) vistos.set(k, a);
+  });
+  acts.filter(a=>a.fromRGDOC && a.rgdocNumero).forEach(a=>{
+    const k = String(a.rgdocNumero);
+    if(vistos.get(k).id !== a.id){
+      dbRef.child(String(a.id)).remove();
+      console.log("[RGDOC] Duplicado eliminado id:", a.id);
+    }
+  });
+  acts = acts.filter(a=>!(a.fromRGDOC && a.rgdocNumero && vistos.get(String(a.rgdocNumero))?.id !== a.id));
+}
 
 function deleteActFromFB(id){
   if(!dbRef){ saveToLocalStorage(); return; }
