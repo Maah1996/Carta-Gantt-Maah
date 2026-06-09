@@ -3746,12 +3746,15 @@ function importarDesdeRGDOC(){
   _rgdocPendingPayload = null;
   localStorage.removeItem('rgdoc_to_gantt');
 
-  // Evitar duplicados
+  // Evitar duplicados — por rgdocNumero O por materia+fecha (para compatibilidad con entradas antiguas)
   const rgdocKey = acto.rgdocNumero || '';
-  if(rgdocKey && acts.some(a=>a.fromRGDOC && String(a.rgdocNumero)===rgdocKey)){
-    console.log('[RGDOC] Ya existe actividad con rgdocNumero:', rgdocKey);
-    return;
-  }
+  const actNorm  = (acto.act||'').toUpperCase().trim();
+  const yaExiste = acts.some(a => a.fromRGDOC && (
+    (rgdocKey && String(a.rgdocNumero) === rgdocKey) ||
+    ((a.act||'').toUpperCase().trim() === actNorm && acto.fecha && a.fecha &&
+      new Date(a.fecha).toDateString() === new Date(acto.fecha+'T12:00:00').toDateString())
+  ));
+  if(yaExiste){ console.log('[RGDOC] Actividad ya existe, omitiendo.'); return; }
   try{
     const f = new Date(acto.fecha+'T12:00:00');
     if(isNaN(f.getTime())) return;
