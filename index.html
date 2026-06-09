@@ -3723,15 +3723,14 @@ function cargarUsuariosAgenda(){
 // estaba abierta o cerrada cuando RegDoc guardó el documento.
 function importarDesdeRGDOC(){
   if(!dbRef) return;
-  const raw = localStorage.getItem('rgdoc_to_gantt');
-  if(!raw) return;
+  const acto = _rgdocPendingPayload || (function(){ try{ return JSON.parse(localStorage.getItem('rgdoc_to_gantt')); }catch(e){ return null; } })();
+  _rgdocPendingPayload = null;
+  localStorage.removeItem('rgdoc_to_gantt');
+  if(!acto || !acto.fecha) return;
   try{
-    const acto = JSON.parse(raw);
-    if(!acto || !acto.fecha) { localStorage.removeItem('rgdoc_to_gantt'); return; }
     const f = new Date(acto.fecha+'T12:00:00');
-    if(isNaN(f.getTime())) { localStorage.removeItem('rgdoc_to_gantt'); return; }
+    if(isNaN(f.getTime())) return;
     f.setHours(0,0,0,0);
-    localStorage.removeItem('rgdoc_to_gantt');
     // Usar Date.now() como ID para evitar conflictos con IDs existentes
     const uid = Date.now();
     const newAct = {
@@ -3778,22 +3777,16 @@ function debugRGDOC(){
     }
   }catch(e){ alert('Error leyendo payload: '+e.message); }
 }
-// Leer payload desde URL hash al cargar (mecanismo principal)
-function checkUrlHashRGDOC(){
+// Payload desde URL hash — guardado en memoria (no localStorage)
+let _rgdocPendingPayload = null;
+(function(){
   try{
     const hash = window.location.hash
     if(!hash.startsWith('#rgdoc=')) return
-    const encoded = hash.slice(7)
-    const payload = JSON.parse(decodeURIComponent(escape(atob(encoded))))
+    _rgdocPendingPayload = JSON.parse(decodeURIComponent(escape(atob(hash.slice(7)))))
     history.replaceState(null,'',window.location.pathname)
-    localStorage.setItem('rgdoc_to_gantt', JSON.stringify(payload))
   }catch(e){}
-}
-checkUrlHashRGDOC()
-window.addEventListener('hashchange', function(){
-  checkUrlHashRGDOC()
-  if(dbRef) importarDesdeRGDOC()
-})
+})()
 
 // ─────────────────────────────────────────────────────────────
 
