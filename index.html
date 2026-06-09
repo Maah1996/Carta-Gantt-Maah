@@ -4058,29 +4058,42 @@ function iniciarGanttDelUsuario(){
 
   hideLoginOverlay();
 
-  // Si es admin, construir chips de navegación a otras Gantt + mostrar botón gestión
+  // Siempre apunta al usuario logueado (no cambia aunque admin vea otra Gantt)
+  myDbRef = db.ref('gantt_maah/actividades_por_usuario/'+currentUser.id);
+
+  // Si es admin, construir chips y conectar DIRECTO a la Gantt guardada (sin pasar por la propia)
   if(currentUser.rol === 'admin'){
     buildAdminUserChips();
     const btnUM = document.getElementById('btn-user-mgmt');
     if(btnUM) btnUM.style.display='inline-block';
-    // Restaurar última Gantt vista, o CG OCGR por defecto
-    setTimeout(()=>{
-      try{
-        const saved = JSON.parse(localStorage.getItem('gantt_admin_viewing'));
-        const target = saved
-          ? usuariosCache.find(u => u.id === saved.id)
-          : usuariosCache.find(u => u.nombre === 'CG OCGR');
-        if(target) adminVerGanttDeUsuario(target.id, target.nombre);
-      }catch(e){}
-    }, 300);
+    // Determinar usuario a mostrar: el guardado en localStorage o CG OCGR por defecto
+    let targetUser = null;
+    try{
+      const saved = JSON.parse(localStorage.getItem('gantt_admin_viewing'));
+      targetUser = saved
+        ? usuariosCache.find(u => u.id === saved.id)
+        : usuariosCache.find(u => u.nombre === 'CG OCGR');
+    }catch(e){}
+    if(targetUser){
+      // Conectar directo a la Gantt del usuario destino sin cargar la del admin
+      viewingUserId   = targetUser.id;
+      viewingUserName = targetUser.nombre;
+      const badge = document.getElementById('user-badge');
+      if(badge) badge.textContent = '👁 GANTT: '+targetUser.nombre;
+      document.getElementById('admin-back-name').textContent = targetUser.nombre;
+      document.getElementById('admin-back-banner').classList.add('visible');
+      document.querySelectorAll('.admin-user-chip').forEach(c=>c.classList.remove('viewing'));
+      const chip = document.getElementById('admin-chip-'+targetUser.id);
+      if(chip) chip.classList.add('viewing');
+      dbRef = db.ref('gantt_maah/actividades_por_usuario/'+targetUser.id);
+    } else {
+      dbRef = myDbRef;
+    }
   } else {
-    // Usuario normal: modo solo-lectura — CSS se encarga de ocultar todo lo restringido
+    // Usuario normal: modo solo-lectura
     document.body.classList.add('readonly-user');
+    dbRef = myDbRef;
   }
-
-  // Conectar a la ruta de ESTE usuario (cada uno tiene la suya)
-  dbRef = db.ref('gantt_maah/actividades_por_usuario/'+currentUser.id);
-  myDbRef = dbRef; // Siempre apunta al usuario logueado, aunque admin vea otra Gantt
 
   // Bandera para hacer la migración solo una vez
   let migracionIntentada = false;
