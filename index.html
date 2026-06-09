@@ -3724,10 +3724,24 @@ function cargarUsuariosAgenda(){
 function importarDesdeRGDOC(){
   if(!dbRef) return;
   const acto = _rgdocPendingPayload || (function(){ try{ return JSON.parse(localStorage.getItem('rgdoc_to_gantt')); }catch(e){ return null; } })();
+  if(!acto || !acto.fecha) return;
+
+  // Si es admin y el payload pide un usuario específico, auto-cambiar a ese usuario
+  if(acto.targetUserName && currentUser && currentUser.rol === 'admin'){
+    const target = usuariosCache.find(u => u.nombre === acto.targetUserName);
+    if(target && viewingUserId !== target.id){
+      // Preservar el payload y NO borrar localStorage — la próxima llamada lo encontrará
+      _rgdocPendingPayload = acto;
+      adminVerGanttDeUsuario(target.id, target.nombre);
+      return; // el callback de Firebase de ese usuario llamará importarDesdeRGDOC de nuevo
+    }
+  }
+
+  // Consumir el payload
   _rgdocPendingPayload = null;
   localStorage.removeItem('rgdoc_to_gantt');
-  if(!acto || !acto.fecha) return;
-  // Evitar duplicados: si ya existe una actividad con el mismo rgdocNumero, no importar
+
+  // Evitar duplicados
   const rgdocKey = acto.rgdocNumero || '';
   if(rgdocKey && acts.some(a=>a.fromRGDOC && String(a.rgdocNumero)===rgdocKey)){
     console.log('[RGDOC] Ya existe actividad con rgdocNumero:', rgdocKey);
@@ -4336,6 +4350,7 @@ function adminVerGanttDeUsuario(userId, userName){
     rebuildMonthSelect();
     rebuildWeekSelect();
     render();
+    importarDesdeRGDOC();
   }, err=>{ console.error('[ADMIN] Error Firebase otro usuario:',err); });
 }
 
