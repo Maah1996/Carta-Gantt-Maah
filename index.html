@@ -3745,10 +3745,18 @@ function importarDesdeRGDOC(){
       fromRGDOC: true,
       rgdocNumero: acto.rgdocNumero || ''
     };
-    // Guardar directamente en Firebase de la Gantt actualmente visible (dbRef)
+    // Agregar a acts y guardar en Firebase de la Gantt visible
     const toSave={...newAct, fecha: newAct.fecha.toISOString(), fechaInicio: null};
     dbRef.child(String(uid)).set(toSave);
-    // Firebase on('value') actualizará acts y render automáticamente
+    acts.push(newAct);
+    acts.sort((a,b)=>a.fecha-b.fecha);
+    // Navegar al mes del plazo automáticamente
+    const mesStr = f.getFullYear()+'-'+(f.getMonth()+1);
+    const sel = document.getElementById('month-select');
+    if(sel){ sel.value = mesStr; sel.dispatchEvent(new Event('change')); }
+    rebuildMonthSelect();
+    rebuildWeekSelect();
+    render();
     var t=document.createElement('div');
     t.textContent='📥 Actividad recibida desde Registro Documental — revisa Julio';
     t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a3f6f;color:#fff;padding:12px 24px;border-radius:10px;font-size:13px;font-weight:700;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,.3);';
