@@ -3721,6 +3721,32 @@ function cargarUsuariosAgenda(){
   });
 }
 
+// ── Eliminar actividad desde Registro Documental (checkbox desmarcado) ───
+function eliminarDesdeRGDOC(){
+  if(!dbRef) return;
+  try{
+    const raw = localStorage.getItem('rgdoc_remove_gantt');
+    if(!raw) return;
+    const sig = JSON.parse(raw);
+    localStorage.removeItem('rgdoc_remove_gantt');
+    const actNorm = (sig.act||'').toUpperCase().trim();
+    const rgdocNum = String(sig.rgdocNumero||'');
+    // Buscar actividades coincidentes por rgdocNumero o por materia
+    const aEliminar = acts.filter(a => a.fromRGDOC && (
+      (rgdocNum && String(a.rgdocNumero) === rgdocNum) ||
+      (actNorm && (a.act||'').toUpperCase().trim() === actNorm)
+    ));
+    aEliminar.forEach(a => {
+      dbRef.child(String(a.id)).remove();
+      console.log('[RGDOC] Eliminado de Gantt:', a.act);
+    });
+    if(aEliminar.length){
+      acts = acts.filter(a => !aEliminar.includes(a));
+      rebuildMonthSelect(); render();
+    }
+  }catch(e){ console.error('[RGDOC] Error eliminando:', e); }
+}
+
 // ── Importar actividad desde Registro Documental OCGR ────────
 // Polling cada 3s: detecta payload en localStorage sin importar si la Gantt
 // estaba abierta o cerrada cuando RegDoc guardó el documento.
@@ -4154,8 +4180,8 @@ function iniciarGanttDelUsuario(){
           }
         });
         render();
-        importarDesdeRGDOC();
-      }).catch(()=>{ render(); importarDesdeRGDOC(); });
+        importarDesdeRGDOC(); eliminarDesdeRGDOC();
+      }).catch(()=>{ render(); importarDesdeRGDOC(); eliminarDesdeRGDOC(); });
     } else {
       // Sin datos en la ruta personal del usuario.
       // Para cualquier admin: intentar recuperar datos del respaldo una sola vez.
@@ -4170,7 +4196,7 @@ function iniciarGanttDelUsuario(){
       rebuildMonthSelect();
       rebuildWeekSelect();
       render();
-      importarDesdeRGDOC();
+      importarDesdeRGDOC(); eliminarDesdeRGDOC();
     }
   }, err=>{
     console.error('Firebase error:', err.code, err.message);
@@ -4385,7 +4411,7 @@ function adminVerGanttDeUsuario(userId, userName){
     rebuildMonthSelect();
     rebuildWeekSelect();
     render();
-    importarDesdeRGDOC();
+    importarDesdeRGDOC(); eliminarDesdeRGDOC();
   }, err=>{ console.error('[ADMIN] Error Firebase otro usuario:',err); });
 }
 
