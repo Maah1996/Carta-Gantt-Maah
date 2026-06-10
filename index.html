@@ -3752,9 +3752,19 @@ function eliminarDesdeRGDOC(){
 // Polling cada 3s: detecta payload en localStorage sin importar si la Gantt
 // estaba abierta o cerrada cuando RegDoc guardó el documento.
 function importarDesdeRGDOC(){
-  if(_rgdocImportado) return;
   const acto = _rgdocPendingPayload || (function(){ try{ return JSON.parse(localStorage.getItem('rgdoc_to_gantt')); }catch(e){ return null; } })();
   if(!acto || !acto.fecha) return;
+
+  // Deduplicación por nonce — solo una pestaña procesa cada envío
+  if(acto.nonce){
+    const done = localStorage.getItem('rgdoc_nonce_done');
+    if(done === String(acto.nonce)){ _rgdocPendingPayload = null; return; }
+    localStorage.setItem('rgdoc_nonce_done', String(acto.nonce));
+  }
+
+  // Consumir payload de inmediato
+  _rgdocPendingPayload = null;
+  localStorage.removeItem('rgdoc_to_gantt');
 
   // Determinar ref de destino: siempre el usuario indicado en targetUserName
   let targetRef = dbRef;
@@ -3771,11 +3781,6 @@ function importarDesdeRGDOC(){
     }
   }
   if(!targetRef) return;
-
-  // Consumir payload — solo una vez por sesión
-  _rgdocImportado = true;
-  _rgdocPendingPayload = null;
-  localStorage.removeItem('rgdoc_to_gantt');
 
   // Verificar duplicado en Firebase del usuario destino
   const rgdocKey = acto.rgdocNumero || '';
@@ -3842,7 +3847,6 @@ function debugRGDOC(){
 }
 // Payload desde URL hash — guardado en memoria (no localStorage)
 let _rgdocPendingPayload = null;
-let _rgdocImportado = false; // flag de sesión: solo importar una vez por carga de página
 (function(){
   try{
     const hash = window.location.hash
@@ -3851,6 +3855,10 @@ let _rgdocImportado = false; // flag de sesión: solo importar una vez por carga
     history.replaceState(null,'',window.location.pathname)
   }catch(e){}
 })()
+// Escucha cambios de localStorage desde RegDoc (para pestañas ya abiertas)
+window.addEventListener('storage', function(e){
+  if(e.key === 'rgdoc_to_gantt' && e.newValue) importarDesdeRGDOC();
+});
 
 // ─────────────────────────────────────────────────────────────
 
