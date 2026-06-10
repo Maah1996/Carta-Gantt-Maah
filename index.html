@@ -3782,39 +3782,42 @@ function importarDesdeRGDOC(){
   }
   if(!targetRef) return;
 
-  // Verificar duplicado en Firebase del usuario destino
   const rgdocKey = acto.rgdocNumero || '';
   const actNorm  = (acto.act||'').toUpperCase().trim();
+  const f = new Date(acto.fecha+'T12:00:00');
+  if(isNaN(f.getTime())) return;
+  f.setHours(0,0,0,0);
+
   targetRef.once('value', snap=>{
     const data = snap.val() || {};
-    const existing = Object.values(data);
-    const yaExiste = existing.some(a => a.fromRGDOC && (
-      (rgdocKey && String(a.rgdocNumero) === rgdocKey) ||
-      ((a.act||'').toUpperCase().trim() === actNorm &&
-        new Date(a.fecha).toDateString() === new Date(acto.fecha+'T12:00:00').toDateString())
-    ));
-    if(yaExiste){ console.log('[RGDOC] Ya existe en destino, omitiendo.'); return; }
+    const entries = Object.entries(data);
 
-    const f = new Date(acto.fecha+'T12:00:00');
-    if(isNaN(f.getTime())) return;
-    f.setHours(0,0,0,0);
-    // ID determinístico: mismo doc siempre usa la misma clave → sobreescribe en vez de duplicar
+    // Buscar actividad existente por rgdocNumero
+    const existingEntry = entries.find(([,a]) => a.fromRGDOC && rgdocKey && String(a.rgdocNumero) === rgdocKey);
+
+    if(acto.update && existingEntry){
+      // Actualización silenciosa: solo sobreescribir act, obs y fecha
+      const [existingId, existingAct] = existingEntry;
+      const updated = { ...existingAct, act: actNorm, obs: (acto.obs||'').toUpperCase().trim(), fecha: f.toISOString() };
+      targetRef.child(String(existingId)).set(updated);
+      // Actualizar en memoria si estamos viendo esa Gantt
+      if(viewingUserId === targetUserId || (!viewingUserId && currentUser && currentUser.id === targetUserId)){
+        const idx = acts.findIndex(a => String(a.id) === String(existingId));
+        if(idx !== -1){ acts[idx] = {...updated, fecha: f}; acts.sort((a,b)=>a.fecha-b.fecha); render(); }
+      }
+      return;
+    }
+
+    if(existingEntry){ console.log('[RGDOC] Ya existe en destino, omitiendo.'); return; }
+
+    // Actividad nueva
     const uidBase = 'rgdoc_' + (rgdocKey || actNorm.replace(/[^A-Z0-9]/g,'').slice(0,20)) + '_' + acto.fecha;
-    const uid = uidBase;
     const newAct = {
-      id: uid,
-      act: actNorm,
-      obs: (acto.obs||'').toUpperCase().trim(),
-      fecha: f,
-      type: acto.type || 'plazo',
-      freq: 'puntual',
-      priori: true,
-      fromRGDOC: true,
-      rgdocNumero: rgdocKey
+      id: uidBase, act: actNorm, obs: (acto.obs||'').toUpperCase().trim(),
+      fecha: f, type: acto.type || 'plazo', freq: 'puntual',
+      priori: true, fromRGDOC: true, rgdocNumero: rgdocKey
     };
-    const toSave = {...newAct, fecha: f.toISOString(), fechaInicio: null};
-    targetRef.child(String(uid)).set(toSave);
-    // Solo actualizar acts[] si estamos viendo la Gantt del destino
+    targetRef.child(String(uidBase)).set({...newAct, fecha: f.toISOString(), fechaInicio: null});
     if(viewingUserId === targetUserId || (!viewingUserId && currentUser && currentUser.id === targetUserId)){
       acts.push(newAct);
       acts.sort((a,b)=>a.fecha-b.fecha);
