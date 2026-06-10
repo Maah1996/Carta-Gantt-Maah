@@ -3709,8 +3709,8 @@ function cargarUsuariosAgenda(){
       if(authUser){
         // ya hay sesión Firebase activa
       } else {
-        // Intentar SSO desde la Agenda MAAH (ticket en localStorage)
-        const ssoOk = intentarSSOdesdeAgenda();
+        // Intentar SSO desde la Agenda MAAH o desde Registro Documental
+        const ssoOk = intentarSSOdesdeAgenda() || intentarSSOdesdeRGDOC();
         if(!ssoOk) showLoginOverlay();
       }
     }
@@ -3879,6 +3879,26 @@ function intentarSSOdesdeAgenda(){
     const u = usuariosCache.find(x => x.id === ticket.userId);
     if(!u) return false;
     // Ticket válido → iniciar sesión directamente
+    currentUser = u;
+    hideLoginOverlay();
+    const btn = document.getElementById('login-btn');
+    if(btn){ btn.textContent='Ingresar a mi Gantt'; btn.disabled=false; }
+    iniciarGanttDelUsuario();
+    return true;
+  }catch(e){ return false; }
+}
+
+// SSO desde Registro Documental OCGR — busca nombre en usuariosCache
+function intentarSSOdesdeRGDOC(){
+  try{
+    const raw = localStorage.getItem('rgdoc_session');
+    if(!raw) return false;
+    const ticket = JSON.parse(raw);
+    if(!ticket || !ticket.nombre || !ticket.expira) return false;
+    if(Date.now() > ticket.expira){ localStorage.removeItem('rgdoc_session'); return false; }
+    const nombre = ticket.nombre.toUpperCase().trim();
+    const u = usuariosCache.find(x => (x.nombre||'').toUpperCase().trim() === nombre);
+    if(!u) return false;
     currentUser = u;
     hideLoginOverlay();
     const btn = document.getElementById('login-btn');
