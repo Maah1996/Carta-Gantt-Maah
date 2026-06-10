@@ -3756,6 +3756,8 @@ function eliminarDesdeRGDOC(){
 // Polling cada 3s: detecta payload en localStorage sin importar si la Gantt
 // estaba abierta o cerrada cuando RegDoc guardó el documento.
 function importarDesdeRGDOC(){
+  // Solo el admin puede importar desde RegDoc a la Gantt de CG OCGR
+  if(!currentUser || currentUser.rol !== 'admin') return;
   const acto = _rgdocPendingPayload || (function(){ try{ return JSON.parse(localStorage.getItem('rgdoc_to_gantt')); }catch(e){ return null; } })();
   if(!acto || !acto.fecha) return;
 
