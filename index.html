@@ -588,7 +588,7 @@ body.readonly-user #admin-back-banner { display:none !important; }
         </div>
         <div class="dias-preview prev-neutral" id="dias-preview" style="">Seleccione una fecha</div>
         <div id="freq-preview" style="display:none;font-size:11px;color:#0c4a6e;background:#e0f2fe;border:1px solid #7dd3fc;border-radius:5px;padding:5px 8px;margin-bottom:6px;"></div>
-        <div class="form-group" style="margin-top:8px;">
+        <div class="form-group" id="wrap-enviar-agenda" style="margin-top:8px;display:none;">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
             <input type="checkbox" id="f-enviar-agenda" style="width:16px;height:16px;cursor:pointer;">
             Enviar también a la Agenda
@@ -4171,6 +4171,10 @@ function iniciarGanttDelUsuario(){
 
   // Siempre apunta al usuario logueado (no cambia aunque admin vea otra Gantt)
   myDbRef = db.ref('gantt_maah/actividades_por_usuario/'+currentUser.id);
+
+  // Mostrar "Enviar a Agenda" solo para admin
+  const wrapAgenda = document.getElementById('wrap-enviar-agenda')
+  if(wrapAgenda) wrapAgenda.style.display = currentUser.rol === 'admin' ? '' : 'none'
 
   // Si es admin, construir chips y conectar DIRECTO a la Gantt guardada (sin pasar por la propia)
   if(currentUser.rol === 'admin'){
