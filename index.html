@@ -443,7 +443,7 @@ body.readonly-user #admin-back-banner { display:none !important; }
     <button class="btn-print" id="btn-exit-extended" onclick="exitExtendedView()" style="background:#0F6E56;border-color:#0F6E56;display:none;" title="Volver a la vista normal">↩ Volver a vista normal</button>
     <button class="btn-print" id="btn-user-mgmt" onclick="openUserMgmtPanel()" style="display:none;background:rgba(74,85,104,.5);border-color:rgba(255,255,255,.4);" title="Gestión de usuarios">⚙️ Usuarios</button>
     <button class="btn-print" id="btn-rgdoc-import" onclick="debugRGDOC()" style="background:#b3d9f7;color:#1a3f6f;border-color:#b3d9f7;font-weight:800;" title="Importar desde Registro Documental">📥 RegDoc</button>
-    <a href="https://maah1996.github.io/registro-documental/" target="_blank" title="Ir a Registro Documental" class="btn-print" style="background:#b3d9f7;color:#1a3f6f;border-color:#b3d9f7;font-weight:800;text-decoration:none;">📄 Reg.Doc</a>
+    <button onclick="volverARegDoc()" title="Ir a Registro Documental" class="btn-print" style="background:#b3d9f7;color:#1a3f6f;border-color:#b3d9f7;font-weight:800;">📄 Reg.Doc</button>
     <span id="fb-status" style="font-size: 10px; padding: 3px 10px; border-radius: 12px; background: rgba(46, 125, 50, 0.3); color: rgb(165, 214, 167);">● En línea</span>
     <span class="today-badge" id="today-lbl">HOY: 30/abr/2026</span>
   </div>
@@ -5118,6 +5118,16 @@ async function deleteUserFromSystem(userId,userName){
     renderUserMgmtList();
   }catch(e){
     alert('Error al eliminar: '+e.message);
+  }
+}
+
+function volverARegDoc(){
+  // Si está dentro del iframe de RegDoc, cambiar el tab del padre
+  if(window.parent && window.parent !== window && typeof window.parent.mostrarVistaRegDoc === 'function'){
+    window.parent.mostrarVistaRegDoc();
+  } else {
+    // Abierta de forma independiente → navegar normalmente
+    window.open('https://maah1996.github.io/registro-documental/', '_blank');
   }
 }
 </script>
