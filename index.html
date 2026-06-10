@@ -3751,72 +3751,78 @@ function eliminarDesdeRGDOC(){
 // Polling cada 3s: detecta payload en localStorage sin importar si la Gantt
 // estaba abierta o cerrada cuando RegDoc guardó el documento.
 function importarDesdeRGDOC(){
-  if(!dbRef) return;
-  if(_rgdocImportado) return; // ya se importó en esta sesión
+  if(_rgdocImportado) return;
   const acto = _rgdocPendingPayload || (function(){ try{ return JSON.parse(localStorage.getItem('rgdoc_to_gantt')); }catch(e){ return null; } })();
   if(!acto || !acto.fecha) return;
 
-  // Si es admin y el payload pide un usuario específico, auto-cambiar a ese usuario
-  if(acto.targetUserName && currentUser && currentUser.rol === 'admin'){
-    const target = usuariosCache.find(u => u.nombre === acto.targetUserName);
-    if(target && viewingUserId !== target.id){
-      // Preservar el payload y NO borrar localStorage — la próxima llamada lo encontrará
-      _rgdocPendingPayload = acto;
-      adminVerGanttDeUsuario(target.id, target.nombre);
-      return; // el callback de Firebase de ese usuario llamará importarDesdeRGDOC de nuevo
+  // Determinar ref de destino: siempre el usuario indicado en targetUserName
+  let targetRef = dbRef;
+  let targetUserId = viewingUserId || (currentUser ? currentUser.id : null);
+  if(acto.targetUserName && currentUser){
+    const tu = usuariosCache.find(u =>
+      u.nombre.toUpperCase().trim() === acto.targetUserName.toUpperCase().trim()
+    );
+    if(tu){
+      targetRef = db.ref('gantt_maah/actividades_por_usuario/'+tu.id);
+      targetUserId = tu.id;
+      // Auto-cambiar vista si no estamos ahí
+      if(viewingUserId !== tu.id) adminVerGanttDeUsuario(tu.id, tu.nombre);
     }
   }
+  if(!targetRef) return;
 
-  // Consumir el payload — marcar como importado para esta sesión
+  // Consumir payload — solo una vez por sesión
   _rgdocImportado = true;
   _rgdocPendingPayload = null;
   localStorage.removeItem('rgdoc_to_gantt');
 
-  // Evitar duplicados — por rgdocNumero O por materia+fecha (para compatibilidad con entradas antiguas)
+  // Verificar duplicado en Firebase del usuario destino
   const rgdocKey = acto.rgdocNumero || '';
   const actNorm  = (acto.act||'').toUpperCase().trim();
-  const yaExiste = acts.some(a => a.fromRGDOC && (
-    (rgdocKey && String(a.rgdocNumero) === rgdocKey) ||
-    ((a.act||'').toUpperCase().trim() === actNorm && acto.fecha && a.fecha &&
-      new Date(a.fecha).toDateString() === new Date(acto.fecha+'T12:00:00').toDateString())
-  ));
-  if(yaExiste){ console.log('[RGDOC] Actividad ya existe, omitiendo.'); return; }
-  try{
+  targetRef.once('value', snap=>{
+    const data = snap.val() || {};
+    const existing = Object.values(data);
+    const yaExiste = existing.some(a => a.fromRGDOC && (
+      (rgdocKey && String(a.rgdocNumero) === rgdocKey) ||
+      ((a.act||'').toUpperCase().trim() === actNorm &&
+        new Date(a.fecha).toDateString() === new Date(acto.fecha+'T12:00:00').toDateString())
+    ));
+    if(yaExiste){ console.log('[RGDOC] Ya existe en destino, omitiendo.'); return; }
+
     const f = new Date(acto.fecha+'T12:00:00');
     if(isNaN(f.getTime())) return;
     f.setHours(0,0,0,0);
-    // Usar Date.now() como ID para evitar conflictos con IDs existentes
     const uid = Date.now();
     const newAct = {
       id: uid,
-      act: (acto.act||'').toUpperCase().trim(),
+      act: actNorm,
       obs: (acto.obs||'').toUpperCase().trim(),
       fecha: f,
       type: acto.type || 'plazo',
       freq: 'puntual',
       priori: true,
       fromRGDOC: true,
-      rgdocNumero: acto.rgdocNumero || ''
+      rgdocNumero: rgdocKey
     };
-    // Agregar a acts y guardar en Firebase de la Gantt visible
-    const toSave={...newAct, fecha: newAct.fecha.toISOString(), fechaInicio: null};
-    dbRef.child(String(uid)).set(toSave);
-    acts.push(newAct);
-    acts.sort((a,b)=>a.fecha-b.fecha);
-    // Navegar al mes del plazo automáticamente
-    const mesStr = f.getFullYear()+'-'+(f.getMonth()+1);
-    const sel = document.getElementById('month-select');
-    if(sel){ sel.value = mesStr; sel.dispatchEvent(new Event('change')); }
-    rebuildMonthSelect();
-    rebuildWeekSelect();
-    render();
+    const toSave = {...newAct, fecha: f.toISOString(), fechaInicio: null};
+    targetRef.child(String(uid)).set(toSave);
+    // Solo actualizar acts[] si estamos viendo la Gantt del destino
+    if(viewingUserId === targetUserId || (!viewingUserId && currentUser && currentUser.id === targetUserId)){
+      acts.push(newAct);
+      acts.sort((a,b)=>a.fecha-b.fecha);
+      const mesStr = f.getFullYear()+'-'+(f.getMonth()+1);
+      const sel = document.getElementById('month-select');
+      if(sel){ sel.value = mesStr; sel.dispatchEvent(new Event('change')); }
+      rebuildMonthSelect(); rebuildWeekSelect(); render();
+    }
     var t=document.createElement('div');
-    t.textContent='📥 Actividad recibida desde Registro Documental — revisa Julio';
+    t.textContent='📥 Actividad recibida en Gantt CG OCGR';
     t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a3f6f;color:#fff;padding:12px 24px;border-radius:10px;font-size:13px;font-weight:700;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,.3);';
     document.body.appendChild(t);
     setTimeout(function(){t.remove();},6000);
-  }catch(e){ console.error('RGDOC import error:',e); }
+  }); // fin targetRef.once
 }
+
 
 function debugRGDOC(){
   const raw = localStorage.getItem('rgdoc_to_gantt');
