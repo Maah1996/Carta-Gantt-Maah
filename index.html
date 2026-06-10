@@ -4512,22 +4512,15 @@ function setTipoFilter(tipoValue){
     render();
     return;
   }
-  // Filtro especial Reg.Doc
-  if(tipoValue === '__rgdoc__'){
-    currentTipoFilter = '__rgdoc__';
-    const btn = document.getElementById('stat-tipo-btn');
-    if(btn){ btn.classList.add('active'); btn.innerHTML = '📋 Reg.Doc <span style="font-size:8px;">▾</span>'; }
-    render();
-    return;
-  }
-  // Abrir modal con tabla de actividades del tipo seleccionado
+  // Abrir modal con tabla de actividades del tipo seleccionado (incluye Reg.Doc)
   abrirModalTipo(tipoValue);
 }
 
 function abrirModalTipo(tipoValue){
+  const esRgdoc = tipoValue === '__rgdoc__';
   const tipo = getAllTipos().find(t=>t.value===tipoValue);
-  const label = tipo ? tipo.label : tipoValue;
-  const lista = acts.filter(a=>a.type===tipoValue).sort((a,b)=>a.fecha-b.fecha);
+  const label = esRgdoc ? '📋 Reg.Doc' : (tipo ? tipo.label : tipoValue);
+  const lista = (esRgdoc ? acts.filter(a=>a.fromRGDOC) : acts.filter(a=>a.type===tipoValue)).sort((a,b)=>a.fecha-b.fecha);
   const hoy = new Date(); hoy.setHours(0,0,0,0);
 
   document.getElementById('modal-tipo-titulo').textContent = '🏷️ ' + label.toUpperCase();
