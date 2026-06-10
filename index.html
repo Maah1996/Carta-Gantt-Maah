@@ -3792,7 +3792,9 @@ function importarDesdeRGDOC(){
     const f = new Date(acto.fecha+'T12:00:00');
     if(isNaN(f.getTime())) return;
     f.setHours(0,0,0,0);
-    const uid = Date.now();
+    // ID determinístico: mismo doc siempre usa la misma clave → sobreescribe en vez de duplicar
+    const uidBase = 'rgdoc_' + (rgdocKey || actNorm.replace(/[^A-Z0-9]/g,'').slice(0,20)) + '_' + acto.fecha;
+    const uid = uidBase;
     const newAct = {
       id: uid,
       act: actNorm,
