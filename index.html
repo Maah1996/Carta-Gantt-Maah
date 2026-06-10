@@ -3872,6 +3872,10 @@ window.addEventListener('message', function(e){
     localStorage.setItem('rgdoc_new_user', JSON.stringify(e.data.payload));
     crearUsuarioDesdeRGDOC();
   }
+  if(e.data && e.data.type === 'rgdoc_import' && e.data.payload){
+    localStorage.setItem('rgdoc_to_gantt', JSON.stringify(e.data.payload));
+    importarDesdeRGDOC();
+  }
 });
 
 // Crear usuario en Gantt cuando RegDoc crea uno nuevo
