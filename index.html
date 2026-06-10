@@ -938,7 +938,8 @@ function filterGroup(diff, isAniv){
 }
 // Función separada para el filtro 'aniv' (solo por tipo)
 function matchesFilter(a, filterKey){
-  if(currentTipoFilter !== null && a.type !== currentTipoFilter) return false;
+  if(currentTipoFilter === '__rgdoc__' && !a.fromRGDOC) return false;
+  if(currentTipoFilter !== null && currentTipoFilter !== '__rgdoc__' && a.type !== currentTipoFilter) return false;
   if(filterKey==='all') return true;
   if(filterKey==='aniv') return a.type==='aniversario';
   const diff=diasRest(a.fecha);
@@ -4486,12 +4487,16 @@ function toggleTipoFilterDropdown(e){
   const allTipos = getAllTipos();
   const counts = {};
   allTipos.forEach(t=>{ counts[t.value] = acts.filter(a=>a.type===t.value).length; });
+  const rgdocCnt = acts.filter(a=>a.fromRGDOC).length;
   let html = '<div class="tipo-filter-item'+(currentTipoFilter===null?' active':'')+'" onclick="setTipoFilter(null)">— Todos los tipos</div>';
   allTipos.forEach(t=>{
     const cnt = counts[t.value]||0;
     if(cnt===0) return;
     html += '<div class="tipo-filter-item'+(currentTipoFilter===t.value?' active':'')+'" onclick="setTipoFilter(\''+t.value+'\')">'+t.label+' ('+cnt+')</div>';
   });
+  if(rgdocCnt>0){
+    html += '<div class="tipo-filter-item'+(currentTipoFilter==='__rgdoc__'?' active':'')+'" onclick="setTipoFilter(\'__rgdoc__\')" style="border-top:1px solid rgba(255,255,255,.1);margin-top:4px;padding-top:6px;">📋 Reg.Doc ('+rgdocCnt+')</div>';
+  }
   dd.innerHTML = html;
   const isOpen = dd.classList.toggle('open');
   document.getElementById('stat-tipo-btn').classList.toggle('active', isOpen);
@@ -4504,6 +4509,14 @@ function setTipoFilter(tipoValue){
     currentTipoFilter = null;
     const btn = document.getElementById('stat-tipo-btn');
     if(btn){ btn.classList.remove('active'); btn.innerHTML = '🏷️ POR TIPO <span style="font-size:8px;">▾</span>'; }
+    render();
+    return;
+  }
+  // Filtro especial Reg.Doc
+  if(tipoValue === '__rgdoc__'){
+    currentTipoFilter = '__rgdoc__';
+    const btn = document.getElementById('stat-tipo-btn');
+    if(btn){ btn.classList.add('active'); btn.innerHTML = '📋 Reg.Doc <span style="font-size:8px;">▾</span>'; }
     render();
     return;
   }
