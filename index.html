@@ -4025,6 +4025,20 @@ function hideLoginOverlay(){
   document.getElementById('login-overlay').style.display='none';
 }
 
+// "Enviar también a la Agenda": existe SOLO en la Gantt propia del administrador.
+// Oculto para usuarios normales y también cuando el admin está viendo la Gantt
+// de otro usuario (chips / vista por defecto al ingresar).
+function actualizarEnviarAgendaVisible(){
+  const wrapAgenda = document.getElementById('wrap-enviar-agenda');
+  if(!wrapAgenda) return;
+  const adminEnSuGantt = currentUser && currentUser.rol === 'admin' && !viewingUserId;
+  wrapAgenda.style.display = adminEnSuGantt ? '' : 'none';
+  if(!adminEnSuGantt){
+    const chk = document.getElementById('f-enviar-agenda');
+    if(chk) chk.checked = false;
+  }
+}
+
 function doLogin(){
   const nombreTxt = (document.getElementById('login-usuario-txt').value||'').trim().toUpperCase();
   const clave   = document.getElementById('login-clave').value.trim();
@@ -4196,10 +4210,6 @@ function iniciarGanttDelUsuario(){
   // Siempre apunta al usuario logueado (no cambia aunque admin vea otra Gantt)
   myDbRef = db.ref('gantt_maah/actividades_por_usuario/'+currentUser.id);
 
-  // Mostrar "Enviar a Agenda" solo para admin
-  const wrapAgenda = document.getElementById('wrap-enviar-agenda')
-  if(wrapAgenda) wrapAgenda.style.display = currentUser.rol === 'admin' ? '' : 'none'
-
   // Si es admin, construir chips y conectar DIRECTO a la Gantt guardada (sin pasar por la propia)
   if(currentUser.rol === 'admin'){
     buildAdminUserChips();
@@ -4233,6 +4243,9 @@ function iniciarGanttDelUsuario(){
     document.body.classList.add('readonly-user');
     dbRef = myDbRef;
   }
+
+  // "Enviar a Agenda" solo existe en la Gantt propia del admin
+  actualizarEnviarAgendaVisible();
 
   // Bandera para hacer la migración solo una vez
   let migracionIntentada = false;
@@ -4481,6 +4494,7 @@ function adminVerGanttDeUsuario(userId, userName){
   if(dbRef) dbRef.off();
   viewingUserId  = userId;
   viewingUserName = userName;
+  actualizarEnviarAgendaVisible();
 
   // 2. Resetear filtros/selectores a estado limpio para el otro usuario
   _resetearEstado();
@@ -4524,6 +4538,7 @@ function adminVolverAMiGantt(){
   if(dbRef) dbRef.off();
   viewingUserId  = null;
   viewingUserName = null;
+  actualizarEnviarAgendaVisible();
   try{ localStorage.removeItem('gantt_admin_viewing'); }catch(e){}
 
   // 1. Resetear el estado del otro usuario
