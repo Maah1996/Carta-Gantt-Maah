@@ -3676,12 +3676,10 @@ function initFirebase(){
       updateStatusBadge(fbOnline);
     });
 
-    // Iniciar listener de auth ANTES de cargar usuarios
-    // (onAuthStateChanged puede disparar antes que el fetch de usuarios — se maneja con pendingAuthUid)
+    // Iniciar listener de auth ANTES de cargar usuarios.
+    // Las reglas de la DB exigen sesión (auth != null), así que la carga de
+    // usuarios se dispara desde initAuth cuando ya existe sesión (anónima o real).
     initAuth();
-
-    // Cargar lista de usuarios de la AGENDA (compartida)
-    cargarUsuariosAgenda();
   }catch(e){
     console.error('Firebase init error:', e);
     updateStatusBadge(false);
@@ -3690,8 +3688,12 @@ function initFirebase(){
 }
 
 // Cargar usuarios desde la base de la agenda
+let usuariosCargando = false;
 function cargarUsuariosAgenda(){
+  if(usuariosCargados || usuariosCargando) return;
+  usuariosCargando = true;
   db.ref('maah_usuarios').once('value', snap=>{
+    usuariosCargando = false;
     const data=snap.val();
     if(!data){ showLoginOverlay(); return; }
     usuariosCache=Object.entries(data).map(([id,u])=>({
@@ -3709,7 +3711,7 @@ function cargarUsuariosAgenda(){
       pendingAuthUid = null;
     } else {
       const authUser = firebase.auth().currentUser;
-      if(authUser){
+      if(authUser && !authUser.isAnonymous){
         // ya hay sesión Firebase activa
       } else {
         // Intentar SSO desde la Agenda MAAH o desde Registro Documental
@@ -3718,6 +3720,7 @@ function cargarUsuariosAgenda(){
       }
     }
   }, err=>{
+    usuariosCargando = false;
     console.error('Error cargando usuarios:', err);
     const errBox=document.getElementById('login-error');
     errBox.textContent='No se pudo cargar usuarios. Verifica tu conexión y recarga la página.';
@@ -3950,6 +3953,14 @@ function intentarSSOdesdeRGDOC(){
 // ── FIREBASE AUTH ────────────────────────────────────────────
 function initAuth(){
   firebase.auth().onAuthStateChanged(authUser=>{
+    if(authUser && authUser.isAnonymous){
+      // Sesión anónima (compartida con RegDoc): solo sirve para poder leer
+      // maah_usuarios — las reglas exigen auth != null. No es un perfil:
+      // no se procesa ni se cierra, y se muestra el login normal.
+      cargarUsuariosAgenda();
+      if(usuariosCargados && !currentUser) showLoginOverlay();
+      return;
+    }
     if(authUser){
       // Usuario autenticado: recuperar perfil del cache
       if(usuariosCargados){
@@ -3957,9 +3968,18 @@ function initAuth(){
       } else {
         // Cache aún cargando — guardar uid para cuando termine
         pendingAuthUid = authUser.uid;
+        cargarUsuariosAgenda();
       }
     } else {
-      // Sin sesión: mostrar login (solo si la app ya estaba cargada)
+      // Sin sesión: entrar de forma anónima para poder leer la lista de
+      // usuarios (las reglas de la DB exigen autenticación para leer).
+      firebase.auth().signInAnonymously().catch(e=>{
+        console.error('[Auth] Error en sesión anónima:', e);
+        const errBox=document.getElementById('login-error');
+        if(errBox){ errBox.textContent='No se pudo conectar al servidor. Recarga la página.'; errBox.style.display='block'; }
+        showLoginOverlay();
+      });
+      // Mostrar login (solo si la app ya estaba cargada)
       if(usuariosCargados && !currentUser){
         showLoginOverlay();
       }
