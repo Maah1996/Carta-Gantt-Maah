@@ -30,6 +30,7 @@ function makeAnualOcurrencia(orig, year){
   return {
     ...orig,
     fecha: fecha,
+    fechaInicio: null,   // la ocurrencia virtual no hereda el rango del padre
     type: orig.type || 'aniversario',
     parentAnualId: orig.id,
     isVirtualAnual: true,
@@ -45,6 +46,7 @@ function makeMensualOcurrencia(orig, year, month){
   return {
     ...orig,
     fecha: fecha,
+    fechaInicio: null,   // la ocurrencia virtual no hereda el rango del padre
     type: orig.type || 'revision',
     parentAnualId: orig.id,
     isVirtualAnual: true,
