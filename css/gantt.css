@@ -1,0 +1,106 @@
+/* ── GANTT ── */
+.gantt-area{overflow:auto;background:#f0f4f8;}
+/* FIX 3: celdas cuadradas — width = height = 24px fijo */
+table.gantt{border-collapse:collapse;font-size:9px;white-space:nowrap;table-layout:fixed;}
+table.gantt th,table.gantt td{border:0.5px solid #c8d0e0;padding:0;text-align:center;}
+
+.th-title{background:#1a3f6f;color:#fff;font-size:11px;font-weight:700;padding:6px 10px;text-align:left;letter-spacing:.3px;}
+.th-week{background:#1a3f6f;color:#fff;font-size:9px;font-weight:600;padding:4px 3px;}
+.th-col-act{background:#1a3f6f;color:#fff;font-size:9px;font-weight:600;padding:5px 6px;text-align:left;width:280px;}
+.th-col-obs{background:#1a3f6f;color:#fff;font-size:9px;font-weight:600;padding:5px 4px;width:40px;}
+.th-col-term{background:#1a3f6f;color:#fff;font-size:9px;font-weight:600;padding:5px 4px;width:62px;}
+.th-col-dias{background:#1a3f6f;color:#fff;font-size:9px;font-weight:600;padding:5px 4px;width:36px;}
+.th-col-del{background:#1a3f6f;width:20px;}
+
+/* FIX 3: columnas de día estrictamente 24×24 */
+.th-daynum{background:#2c5282;color:#c8d8f0;font-size:8px;padding:0;width:24px;height:24px;line-height:24px;}
+.th-daynum.wknd{background:#1e3a5f;color:#7888aa;opacity:.75;}
+.th-daynum.othermonth{opacity:.35;}
+.th-daynum.today-col{border-left:2.5px solid #e53935 !important;color:#fff;background:#3a1010;}
+.th-dayname{background:#2c5282;color:#8ab0d8;font-size:7px;padding:0;width:24px;height:20px;line-height:20px;}
+.th-dayname.wknd{background:#1e3a5f;color:#5a6a7a;}
+.th-dayname.othermonth{opacity:.35;}
+.th-dayname.today-col{border-left:2.5px solid #e53935 !important;background:#2a1010;}
+
+/* Días "extras" del mes siguiente (modo extendido) */
+.th-daynum.extra{background:#a06310 !important;color:#fbe6c4 !important;}
+.th-daynum.extra.wknd{background:#7a4a0c !important;color:#c4a575 !important;}
+.th-dayname.extra{background:#a06310 !important;color:#fbe6c4 !important;}
+.th-dayname.extra.wknd{background:#7a4a0c !important;color:#c4a575 !important;}
+.td-day.extra{background:#fdf3e0 !important;}
+.td-day.extra.wknd{background:#f0e0c0 !important;}
+
+/* ── CELDAS DE TEXTO — alineación izquierda con alta especificidad ── */
+table.gantt td.td-act{text-align:left !important;padding:3px 7px;font-size:9px;color:#2d3748;background:#fff;width:280px;max-width:280px;white-space:normal;line-height:1.3;vertical-align:middle;font-weight:500;text-transform:uppercase;}
+table.gantt td.td-obs{width:40px;font-size:8px;background:#fff;color:#4a5568;vertical-align:middle;padding:2px 4px;text-align:left !important;text-transform:uppercase;}
+table.gantt td.td-term{width:62px;font-size:8px;background:#fff;color:#2d3748;vertical-align:middle;padding:2px 4px;font-weight:500;text-align:left !important;}
+table.gantt td.td-d{width:36px;font-size:9px;font-weight:800;vertical-align:middle;padding:2px;text-align:center !important;}
+table.gantt td.td-del{width:20px;background:#fff;vertical-align:middle;text-align:center !important;}
+
+/* td-day definido arriba junto al fix de row-aniv */
+
+/* FIX 1 & 3: barra pintada cuadrada, solo color */
+.bar-cell{width:24px;height:24px;vertical-align:middle;text-align:center;padding:0;}
+.bar-cell.bar-single{border-radius:5px;}
+.bar-cell.bar-start{border-radius:5px 0 0 5px;}
+.bar-cell.bar-end{border-radius:0 5px 5px 0;}
+.bar-cell.bar-mid{border-radius:0;}
+
+.plazo-badge{background:#8B0000;color:#fff;font-size:7px;padding:1px 3px;border-radius:2px;font-weight:800;}
+.anual-badge{background:#7c2d12;color:#fff;font-size:7px;padding:1px 3px;border-radius:2px;font-weight:800;letter-spacing:.3px;}
+.mensual-badge{background:#a16207;color:#fff;font-size:7px;padding:1px 3px;border-radius:2px;font-weight:800;letter-spacing:.3px;}
+.semanal-badge{background:#0f766e;color:#fff;font-size:7px;padding:1px 3px;border-radius:2px;font-weight:800;letter-spacing:.3px;}
+
+/* FIX 1: row-aniv solo colorea columnas de texto, NO la barra pintada */
+table.gantt tr.row-aniv td.td-act,
+table.gantt tr.row-aniv td.td-obs,
+table.gantt tr.row-aniv td.td-term,
+table.gantt tr.row-aniv td.td-d,
+table.gantt tr.row-aniv td.td-del{background:#fffde7;}
+table.gantt tr.row-aniv td.td-day{background:#fffde7;}
+table.gantt tr.row-aniv td.td-day.wknd{background:#f0ead0;}
+table.gantt tr.row-aniv td.td-act{color:#5a3c00;font-style:italic;font-weight:600;text-align:left !important;}
+/* bar-cell NUNCA recibe el amarillo de aniv — su bg inline tiene prioridad al no usar !important */
+/* Actividades prioritarias (marcadas en agenda con ⚑) */
+table.gantt tr.row-priori td.td-act,
+table.gantt tr.row-priori td.td-obs,
+table.gantt tr.row-priori td.td-term,
+table.gantt tr.row-priori td.td-d,
+table.gantt tr.row-priori td.td-del{background:#fff3e0;}
+table.gantt tr.row-priori td.td-act{color:#e65100;font-weight:700;text-align:left !important;}
+table.gantt tr.row-priori td.td-act::before{content:'⚑ ';}
+
+/* FIX 2: fondo gris claro en todas las celdas de día para días normales */
+.td-day{width:24px;height:24px;background:#e8ecf0;vertical-align:middle;padding:0;}
+.td-day.wknd{background:#d0d5dd;}
+.td-day.othermonth{background:#cdd2da;opacity:.6;}
+.td-day.today-col{border-left:2.5px solid #e53935 !important;}
+
+.del-btn{background:none;border:none;color:#ddd;cursor:pointer;font-size:10px;padding:1px 3px;border-radius:2px;transition:all .15s;}
+.del-btn:hover{color:#c0392b;background:#fff0f0;}
+.edit-btn{background:none;border:none;color:#90aac8;cursor:pointer;font-size:11px;padding:1px 3px;border-radius:2px;transition:all .15s;}
+.edit-btn:hover{color:#1a3f6f;background:#e8f0fb;}
+.empty-row td{text-align:center;padding:40px 20px;color:#a0aec0;font-size:12px;background:#fff;}
+.today-th-label{color:#e53935;font-weight:800;font-size:7px;}
+
+/* ── Dropdown de semanas (ext-wkrow reutilizado) ── */
+.ext-wkrow { display:flex; align-items:center; gap:10px; padding:8px 12px; border-bottom:0.5px solid #e2e8f0; cursor:pointer; font-size:12px; transition:background 0.1s; user-select:none; }
+/* Dropdown del selector "Semana" en pantalla — reutiliza las mismas filas */
+#week-dropdown .ext-wkrow { font-size: 11px; padding: 6px 10px; }
+#week-trigger:hover { background: #f7fafc; border-color: #94a0b3; }
+#week-trigger.has-selection { background: #fffbe6; border-color: #ffd966; color: #5a3c00; font-weight: 600; }
+.ext-wkrow:last-child { border-bottom:none; }
+.ext-wkrow:hover { background:#eef4fb; }
+.ext-wkrow.checked { background:#eaf3df; }
+.ext-wkrow.master { background:#1a3f6f; color:#fff; font-weight:600; }
+.ext-wkrow.master:hover { background:#143057; }
+.ext-wkrow.master.checked { background:#1a3f6f; }
+.ext-wkrow.section { background:#fdf3e0; color:#5a3c00; font-weight:600; font-size:11px; pointer-events:none; padding:6px 12px; cursor:default; }
+.ext-wkrow.extra { background:#fdfaf2; }
+.ext-wkrow.extra.checked { background:#faecca; }
+.ext-cb { width:16px; height:16px; border:1.5px solid #94a0b3; border-radius:3px; flex-shrink:0; background:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; line-height:1; }
+.ext-wkrow.checked .ext-cb { background:#0F6E56; border-color:#0F6E56; color:#fff; }
+.ext-wkrow.checked .ext-cb::after { content:"✓"; }
+.ext-wkrow.master.checked .ext-cb { background:#fff; border-color:#fff; color:#1a3f6f; }
+.ext-wk-tag { background:#a06310; color:#fff; font-size:9px; padding:1px 5px; border-radius:3px; font-weight:700; margin-left:6px; }
+.ext-mbtn.active { background:#0F6E56 !important; color:#fff !important; }

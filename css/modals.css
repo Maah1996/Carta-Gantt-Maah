@@ -1,0 +1,79 @@
+/* ── USER MGMT PANEL ── */
+#user-mgmt-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9500;display:flex;align-items:center;justify-content:center;}
+#user-mgmt-panel{background:#fff;border-radius:10px;width:520px;max-width:95vw;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+.um-header{background:#1a3f6f;color:#fff;padding:14px 18px;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:space-between;}
+.um-header h2{font-size:14px;font-weight:700;margin:0;}
+.um-close{background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:0 4px;line-height:1;}
+.um-body{flex:1;overflow-y:auto;padding:16px;}
+.um-user-row{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:6px;border:1px solid #e2e8f0;margin-bottom:6px;background:#fafafa;transition:background .12s;}
+.um-user-row:hover{background:#f0f4ff;}
+.um-user-name{flex:1;font-size:12px;font-weight:700;color:#2d3748;}
+.um-user-rol{font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700;text-transform:uppercase;white-space:nowrap;}
+.um-rol-admin{background:#1a3f6f;color:#fff;}
+.um-rol-user{background:#e2e8f0;color:#4a5568;}
+.um-user-auth{font-size:9px;color:#888;white-space:nowrap;}
+.um-btn{font-size:10px;padding:4px 10px;border-radius:4px;border:1px solid;cursor:pointer;font-weight:600;transition:all .12s;white-space:nowrap;}
+.um-btn-edit{background:#eef2ff;border-color:#4f46e5;color:#4f46e5;}
+.um-btn-edit:hover{background:#4f46e5;color:#fff;}
+.um-btn-del{background:#fff5f5;border-color:#c53030;color:#c53030;}
+.um-btn-del:hover{background:#c53030;color:#fff;}
+.um-new-btn{background:#1a3f6f;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;width:100%;margin-bottom:14px;transition:background .12s;}
+.um-new-btn:hover{background:#15325a;}
+.um-form-title{font-size:13px;font-weight:700;color:#1a3f6f;margin-bottom:12px;}
+.um-form-group{margin-bottom:10px;}
+.um-form-group label{display:block;font-size:10px;font-weight:600;color:#4a5568;margin-bottom:3px;}
+.um-form-group input,.um-form-group select{width:100%;font-size:12px;padding:6px 9px;border:1px solid #cbd5e0;border-radius:5px;}
+.um-form-group input:focus,.um-form-group select:focus{outline:none;border-color:#1a3f6f;box-shadow:0 0 0 2px rgba(26,63,111,.1);}
+.um-actions{display:flex;gap:8px;margin-top:14px;}
+.um-save-btn{background:#1a3f6f;color:#fff;border:none;padding:7px 20px;border-radius:5px;font-size:12px;font-weight:700;cursor:pointer;flex:1;}
+.um-save-btn:hover{background:#15325a;}
+.um-cancel-btn{background:#f7fafc;color:#4a5568;border:1px solid #cbd5e0;padding:7px 14px;border-radius:5px;font-size:12px;cursor:pointer;}
+.um-cancel-btn:hover{background:#e2e8f0;}
+.um-error{color:#c53030;font-size:11px;margin-top:6px;padding:5px 8px;background:#fff5f5;border-radius:4px;}
+.um-success{color:#276749;font-size:11px;margin-top:6px;padding:5px 8px;background:#f0fff4;border-radius:4px;}
+
+/* ── MODAL EDICIÓN ── */
+.modal-edit{background:#fff;border-radius:10px;padding:22px;width:380px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal-edit h3{font-size:13px;font-weight:700;color:#1a3f6f;margin-bottom:4px;}
+.modal-edit .subtitle{font-size:10px;color:#a0aec0;margin-bottom:14px;}
+.modal-edit .form-group{margin-bottom:10px;}
+.modal-edit label{display:block;font-size:10px;color:#4a5568;margin-bottom:3px;font-weight:600;}
+.modal-edit input,.modal-edit select,.modal-edit textarea{width:100%;font-size:11px;padding:6px 9px;border:1px solid #cbd5e0;border-radius:5px;background:#fff;color:#2d3748;}
+.modal-edit textarea{height:44px;resize:none;}
+.modal-edit input:focus,.modal-edit select:focus,.modal-edit textarea:focus{outline:none;border-color:#1a3f6f;}
+.modal-edit .type-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:4px;}
+.edit-preview{margin-top:5px;padding:6px 8px;border-radius:4px;font-size:10px;font-weight:700;text-align:center;border:1px solid transparent;}
+.pwd-box{background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-bottom:14px;}
+.pwd-box p{font-size:11px;color:#4a5568;margin-bottom:8px;}
+.pwd-box input{width:100%;font-size:14px;padding:7px 10px;border:1px solid #cbd5e0;border-radius:5px;letter-spacing:4px;text-align:center;}
+.pwd-error{color:#c0392b;font-size:10px;margin-top:4px;display:none;}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:10px;padding:22px;width:340px;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.modal h3{font-size:13px;font-weight:700;color:#1a3f6f;margin-bottom:8px;}
+.modal p{font-size:12px;color:#4a5568;}
+.modal-btns{display:flex;gap:8px;margin-top:14px;}
+.modal-btns button{flex:1;padding:8px;border-radius:5px;border:none;cursor:pointer;font-size:11px;font-weight:600;}
+.btn-cancel{background:#e2e8f0;color:#4a5568;}
+.btn-confirm{background:#c0392b;color:#fff;}
+
+/* Modal clave nueva actividad */
+.modal-addpwd{background:#fff;border-radius:10px;padding:22px;width:320px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal-addpwd h3{font-size:13px;font-weight:700;color:#1a3f6f;margin-bottom:10px;}
+.modal-addpwd p{font-size:11px;color:#4a5568;margin-bottom:10px;}
+.modal-addpwd input{width:100%;font-size:16px;padding:8px 10px;border:1px solid #cbd5e0;border-radius:5px;letter-spacing:6px;text-align:center;margin-bottom:6px;}
+.modal-addpwd .pwd-error{color:#c0392b;font-size:10px;display:none;margin-bottom:6px;}
+
+/* ── MENÚ CONTEXTUAL LÁPIZ ── */
+.ctx-menu{position:fixed;z-index:9998;background:#fff;border:0.5px solid #c8d0e0;border-radius:8px;box-shadow:0 4px 18px rgba(0,0,0,.15);padding:5px 0;min-width:170px;display:none;}
+.ctx-menu.open{display:block;}
+.ctx-item{padding:8px 14px;font-size:11px;color:#2d3748;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;}
+.ctx-item:hover{background:#f0f4f8;}
+.ctx-item.danger{color:#c0392b;}
+.ctx-item.danger:hover{background:#fff5f5;}
+.ctx-divider{height:0.5px;background:#e2e8f0;margin:3px 0;}
+
+/* Tooltip de feriados */
+.feriado-tooltip{position:fixed;background:#2d3748;color:#fff;font-size:10px;padding:5px 9px;border-radius:5px;z-index:9999;max-width:180px;line-height:1.4;pointer-events:none;display:none;box-shadow:0 4px 12px rgba(0,0,0,.3);}

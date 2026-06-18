@@ -1,0 +1,70 @@
+/* ── PRINT: se maneja por JS abriendo ventana nueva, no por @media print ── */
+@media print{ body{ display:none !important; } }
+
+/* ── USUARIOS NO-ADMIN: ocultar solo botones de header que no les corresponden ── */
+body.readonly-user #btn-recurrentes,
+body.readonly-user #btn-extended,
+body.readonly-user #btn-exit-extended,
+body.readonly-user #btn-user-mgmt,
+body.readonly-user #admin-users-wrap,
+body.readonly-user #admin-back-banner { display:none !important; }
+
+/* ── RESPONSIVE ── */
+/* Tablet y móvil: sidebar arriba, Gantt abajo con scroll */
+@media(max-width:900px){
+  .main-layout{
+    display:flex;
+    flex-direction:column;
+    min-height:auto;
+  }
+  .sidebar{
+    width:100%;
+    border-right:none;
+    border-bottom:2px solid #dde3ed;
+    padding:12px 16px;
+    /* En pantalla pequeña el sidebar queda compacto */
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  .sidebar-section{margin-bottom:0;}
+  .gantt-area{
+    width:100%;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    flex:1;
+  }
+  .app-header{padding:8px 14px;}
+  .app-header h1{font-size:12px;}
+  .stats-bar{padding:5px 12px;gap:5px;}
+  .stat-card{min-width:50px;padding:4px 8px;}
+  .stat-card .val{font-size:14px;}
+  .toolbar{padding:6px 12px;gap:8px;}
+  select.month-select{min-width:160px;}
+}
+
+@media(max-width:600px){
+  .sidebar{
+    grid-template-columns:1fr;
+  }
+  .app-header{flex-direction:column;gap:5px;align-items:flex-start;padding:8px 12px;}
+  .header-right{width:100%;justify-content:space-between;}
+  .stats-bar{padding:4px 8px;gap:3px;overflow-x:auto;flex-wrap:nowrap;}
+  .stat-card{min-width:44px;padding:3px 6px;flex-shrink:0;}
+  .stat-card .val{font-size:13px;}
+  .stat-card .lbl{font-size:7px;}
+  .stat-divider{display:none;}
+  .toolbar{flex-direction:column;align-items:flex-start;gap:6px;}
+  select.month-select{width:100%;}
+  .toolbar-divider{display:none;}
+  .view-info{width:100%;}
+}
+
+/* Feriados */
+.td-day.feriado,.bar-cell.feriado{position:relative;cursor:pointer;}
+.td-day.feriado::after{content:'';position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:4px;height:4px;background:#c8960a;border-radius:50%;}
+
+/* Botones del sidebar */
+.btn-locked{background:#2d6a9f !important;}
+.btn-lock{width:100%;padding:6px;font-size:10px;background:transparent;color:#c0392b;border:1px solid #fc8181;border-radius:5px;cursor:pointer;margin-top:8px;transition:all .15s;font-weight:600;}
+.btn-lock:hover{background:#fff5f5;}

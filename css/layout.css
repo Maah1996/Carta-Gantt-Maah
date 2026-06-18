@@ -1,0 +1,62 @@
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#eef2f7;min-height:100vh;color:#2d3748;}
+
+/* ── HEADER ── */
+.app-header{background:#1a3f6f;color:#fff;padding:9px 20px;display:flex;align-items:center;justify-content:space-between;}
+.app-header h1{font-size:13px;font-weight:700;letter-spacing:.5px;}
+.header-right{display:flex;align-items:center;gap:10px;}
+.today-badge{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);padding:3px 12px;border-radius:20px;font-size:11px;font-weight:600;}
+.btn-print{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;padding:4px 12px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;transition:background .15s;}
+.btn-print:hover{background:rgba(255,255,255,.25);}
+
+/* ── STATS BAR ── */
+.stats-bar{background:#15325a;padding:6px 20px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.filter-label{font-size:10px;color:rgba(255,255,255,.45);margin-right:2px;align-self:center;}
+/* FIX 1: stat-card más pequeños */
+.stat-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:4px 10px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:center;min-width:58px;}
+.stat-card:hover{background:rgba(255,255,255,.18);transform:translateY(-1px);}
+.stat-card.active-filter{outline:2px solid #fff;background:rgba(255,255,255,.22);}
+.stat-card .val{font-size:15px;font-weight:800;line-height:1.1;}
+.stat-card .lbl{font-size:8px;color:rgba(255,255,255,.6);margin-top:1px;text-transform:uppercase;letter-spacing:.3px;text-align:center;}
+.stat-total .val{color:#fff;}
+.stat-venc .val{color:#9DCB47;}
+.stat-rojo .val{color:#FF0000;}
+.stat-naranja .val{color:#FFB400;}
+.stat-amarillo .val{color:#FFEB00;}
+.stat-aniv .val{color:#ffe082;}
+.stat-divider{width:1px;height:30px;background:rgba(255,255,255,.15);margin:0 2px;}
+.filter-clear{font-size:10px;color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:2px 8px;cursor:pointer;align-self:center;}
+.filter-clear:hover{background:rgba(255,255,255,.2);}
+/* ── POR TIPO filter ── */
+.stat-tipo-wrap{position:relative;display:inline-flex;align-items:center;}
+.stat-tipo-btn{background:rgba(113,63,135,.3);border:1px solid rgba(171,71,188,.4);border-radius:14px;padding:3px 10px;cursor:pointer;font-size:9px;font-weight:700;color:#ce93d8;text-transform:uppercase;letter-spacing:.3px;display:inline-flex;align-items:center;gap:3px;transition:all .15s;white-space:nowrap;}
+.stat-tipo-btn:hover,.stat-tipo-btn.active{background:rgba(113,63,135,.65);color:#fff;border-color:#ab47bc;}
+#tipo-filter-dropdown{display:none;position:absolute;top:calc(100% + 5px);left:0;background:#1a2a4a;border:1px solid rgba(255,255,255,.18);border-radius:7px;box-shadow:0 8px 24px rgba(0,0,0,.45);min-width:170px;z-index:9001;overflow:hidden;}
+#tipo-filter-dropdown.open{display:block;}
+.tipo-filter-item{padding:7px 14px;font-size:11px;color:#cbd5e0;cursor:pointer;transition:background .12s;}
+.tipo-filter-item:hover{background:rgba(255,255,255,.1);color:#fff;}
+.tipo-filter-item.active{color:#ce93d8;font-weight:700;}
+/* ── Admin user chips ── */
+.stat-divider-v{width:1px;background:rgba(255,255,255,.22);height:22px;align-self:center;margin:0 3px;}
+.admin-user-chip{background:rgba(21,101,192,.25);border:1px solid rgba(66,165,245,.35);border-radius:14px;padding:3px 11px;cursor:pointer;transition:all .15s;font-size:9px;font-weight:700;color:#90caf9;text-transform:uppercase;letter-spacing:.3px;display:inline-flex;align-items:center;gap:3px;white-space:nowrap;}
+.admin-user-chip:hover{background:rgba(21,101,192,.5);transform:translateY(-1px);}
+.admin-user-chip.viewing{background:rgba(21,101,192,.8);color:#fff;border-color:#42a5f5;outline:2px solid #42a5f5;}
+#admin-users-wrap{display:none;align-items:center;gap:4px;}
+#admin-users-wrap.visible{display:inline-flex;}
+/* ── Admin viendo otra Gantt ── */
+#admin-back-banner{display:none;background:#0d3b1e;border-bottom:2px solid #2e7d32;padding:5px 20px;align-items:center;gap:12px;font-size:11px;color:#a5d6a7;}
+#admin-back-banner.visible{display:flex;}
+#admin-back-btn{background:#2e7d32;border:none;color:#fff;font-weight:700;font-size:11px;padding:5px 14px;border-radius:5px;cursor:pointer;transition:background .15s;}
+#admin-back-btn:hover{background:#388e3c;}
+
+/* ── TOOLBAR ── */
+.toolbar{background:#fff;border-bottom:1px solid #dde3ed;padding:7px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.toolbar-label{font-size:11px;font-weight:600;color:#4a5568;}
+select.month-select{font-size:11px;padding:5px 9px;border:1px solid #cbd5e0;border-radius:5px;background:#fff;color:#2d3748;cursor:pointer;min-width:200px;}
+select.month-select:focus{outline:none;border-color:#1a3f6f;}
+.toolbar-divider{width:1px;height:24px;background:#e2e8f0;}
+.view-info{font-size:10px;color:#718096;background:#f7fafc;border:1px solid #e2e8f0;padding:4px 10px;border-radius:5px;}
+
+/* ── MAIN ── */
+/* FIX 4: sidebar más angosto para dar protagonismo a la carta */
+.main-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 160px);}
