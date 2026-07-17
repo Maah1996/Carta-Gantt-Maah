@@ -17,16 +17,16 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Carta Gantt MAAH">
-<link rel="stylesheet" href="css/layout.css?v=2">
-<link rel="stylesheet" href="css/sidebar.css?v=2">
-<link rel="stylesheet" href="css/gantt.css?v=2">
-<link rel="stylesheet" href="css/modals.css?v=2">
-<link rel="stylesheet" href="css/responsive.css?v=2">
+<link rel="stylesheet" href="css/layout.css?v=3">
+<link rel="stylesheet" href="css/sidebar.css?v=3">
+<link rel="stylesheet" href="css/gantt.css?v=3">
+<link rel="stylesheet" href="css/modals.css?v=3">
+<link rel="stylesheet" href="css/responsive.css?v=3">
 </head>
 <body>
 
 <!-- ══ MODAL DE LOGIN (overlay completo, bloquea TODA la app) ══ -->
-<div id="login-overlay" style="position: fixed; inset: 0px; background: rgb(26, 63, 111); z-index: 99999; display: none; align-items: center; justify-content: center;">
+<div id="login-overlay" style="position: fixed; inset: 0px; background: rgb(26, 63, 111); z-index: 99999; display: flex; align-items: center; justify-content: center;">
   <div style="background:#fff;border-radius:12px;padding:32px 28px;width:340px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.4);">
     <div style="text-align:center;margin-bottom:18px;">
       <div style="font-size:22px;font-weight:700;color:#1a3f6f;">📊 Carta Gantt MAAH</div>
@@ -78,14 +78,14 @@
 </div>
 
 <!-- ══ HEADER ══ -->
-<div class="app-header" id="app-header" style="">
+<div class="app-header" id="app-header" style="display:none;">
   <div style="display:flex;align-items:center;gap:10px;">
     <h1>■&nbsp; CARTA GANTT MAAH</h1>
     <button onclick="volverARegDoc()" title="Ir a Registro Documental" style="font-size:11px;padding:4px 12px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.5);color:#fff;border-radius:6px;cursor:pointer;font-weight:800;white-space:nowrap;">📄 Reg.Doc</button>
   </div>
   <div class="header-right">
-    <span id="user-badge" style="font-size: 11px; padding: 4px 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.18); color: rgb(255, 255, 255); font-weight: 600; display: inline-block;">👤 ADMIN ★</span>
-    <button id="logout-btn" onclick="doLogout()" style="font-size: 10px; padding: 4px 10px; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.3); color: rgb(255, 255, 255); border-radius: 5px; cursor: pointer; display: inline-block;" title="Cerrar sesión">↪ Salir</button>
+    <span id="user-badge" style="font-size: 11px; padding: 4px 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.18); color: rgb(255, 255, 255); font-weight: 600; display: none;"></span>
+    <button id="logout-btn" onclick="doLogout()" style="font-size: 10px; padding: 4px 10px; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.3); color: rgb(255, 255, 255); border-radius: 5px; cursor: pointer; display: none;" title="Cerrar sesión">↪ Salir</button>
     <button id="btn-cambiar-clave" onclick="abrirCambiarClave()" style="display:none;font-size:10px;padding:4px 10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:5px;cursor:pointer;" title="Cambiar mi clave">🔑 Clave</button>
     <!-- FIX 5: botón imprimir -->
     <button class="btn-print" id="btn-recurrentes" onclick="openAnualesModal()" title="Ver/editar actividades que se repiten (anuales, mensuales, semanales)">📅 Recurrentes</button>
@@ -95,21 +95,21 @@
     <button class="btn-print" id="btn-user-mgmt" onclick="openUserMgmtPanel()" style="display:none;background:rgba(74,85,104,.5);border-color:rgba(255,255,255,.4);" title="Gestión de usuarios">⚙️ Usuarios</button>
 
 
-    <span id="fb-status" style="font-size: 10px; padding: 3px 10px; border-radius: 12px; background: rgba(46, 125, 50, 0.3); color: rgb(165, 214, 167);">● En línea</span>
-    <span class="today-badge" id="today-lbl">HOY: 30/abr/2026</span>
+    <span id="fb-status" style="font-size: 10px; padding: 3px 10px; border-radius: 12px; background: rgba(113,128,150,.25); color: #cbd5e0;">● Conectando...</span>
+    <span class="today-badge" id="today-lbl">HOY: --</span>
   </div>
 </div>
 
 <!-- ══ STATS BAR ══ -->
-<div class="stats-bar" id="app-stats-bar" style="">
+<div class="stats-bar" id="app-stats-bar" style="display:none;">
   <span class="filter-label">Filtrar:</span>
   <div class="stat-card stat-total active-filter" onclick="setFilter(&#39;all&#39;)" title="Ver todas">
-    <span class="val" id="s-total">12</span>
+    <span class="val" id="s-total">0</span>
     <span class="lbl">Total</span>
   </div>
   <div class="stat-divider"></div>
   <div class="stat-card stat-venc" onclick="setFilter(&#39;venc&#39;)" title="Vencidas">
-    <span class="val" id="s-venc">2</span>
+    <span class="val" id="s-venc">0</span>
     <span class="lbl">Vencidas</span>
   </div>
   <div class="stat-card stat-rojo" onclick="setFilter(&#39;rojo&#39;)" title="0–5 días">
@@ -117,16 +117,16 @@
     <span class="lbl">0–5 días</span>
   </div>
   <div class="stat-card stat-naranja" onclick="setFilter(&#39;naranja&#39;)" title="5–10 días">
-    <span class="val" id="s-naranja">1</span>
+    <span class="val" id="s-naranja">0</span>
     <span class="lbl">5–10 días</span>
   </div>
   <div class="stat-card stat-amarillo" onclick="setFilter(&#39;amarillo&#39;)" title="Más de 10 días">
-    <span class="val" id="s-amarillo">9</span>
+    <span class="val" id="s-amarillo">0</span>
     <span class="lbl">10+ D</span>
   </div>
   <div class="stat-divider"></div>
   <div class="stat-card stat-aniv" onclick="setFilter(&#39;aniv&#39;)" title="Aniversarios">
-    <span class="val" id="s-anivs">5</span>
+    <span class="val" id="s-anivs">0</span>
     <span class="lbl">Aniversarios</span>
   </div>
   <div class="stat-divider-v"></div>
@@ -147,7 +147,7 @@
 </div>
 
 <!-- ══ TOOLBAR ══ -->
-<div class="toolbar" id="app-toolbar" style="">
+<div class="toolbar" id="app-toolbar" style="display:none;">
   <span class="toolbar-label">Año:</span>
   <select class="month-select" id="year-select" onchange="onYearChange()" style="min-width:130px;"><option value="all">— Toda la Gantt —</option><option value="current">Año actual (2026)</option><option value="2026">2026 (45 act.) ← HOY</option><option value="2027">2027 (42 act.)</option><option value="2028">2028 (42 act.)</option></select>
   <span class="toolbar-label" id="month-select-label" style="">Mes:</span>
@@ -161,16 +161,16 @@
     <div id="week-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:1px solid #cbd5e0;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.15);min-width:280px;max-height:340px;overflow-y:auto;z-index:9000;font-family:'Segoe UI',Arial,sans-serif;"></div>
   </div>
   <div class="toolbar-divider"></div>
-  <span class="view-info" id="view-info">Mostrando Mayo 2026 (21 actividades)</span>
+  <span class="view-info" id="view-info">Cargando Carta Gantt...</span>
   <div class="toolbar-divider"></div>
   <div id="feriados-panel" style="flex:1;min-width:280px;background:#fffbe6;border:1px solid #ffd966;border-radius:6px;padding:6px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:11px;">
     <strong style="color:#854f0b;font-size:10px;letter-spacing:.3px;">FERIADOS DEL MES:</strong>
-    <span id="feriados-list" style="color:#5a4000;"><span style="background:#fff;border:1px solid #ffd966;border-radius:4px;padding:2px 8px;font-size:10px;color:#5a4000;display:inline-block;"><strong style="color:#854f0b;">VIE 01</strong> · Día del Trabajo</span> <span style="background:#fff;border:1px solid #ffd966;border-radius:4px;padding:2px 8px;font-size:10px;color:#5a4000;display:inline-block;"><strong style="color:#854f0b;">JUE 21</strong> · Día de las Glorias Navales</span></span>
+    <span id="feriados-list" style="color:#5a4000;"></span>
   </div>
 </div>
 
 <!-- ══ MAIN ══ -->
-<div class="main-layout" id="app-main" style="">
+<div class="main-layout" id="app-main" style="display:none;">
 
   <!-- SIDEBAR -->
   <div class="sidebar">
@@ -524,26 +524,26 @@ PERS. 11:45 A 15:00</td><td class="td-obs"><span class="obs-text">SABADOS</span>
 </div>
 
 
-<script src="js/config.js?v=2"></script>
-<script src="js/utils.js?v=2"></script>
-<script src="js/vista.js?v=2"></script>
-<script src="js/semanas.js?v=2"></script>
-<script src="js/tipos.js?v=2"></script>
-<script src="js/filtros.js?v=2"></script>
-<script src="js/actividades.js?v=2"></script>
-<script src="js/recurrentes.js?v=2"></script>
-<script src="js/render.js?v=2"></script>
-<script src="js/firebase.js?v=2"></script>
-<script src="js/auth.js?v=2"></script>
-<script src="js/edit.js?v=2"></script>
-<script src="js/extendida.js?v=2"></script>
-<script src="js/print.js?v=2"></script>
-<script src="js/feriados.js?v=2"></script>
-<script src="js/context-menu.js?v=2"></script>
-<script src="js/admin.js?v=2"></script>
-<script src="js/usuarios.js?v=2"></script>
-<script src="js/rgdoc.js?v=2"></script>
-<script src="js/init.js?v=2"></script>
+<script src="js/config.js?v=3"></script>
+<script src="js/utils.js?v=3"></script>
+<script src="js/vista.js?v=3"></script>
+<script src="js/semanas.js?v=3"></script>
+<script src="js/tipos.js?v=3"></script>
+<script src="js/filtros.js?v=3"></script>
+<script src="js/actividades.js?v=3"></script>
+<script src="js/recurrentes.js?v=3"></script>
+<script src="js/render.js?v=3"></script>
+<script src="js/firebase.js?v=3"></script>
+<script src="js/auth.js?v=3"></script>
+<script src="js/edit.js?v=3"></script>
+<script src="js/extendida.js?v=3"></script>
+<script src="js/print.js?v=3"></script>
+<script src="js/feriados.js?v=3"></script>
+<script src="js/context-menu.js?v=3"></script>
+<script src="js/admin.js?v=3"></script>
+<script src="js/usuarios.js?v=3"></script>
+<script src="js/rgdoc.js?v=3"></script>
+<script src="js/init.js?v=3"></script>
 
 <!-- ══ PANEL GESTIÓN DE USUARIOS ══ -->
 <div id="user-mgmt-overlay" style="display:none;" onclick="if(event.target===this)closeUserMgmtPanel()">

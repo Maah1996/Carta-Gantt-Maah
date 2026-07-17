@@ -11,10 +11,10 @@ function buildAdminUserChips(){
   if(!others.length){ wrap.classList.remove('visible'); return; }
   let html = '<div class="stat-divider-v"></div>';
   // Chip propio del admin (siempre primero, vuelve a su gantt)
-  html += '<div class="admin-user-chip" id="admin-chip-self" onclick="adminVolverAMiGantt()" title="Ver mi Gantt (ADMIN)">★ '+currentUser.nombre+'</div>';
+  html += '<div class="admin-user-chip" id="admin-chip-self" onclick="adminVolverAMiGantt()" title="Ver mi Gantt (ADMIN)">★ '+escapeHtml(currentUser.nombre)+'</div>';
   others.forEach(u => {
-    const nom = u.nombre.replace(/'/g,'&#39;');
-    html += '<div class="admin-user-chip" id="admin-chip-'+u.id+'" onclick="adminVerGanttDeUsuario(\''+u.id+'\',\''+nom+'\')" title="Ver Gantt de '+nom+'">👤 '+u.nombre+'</div>';
+    const safeId = escapeAttr(u.id);
+    html += '<div class="admin-user-chip" id="admin-chip-'+safeId+'" onclick="adminVerGanttDeUsuario('+jsArgAttr(u.id)+','+jsArgAttr(u.nombre)+')" title="Ver Gantt de '+escapeAttr(u.nombre)+'">👤 '+escapeHtml(u.nombre)+'</div>';
   });
   wrap.innerHTML = html;
   wrap.classList.add('visible');
@@ -117,7 +117,7 @@ function _restaurarEstado(state){
     tipoBtn.classList.toggle('active', currentTipoFilter !== null);
     if(currentTipoFilter !== null){
       const t = getAllTipos().find(x=>x.value===currentTipoFilter);
-      tipoBtn.innerHTML = '🏷️ '+(t?t.label.toUpperCase():'TIPO')+' <span style="font-size:8px;">▾</span>';
+      tipoBtn.innerHTML = '🏷️ '+escapeHtml(t?t.label.toUpperCase():'TIPO')+' <span style="font-size:8px;">▾</span>';
     } else {
       tipoBtn.innerHTML = '🏷️ POR TIPO <span style="font-size:8px;">▾</span>';
     }

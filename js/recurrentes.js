@@ -144,9 +144,9 @@ function renderAnualesList(){
       cuando = 'Cada '+(DOW_NAMES[a.dow||0]||'—');
     }
     // Escapamos posibles ' en ids/textos
-    const safeId = JSON.stringify(a.id); // funciona para number y string
+    const safeId = jsArgAttr(a.id); // funciona para number y string
     html += '<tr style="border-bottom:1px solid #e2e8f0;">';
-    html += '<td style="padding:8px 10px;font-size:12px;color:#2d3748;">'+(a.act||'')+(a.obs?' <span style="color:#718096;font-size:10px;">('+a.obs+')</span>':'')+'</td>';
+    html += '<td style="padding:8px 10px;font-size:12px;color:#2d3748;">'+escapeHtml(a.act||'')+(a.obs?' <span style="color:#718096;font-size:10px;">('+escapeHtml(a.obs)+')</span>':'')+'</td>';
     html += '<td style="padding:8px 10px;text-align:center;"><span class="'+badgeCls+'" style="font-size:8px;padding:2px 6px;">'+badgeTxt+'</span></td>';
     html += '<td style="padding:8px 10px;font-size:11px;color:#1a3f6f;text-align:center;font-weight:600;">'+cuando+'</td>';
     html += '<td style="padding:8px 10px;text-align:center;">';

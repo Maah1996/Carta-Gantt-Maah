@@ -1,0 +1,61 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "maah_login_index": {
+      "$key": {
+        ".read": true,
+        ".write": "auth != null && root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin'"
+      }
+    },
+    "maah_auth_index": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && (auth.uid === $uid || root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin')"
+      }
+    },
+    "maah_usuarios": {
+      ".read": "auth != null && root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin'",
+      ".write": "auth != null && root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin'",
+      "$userId": {
+        ".read": "auth != null && (root.child('maah_auth_index').child(auth.uid).val() === $userId || root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin')",
+        "authUid": { ".write": "auth != null && (root.child('maah_auth_index').child(auth.uid).val() === $userId || root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin')" },
+        "passHash": { ".write": "auth != null && (root.child('maah_auth_index').child(auth.uid).val() === $userId || root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin')" },
+        "passVersion": { ".write": "auth != null && (root.child('maah_auth_index').child(auth.uid).val() === $userId || root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin')" }
+      }
+    },
+    "gantt_maah": {
+      "actividades_por_usuario": {
+        "$userId": {
+          ".read": "auth != null && (root.child('maah_auth_index').child(auth.uid).val() === $userId || root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin')",
+          ".write": "auth != null && (root.child('maah_auth_index').child(auth.uid).val() === $userId || root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin')"
+        }
+      },
+      "tipos_usuario": {
+        "$userId": {
+          ".read": "auth != null && (root.child('maah_auth_index').child(auth.uid).val() === $userId || root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin')",
+          ".write": "auth != null && (root.child('maah_auth_index').child(auth.uid).val() === $userId || root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin')"
+        }
+      },
+      "actividades": {
+        ".read": "auth != null && root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin'",
+        ".write": "auth != null && root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin'"
+      }
+    },
+    "maah_agenda": {
+      "maah_config": {
+        ".read": "auth != null && auth.token.firebase.sign_in_provider != 'anonymous'",
+        ".write": "auth != null && root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin'"
+      },
+      "$userId": {
+        ".read": "auth != null && (root.child('maah_auth_index').child(auth.uid).val() === $userId || root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin')",
+        ".write": "auth != null && (root.child('maah_auth_index').child(auth.uid).val() === $userId || root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin')"
+      }
+    },
+    "maah_gastos_fijos": { ".read": "auth != null && auth.token.firebase.sign_in_provider != 'anonymous'", ".write": "auth != null && auth.token.firebase.sign_in_provider != 'anonymous'" },
+    "maah_gastos": { ".read": "auth != null && auth.token.firebase.sign_in_provider != 'anonymous'", ".write": "auth != null && auth.token.firebase.sign_in_provider != 'anonymous'" },
+    "maah_gastos_mes": { ".read": "auth != null && auth.token.firebase.sign_in_provider != 'anonymous'", ".write": "auth != null && auth.token.firebase.sign_in_provider != 'anonymous'" },
+    "maah_gastos_meta": { ".read": "auth != null && auth.token.firebase.sign_in_provider != 'anonymous'", ".write": "auth != null && auth.token.firebase.sign_in_provider != 'anonymous'" },
+    "maah_tg_msgid": { ".read": "auth != null && auth.token.firebase.sign_in_provider != 'anonymous'", ".write": "auth != null && auth.token.firebase.sign_in_provider != 'anonymous'" }
+  }
+}

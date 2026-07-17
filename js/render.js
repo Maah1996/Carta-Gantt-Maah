@@ -403,11 +403,11 @@ function render(){
 
     var rowCls=isAniv?'row-aniv':(r.priori?'row-priori':'');
     html+='<tr class="'+rowCls+'">';
-    html+='<td class="td-act">'+r.act+'</td>';
+    html+='<td class="td-act">'+escapeHtml(r.act)+'</td>';
     if(isPlazo){
       // Extraer procedencia desde obs ("PLAZO | COT" → "COT")
       const obsRaw = (r.obs||'').replace(/^PLAZO\s*\|\s*/i,'').trim();
-      const obsExtra = obsRaw ? '<span class="obs-text" style="font-size:7px;display:block;margin-top:1px;">'+obsRaw+'</span>' : '';
+      const obsExtra = obsRaw ? '<span class="obs-text" style="font-size:7px;display:block;margin-top:1px;">'+escapeHtml(obsRaw)+'</span>' : '';
       html+='<td class="td-obs"><span class="plazo-badge">PLAZO</span>'+obsExtra+'</td>';
     } else if(r.isVirtualAnual){
       const obsTxt = r.obs ? r.obs : '';
@@ -418,23 +418,21 @@ function render(){
       else if(fr==='semanal') badge='<span class="semanal-badge" title="Se repite todas las semanas">SEMANAL</span>';
       // Badge va en una línea separada, debajo del texto, para que se vea más ordenado
       let cellInner = '';
-      if(obsTxt) cellInner += '<span class="obs-text">'+obsTxt+'</span>';
+      if(obsTxt) cellInner += '<span class="obs-text">'+escapeHtml(obsTxt)+'</span>';
       if(badge)  cellInner += '<span class="obs-badge-row">'+badge+'</span>';
       html+='<td class="td-obs">'+cellInner+'</td>';
     } else {
-      html+='<td class="td-obs">'+(r.obs||'')+'</td>';
+      html+='<td class="td-obs">'+escapeHtml(r.obs||'')+'</td>';
     }
     html+='<td class="td-term">'+fmtDate(r.fecha)+'</td>';
     html+='<td class="td-d" style="background:'+col.bg+';color:'+col.fg+';'+(col.hideNum?'border:1px solid #7AB034;':'')+'" title="'+(col.hideNum?'Vencido':dl)+'">'+(col.hideNum?'':dl)+'</td>';
     if(r.isVirtualAnual){
       // Fila virtual (recurrente): solo lápiz con menú contextual
       const parentId = r.parentAnualId;
-      const safeId = String(parentId).replace(/'/g,"\\'");
-      html+='<td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,\''+safeId+'\',true)" title="Opciones">&#9998;</button></td>';
+      html+='<td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,'+jsArgAttr(parentId)+',true)" title="Opciones">&#9998;</button></td>';
     } else {
       // Actividad normal: solo lápiz con menú contextual
-      const safeId = String(r.id).replace(/'/g,"\\'");
-      html+='<td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,\''+safeId+'\',false)" title="Opciones">&#9998;</button></td>';
+      html+='<td class="td-del"><button class="edit-btn" onclick="openCtxMenu(event,'+jsArgAttr(r.id)+',false)" title="Opciones">&#9998;</button></td>';
     }
 
     allDays.forEach((_,i)=>{
@@ -447,7 +445,8 @@ function render(){
       const fKey=feriadoKey(allDays[i].d);
       const esFeriado=!!fmap[fKey];
       const ferNombre=esFeriado?fmap[fKey]:'';
-      const ferAttr=esFeriado?' onmouseenter="showFeriadoTip(this,\''+ferNombre.replace(/'/g,'&#39;')+'\')" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,\''+ferNombre.replace(/'/g,'&#39;')+'\')"':'';
+      const ferArg=jsArgAttr(ferNombre);
+      const ferAttr=esFeriado?' onmouseenter="showFeriadoTip(this,'+ferArg+')" onmouseleave="hideFeriadoTip()" onclick="showFeriadoTip(this,'+ferArg+')"':'';
       // Para SEMANAL/MENSUAL solo pintar el día específico de la semana/mes
       let paintBar=false;
       if(hasBar && i>=effStart && i<=effEnd){

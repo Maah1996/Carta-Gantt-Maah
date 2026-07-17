@@ -36,8 +36,8 @@
         +'<span>'+fmtDate(a.fecha)+'</span>'
       : fmtDate(a.fecha);
     html += '<tr style="background:'+bg+';border-bottom:1px solid #edf2f7;">'
-      + '<td style="padding:8px 10px;font-weight:600;color:#2d3748;">'+(a.priori?'⚑ ':'')+a.act+'</td>'
-      + '<td style="padding:8px 10px;color:#718096;font-size:11px;">'+(a.obs||'—')+'</td>'
+      + '<td style="padding:8px 10px;font-weight:600;color:#2d3748;">'+(a.priori?'⚑ ':'')+escapeHtml(a.act)+'</td>'
+      + '<td style="padding:8px 10px;color:#718096;font-size:11px;">'+escapeHtml(a.obs||'—')+'</td>'
       + '<td style="padding:8px 10px;text-align:center;color:#4a5568;font-size:11px;">'+fechaCell+'</td>'
       + '<td style="padding:8px 10px;text-align:center;"><span style="background:'+col.bg+';color:'+col.fg+';border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;">'+dl+'</span></td>'
       + '</tr>';
@@ -62,14 +62,14 @@ function imprimirModalTipo(){
     const col = getColor(diff, a.type==='aniversario');
     const dl = dLabel(diff);
     return '<tr style="background:'+(i%2===0?'#fff':'#f8fafc')+';">'
-      +'<td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:600;">'+(a.priori?'⚑ ':'')+a.act+'</td>'
-      +'<td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#718096;">'+(a.obs||'—')+'</td>'
+      +'<td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:600;">'+(a.priori?'⚑ ':'')+escapeHtml(a.act)+'</td>'
+      +'<td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#718096;">'+escapeHtml(a.obs||'—')+'</td>'
       +'<td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;text-align:center;">'+fmtDate(a.fecha)+'</td>'
       +'<td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;text-align:center;"><span style="background:'+col.bg+';color:'+col.fg+';border-radius:4px;padding:2px 8px;font-weight:700;font-size:11px;">'+dl+'</span></td>'
       +'</tr>';
   }).join('');
   const w = window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${label} — Carta Gantt MAAH</title>
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${escapeHtml(label)} — Carta Gantt MAAH</title>
   <style>body{font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:24px;color:#2d3748;}
   h1{font-size:18px;color:#1a3f6f;margin-bottom:4px;}
   .sub{font-size:11px;color:#718096;margin-bottom:16px;}
@@ -77,7 +77,7 @@ function imprimirModalTipo(){
   th{background:#1a3f6f;color:#fff;padding:8px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;}
   @media print{@page{margin:15mm;}}
   </style></head><body>
-  <h1>🏷️ ${label.toUpperCase()}</h1>
+  <h1>🏷️ ${escapeHtml(label.toUpperCase())}</h1>
   <div class="sub">Carta Gantt MAAH · ${lista.length} actividades · ${hoy}</div>
   <table><thead><tr><th>Actividad</th><th>OBS</th><th style="width:90px;text-align:center;">Término</th><th style="width:70px;text-align:center;">Días</th></tr></thead>
   <tbody>${rows}</tbody></table></body></html>`);

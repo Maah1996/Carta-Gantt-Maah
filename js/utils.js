@@ -1,4 +1,23 @@
-// ── UTILS ────────────────────────────────────────────────────
+﻿// ── UTILS ────────────────────────────────────────────────────
+function escapeHtml(value){
+  const map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};
+  return String(value ?? '').replace(/[&<>"']/g, ch=>map[ch]);
+}
+function escapeAttr(value){
+  return escapeHtml(value).replace(/`/g,'&#96;');
+}
+function jsArg(value){
+  return JSON.stringify(String(value ?? ''))
+    .replace(/</g,'\\u003C')
+    .replace(/>/g,'\\u003E')
+    .replace(/&/g,'\\u0026')
+    .replace(/\u2028/g,'\\u2028')
+    .replace(/\u2029/g,'\\u2029');
+}
+function jsArgAttr(value){
+  return escapeAttr(jsArg(value));
+}
+
 function diasRest(fecha){
   const t = new Date(fecha); t.setHours(0,0,0,0);
   return Math.round((t - TODAY) / 86400000);

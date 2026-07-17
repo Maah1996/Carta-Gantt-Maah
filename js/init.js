@@ -132,6 +132,41 @@
   });
 }
 
+function limpiarEstadoHTMLInicial(){
+  ['app-header','app-stats-bar','app-toolbar','app-main'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display='none';
+  });
+
+  const badge=document.getElementById('user-badge');
+  if(badge){
+    badge.textContent='';
+    badge.style.display='none';
+  }
+
+  ['logout-btn','btn-cambiar-clave','btn-user-mgmt'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display='none';
+  });
+
+  const status=document.getElementById('fb-status');
+  if(status){
+    status.textContent='● Conectando...';
+    status.style.background='rgba(113,128,150,.25)';
+    status.style.color='#cbd5e0';
+  }
+
+  ['s-total','s-venc','s-rojo','s-naranja','s-amarillo','s-anivs'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.textContent='0';
+  });
+
+  const info=document.getElementById('view-info');
+  if(info) info.textContent='Cargando Carta Gantt...';
+
+  const wrap=document.getElementById('gantt-wrap');
+  if(wrap) wrap.innerHTML='<div class="empty-row" style="padding:24px;text-align:center;color:#718096;">Cargando Carta Gantt...</div>';
+}
 // Migración: copia los datos viejos de gantt_maah/actividades a la ruta personal de MAAH.
 // Solo se ejecuta cuando MAAH entra a una gantt vacía.
 function migrarDatosViejosAMaah(){
@@ -173,6 +208,7 @@ document.getElementById('today-lbl').textContent=
   'HOY: '+String(td2.getDate()).padStart(2,'0')+'/'+MSHORT[td2.getMonth()]+'/'+td2.getFullYear();
 
 setFilter('all');
+limpiarEstadoHTMLInicial();
 
 // Cerrar dropdown de tipo al hacer clic fuera
 document.addEventListener('click', function(){

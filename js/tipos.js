@@ -55,7 +55,7 @@ function fillTipoSelect(selectEl, currentValue){
   const all = getAllTipos();
   let html = '';
   all.forEach(t=>{
-    html += '<option value="'+t.value+'"'+(t.value===currentValue?' selected':'')+'>'+t.label+'</option>';
+    html += '<option value="'+escapeAttr(t.value)+'"'+(t.value===currentValue?' selected':'')+'>'+escapeHtml(t.label)+'</option>';
   });
   html += '<option value="__add__">+ Agregar nueva opción...</option>';
   html += '<option value="__delete__">− Eliminar categoría...</option>';
@@ -207,8 +207,8 @@ function renderTipoCustomList(){
     html += '<div style="font-size:10px;color:#718096;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Tipos por defecto</div>';
     html += baseActivos.map(t=>
       '<div style="'+rowStyle+'background:#f8fafc;border:1px solid #e2e8f0;">'
-        +'<span style="flex:1;font-size:12px;color:#2d3748;font-weight:500;">'+t.label+'</span>'
-        +'<button onclick="deleteTipoBase(\''+t.value+'\')" style="'+btnStyle+'" title="Eliminar \''+t.label+'\'">✕</button>'
+        +'<span style="flex:1;font-size:12px;color:#2d3748;font-weight:500;">'+escapeHtml(t.label)+'</span>'
+        +'<button onclick="deleteTipoBase('+jsArgAttr(t.value)+')" style="'+btnStyle+'" title="Eliminar \''+escapeAttr(t.label)+'\'">✕</button>'
       +'</div>'
     ).join('');
   }
@@ -217,8 +217,8 @@ function renderTipoCustomList(){
     html += '<div style="font-size:10px;color:#718096;margin:10px 0 6px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Tipos personalizados</div>';
     html += tiposCustom.map(t=>
       '<div style="'+rowStyle+'background:#ebf4ff;border:1px solid #bee3f8;">'
-        +'<span style="flex:1;font-size:12px;color:#2c5282;font-weight:500;">'+t.label+'</span>'
-        +'<button onclick="deleteCustomTipo(\''+t.value+'\')" style="'+btnStyle+'border-color:#3182ce;color:#3182ce;" title="Eliminar \''+t.label+'\'">✕</button>'
+        +'<span style="flex:1;font-size:12px;color:#2c5282;font-weight:500;">'+escapeHtml(t.label)+'</span>'
+        +'<button onclick="deleteCustomTipo('+jsArgAttr(t.value)+')" style="'+btnStyle+'border-color:#3182ce;color:#3182ce;" title="Eliminar \''+escapeAttr(t.label)+'\'">✕</button>'
       +'</div>'
     ).join('');
   }

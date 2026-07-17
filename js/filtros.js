@@ -49,7 +49,7 @@ function toggleTipoFilterDropdown(e){
   allTipos.forEach(t=>{
     const cnt = counts[t.value]||0;
     if(cnt===0) return;
-    html += '<div class="tipo-filter-item'+(currentTipoFilter===t.value?' active':'')+'" onclick="setTipoFilter(\''+t.value+'\')">'+t.label+' ('+cnt+')</div>';
+    html += '<div class="tipo-filter-item'+(currentTipoFilter===t.value?' active':'')+'" onclick="setTipoFilter('+jsArgAttr(t.value)+')">'+escapeHtml(t.label)+' ('+cnt+')</div>';
   });
   if(rgdocCnt>0){
     html += '<div class="tipo-filter-item'+(currentTipoFilter==='__rgdoc__'?' active':'')+'" onclick="setTipoFilter(\'__rgdoc__\')" style="border-top:1px solid rgba(255,255,255,.1);margin-top:4px;padding-top:6px;">📋 Reg.Doc ('+rgdocCnt+')</div>';

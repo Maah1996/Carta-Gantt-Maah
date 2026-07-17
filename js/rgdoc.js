@@ -134,18 +134,44 @@ let _rgdocPendingPayload = null;
     history.replaceState(null,'',window.location.pathname)
   }catch(e){}
 })()
+const RGDOC_ALLOWED_MESSAGE_ORIGINS = ['https://maah1996.github.io'];
+function rgdocIsLocalOrigin(origin){
+  try{
+    const u = new URL(origin);
+    return u.hostname === 'localhost' || u.hostname === '127.0.0.1' || u.hostname === '::1';
+  }catch(e){ return false; }
+}
+function rgdocMessageOriginAllowed(origin){
+  if(!origin || origin === 'null') return false;
+  if(origin === window.location.origin) return true;
+  if(RGDOC_ALLOWED_MESSAGE_ORIGINS.includes(origin)) return true;
+  return rgdocIsLocalOrigin(origin) && rgdocIsLocalOrigin(window.location.origin);
+}
+function rgdocPayloadValido(type, payload){
+  if(!payload || typeof payload !== 'object') return false;
+  if(type === 'rgdoc_new_user') return !!payload.nombre;
+  if(type === 'rgdoc_import') return !!payload.fecha && !!payload.act;
+  return false;
+}
+
 // Escucha cambios de localStorage desde RegDoc (para pestañas ya abiertas)
 window.addEventListener('storage', function(e){
   if(e.key === 'rgdoc_to_gantt' && e.newValue) importarDesdeRGDOC();
   if(e.key === 'rgdoc_new_user' && e.newValue) crearUsuarioDesdeRGDOC();
 });
 window.addEventListener('message', function(e){
-  if(e.data && e.data.type === 'rgdoc_new_user' && e.data.payload){
-    localStorage.setItem('rgdoc_new_user', JSON.stringify(e.data.payload));
+  if(!rgdocMessageOriginAllowed(e.origin)){
+    console.warn('[RGDOC] Mensaje rechazado por origen no permitido:', e.origin);
+    return;
+  }
+  const msg = e.data || {};
+  if(!rgdocPayloadValido(msg.type, msg.payload)) return;
+  if(msg.type === 'rgdoc_new_user'){
+    localStorage.setItem('rgdoc_new_user', JSON.stringify(msg.payload));
     crearUsuarioDesdeRGDOC();
   }
-  if(e.data && e.data.type === 'rgdoc_import' && e.data.payload){
-    localStorage.setItem('rgdoc_to_gantt', JSON.stringify(e.data.payload));
+  if(msg.type === 'rgdoc_import'){
+    localStorage.setItem('rgdoc_to_gantt', JSON.stringify(msg.payload));
     importarDesdeRGDOC();
   }
 });
@@ -159,17 +185,32 @@ function crearUsuarioDesdeRGDOC(){
     const data = JSON.parse(raw);
     if(!data || !data.nombre) return;
     const nombre = data.nombre.toUpperCase().trim();
-    db.ref('maah_usuarios').once('value', snap=>{
+    db.ref('maah_usuarios').once('value', async snap=>{
       const users = snap.val() || {};
       const yaExiste = Object.values(users).some(u => (u.nombre||'').toUpperCase().trim() === nombre);
       if(yaExiste){ console.log('[RGDOC] Usuario ya existe en Gantt:', nombre); return; }
       const ganttRol = (data.rol === 'admin' || data.rol === 'administrador') ? 'admin' : 'user';
-      db.ref('maah_usuarios').push({
+      const claveInicial = data.pass || '1234';
+      const newUserRef = db.ref('maah_usuarios').push();
+      const userId = newUserRef.key;
+      const passHash = await hashClaveUsuario(userId, claveInicial);
+      let authUid = null;
+      try{
+        const sec=firebase.initializeApp(firebase.app().options,'rgdoc_new_'+Date.now());
+        const secAuth=sec.auth();
+        await secAuth.createUserWithEmailAndPassword(authEmailFromUserId(userId), authPasswordFromClave(claveInicial));
+        authUid = secAuth.currentUser.uid;
+        await sec.delete();
+      }catch(e){ console.warn('[RGDOC] No se pudo crear Auth para usuario nuevo:', e); }
+      newUserRef.set({
         nombre: nombre,
-        pass: data.pass || '1234',
+        passHash: passHash,
+        passVersion: 'sha256-v1',
         rol: ganttRol,
-        authUid: null
+        authUid: authUid
       });
+      db.ref('maah_login_index/'+loginIndexKey(nombre)).set(userId).catch(()=>{});
+      if(authUid) db.ref('maah_auth_index/'+authUid).set(userId).catch(()=>{});
       console.log('[RGDOC] Usuario creado en Gantt:', nombre);
     });
   }catch(e){ console.error('[RGDOC] Error creando usuario en Gantt:', e); }
@@ -177,6 +218,30 @@ function crearUsuarioDesdeRGDOC(){
 
 // ─────────────────────────────────────────────────────────────
 
+
+function aplicarHintLoginDesdeTicket(u){
+  const input = document.getElementById('login-usuario-txt');
+  if(input && u && u.nombre) input.value = u.nombre;
+  const errBox = document.getElementById('login-error');
+  if(errBox){
+    errBox.textContent = 'Confirma tu clave para abrir la Gantt con sesión Firebase.';
+    errBox.style.display = 'block';
+  }
+}
+
+function iniciarGanttSiFirebaseCoincide(u){
+  const authUser = firebase.auth().currentUser;
+  if(!authUser || authUser.isAnonymous || !u || !u.authUid || authUser.uid !== u.authUid){
+    aplicarHintLoginDesdeTicket(u);
+    return false;
+  }
+  currentUser = u;
+  hideLoginOverlay();
+  const btn = document.getElementById('login-btn');
+  if(btn){ btn.textContent='Ingresar a mi Gantt'; btn.disabled=false; }
+  iniciarGanttDelUsuario();
+  return true;
+}
 
 function intentarSSOdesdeAgenda(){
   try{
@@ -187,13 +252,7 @@ function intentarSSOdesdeAgenda(){
     if(Date.now() > ticket.expira){ localStorage.removeItem('maah_session'); return false; }
     const u = usuariosCache.find(x => x.id === ticket.userId);
     if(!u) return false;
-    // Ticket válido → iniciar sesión directamente
-    currentUser = u;
-    hideLoginOverlay();
-    const btn = document.getElementById('login-btn');
-    if(btn){ btn.textContent='Ingresar a mi Gantt'; btn.disabled=false; }
-    iniciarGanttDelUsuario();
-    return true;
+    return iniciarGanttSiFirebaseCoincide(u);
   }catch(e){ return false; }
 }
 
@@ -208,15 +267,9 @@ function intentarSSOdesdeRGDOC(){
     const nombre = ticket.nombre.toUpperCase().trim();
     const u = usuariosCache.find(x => (x.nombre||'').toUpperCase().trim() === nombre);
     if(!u) return false;
-    currentUser = u;
-    hideLoginOverlay();
-    const btn = document.getElementById('login-btn');
-    if(btn){ btn.textContent='Ingresar a mi Gantt'; btn.disabled=false; }
-    iniciarGanttDelUsuario();
-    return true;
+    return iniciarGanttSiFirebaseCoincide(u);
   }catch(e){ return false; }
 }
-
 // ── FIREBASE AUTH ────────────────────────────────────────────
 
 

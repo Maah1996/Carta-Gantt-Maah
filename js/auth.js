@@ -1,95 +1,113 @@
-﻿function cargarUsuariosAgenda(){
-  if(usuariosCargados || usuariosCargando) return;
+﻿function loginIndexKey(value){
+  return String(value||'')
+    .trim()
+    .toUpperCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^A-Z0-9]+/g,'_')
+    .replace(/^_|_$/g,'')
+    .toLowerCase();
+}
+
+function perfilUsuarioDesdeFirebase(id,u){
+  return {
+    id,
+    nombre:  (u&&u.nombre)||id,
+    rol:     (u&&u.rol)||'user',
+    email:   (u&&u.email)||'',
+    authUid: (u&&u.authUid)||'',
+    permisos:(u&&u.permisos)||{}
+  };
+}
+
+async function buscarUsuarioParaLogin(nombreTxt){
+  const exact = usuariosCache.find(x=>x.nombre.toUpperCase() === nombreTxt.toUpperCase());
+  if(exact) return exact;
+  const key = loginIndexKey(nombreTxt);
+  const snap = await db.ref('maah_login_index/'+key).once('value');
+  const userId = snap.val();
+  if(!userId) return null;
+  return {id:String(userId), nombre:nombreTxt.toUpperCase(), rol:'user', email:'', authUid:''};
+}
+
+async function cargarUsuariosAutenticados(authUid){
+  const authUser = firebase.auth().currentUser;
+  let userId = null;
+  const idxSnap = await db.ref('maah_auth_index/'+authUid).once('value');
+  if(idxSnap.exists()) userId = String(idxSnap.val());
+  if(!userId && authUser && authUser.email && authUser.email.endsWith('@maah.app')){
+    userId = authUser.email.split('@')[0];
+  }
+  if(!userId) throw new Error('No existe índice de autenticación para este usuario.');
+
+  const profileSnap = await db.ref('maah_usuarios/'+userId).once('value');
+  const profileData = profileSnap.val();
+  if(!profileData) throw new Error('No existe perfil de usuario para esta sesión.');
+  const perfil = perfilUsuarioDesdeFirebase(userId, profileData);
+
+  if(!perfil.authUid){
+    perfil.authUid = authUid;
+    db.ref('maah_usuarios/'+userId+'/authUid').set(authUid).catch(()=>{});
+  }
+  db.ref('maah_auth_index/'+authUid).set(userId).catch(()=>{});
+  db.ref('maah_login_index/'+loginIndexKey(perfil.nombre)).set(userId).catch(()=>{});
+
+  if(perfil.rol === 'admin'){
+    const allSnap = await db.ref('maah_usuarios').once('value');
+    const data = allSnap.val() || {};
+    usuariosCache = Object.entries(data).map(([id,u])=>perfilUsuarioDesdeFirebase(id,u))
+      .sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  } else {
+    usuariosCache = [perfil];
+  }
+  usuariosCargados = true;
+}
+
+function cargarUsuariosAgenda(){
+  if(usuariosCargando) return;
+  const authUser = firebase.auth().currentUser;
+  if(!authUser || authUser.isAnonymous){
+    usuariosCargados = false;
+    usuariosCache = [];
+    const ssoOk = intentarSSOdesdeAgenda() || intentarSSOdesdeRGDOC();
+    if(!ssoOk) showLoginOverlay();
+    return;
+  }
   usuariosCargando = true;
-  db.ref('maah_usuarios').once('value', snap=>{
+  cargarUsuariosAutenticados(authUser.uid).then(()=>{
     usuariosCargando = false;
-    const data=snap.val();
-    if(!data){ showLoginOverlay(); return; }
-    usuariosCache=Object.entries(data).map(([id,u])=>({
-      id,
-      nombre:  u.nombre||id,
-      rol:     u.rol||'user',
-      email:   u.email||'',
-      authUid: u.authUid||''
-    })).sort((a,b)=>a.nombre.localeCompare(b.nombre));
-
-    usuariosCargados = true;
-
-    if(pendingAuthUid){
-      procesarAuthUser(pendingAuthUid);
-      pendingAuthUid = null;
-    } else {
-      const authUser = firebase.auth().currentUser;
-      if(authUser && !authUser.isAnonymous){
-        // ya hay sesión Firebase activa
-      } else {
-        // Intentar SSO desde la Agenda MAAH o desde Registro Documental
-        const ssoOk = intentarSSOdesdeAgenda() || intentarSSOdesdeRGDOC();
-        if(!ssoOk) showLoginOverlay();
-      }
-    }
-  }, err=>{
+    procesarAuthUser(authUser.uid);
+  }).catch(err=>{
     usuariosCargando = false;
-    console.error('Error cargando usuarios:', err);
+    console.error('Error cargando usuario autenticado:', err);
     const errBox=document.getElementById('login-error');
-    errBox.textContent='No se pudo cargar usuarios. Verifica tu conexión y recarga la página.';
-    errBox.style.display='block';
+    if(errBox){
+      errBox.textContent='No se pudo cargar tu perfil Firebase. Verifica tu conexión y recarga la página.';
+      errBox.style.display='block';
+    }
     showLoginOverlay();
   });
 }
 
-
 function initAuth(){
   firebase.auth().onAuthStateChanged(authUser=>{
-    if(authUser && authUser.isAnonymous){
-      // Sesión anónima (compartida con RegDoc): solo sirve para poder leer
-      // maah_usuarios — las reglas exigen auth != null. No es un perfil:
-      // no se procesa ni se cierra, y se muestra el login normal.
+    if(authUser && !authUser.isAnonymous){
       cargarUsuariosAgenda();
-      if(usuariosCargados && !currentUser) showLoginOverlay();
       return;
     }
-    if(authUser){
-      // Usuario autenticado: recuperar perfil del cache
-      if(usuariosCargados){
-        procesarAuthUser(authUser.uid);
-      } else {
-        // Cache aún cargando — guardar uid para cuando termine
-        pendingAuthUid = authUser.uid;
-        cargarUsuariosAgenda();
-      }
-    } else {
-      // Sin sesión: entrar de forma anónima para poder leer la lista de
-      // usuarios (las reglas de la DB exigen autenticación para leer).
-      firebase.auth().signInAnonymously().catch(e=>{
-        console.error('[Auth] Error en sesión anónima:', e);
-        const errBox=document.getElementById('login-error');
-        if(errBox){ errBox.textContent='No se pudo conectar al servidor. Recarga la página.'; errBox.style.display='block'; }
-        showLoginOverlay();
-      });
-      // Mostrar login (solo si la app ya estaba cargada)
-      if(usuariosCargados && !currentUser){
-        showLoginOverlay();
-      }
-    }
+    usuariosCargados = false;
+    usuariosCache = [];
+    showLoginOverlay();
   });
 }
 
 function procesarAuthUser(authUid){
-  // 1. Buscar por authUid guardado (usuarios ya migrados)
   let u = usuariosCache.find(x => x.authUid === authUid);
-
-  // 2. Si no, derivar userId desde el email sintético (primer login)
   if(!u){
     const firebaseUser = firebase.auth().currentUser;
     if(firebaseUser && firebaseUser.email && firebaseUser.email.endsWith('@maah.app')){
       const derivedId = firebaseUser.email.split('@')[0];
-      u = usuariosCache.find(x => x.id.toLowerCase() === derivedId);
-      if(u){
-        // Guardar authUid en DB para futuras sesiones (lookup rápido)
-        db.ref('maah_usuarios/'+u.id+'/authUid').set(authUid);
-        u.authUid = authUid;
-      }
+      u = usuariosCache.find(x => x.id.toLowerCase() === derivedId.toLowerCase());
     }
   }
 
@@ -98,14 +116,12 @@ function procesarAuthUser(authUid){
     firebase.auth().signOut();
     return;
   }
-  // Todos los usuarios pueden entrar; el rol determina qué ven (admin = completo, resto = solo lectura)
   currentUser = u;
   hideLoginOverlay();
   const btn = document.getElementById('login-btn');
   if(btn){ btn.textContent='Ingresar a mi Gantt'; btn.disabled=false; }
   iniciarGanttDelUsuario();
 }
-
 function showLoginOverlay(){
   document.getElementById('login-overlay').style.display='flex';
 }
@@ -127,7 +143,59 @@ function actualizarEnviarAgendaVisible(){
   }
 }
 
-function doLogin(){
+function authEmailFromUserId(userId){
+  return String(userId||'').toLowerCase() + '@maah.app';
+}
+
+function authPasswordFromClave(clave){
+  return String(clave||'') + '@@maah';
+}
+
+async function hashClaveUsuario(userId, clave){
+  if(!window.crypto || !window.crypto.subtle){
+    throw new Error('Este navegador no permite proteger claves con hash. Abre la app por HTTPS.');
+  }
+  const raw = 'gantt-maah-v1|' + String(userId||'').toLowerCase() + '|' + String(clave||'');
+  const bytes = new TextEncoder().encode(raw);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function guardarClaveMigracion(userId, clave){
+  const passHash = await hashClaveUsuario(userId, clave);
+  return db.ref('maah_usuarios/'+userId).update({
+    passHash,
+    passVersion: 'sha256-v1'
+  });
+}
+
+async function limpiarClaveLegacy(userId){
+  // No elimina datos ingresados; la limpieza definitiva se hará cuando el admin lo autorice.
+  return Promise.resolve();
+}
+
+async function claveLegacyValida(userId, clave, userData){
+  const passDB = String((userData&&userData.pass)||'').trim();
+  if(passDB && passDB === clave){
+    await guardarClaveMigracion(userId, clave).catch(e=>console.warn('[Auth] No se pudo migrar clave legacy:', e));
+    return true;
+  }
+  const passHash = String((userData&&userData.passHash)||'').trim();
+  if(passHash){
+    const actualHash = await hashClaveUsuario(userId, clave);
+    return actualHash === passHash;
+  }
+  return false;
+}
+
+function iniciarSesionLocalConPerfil(u, btn){
+  currentUser = u;
+  hideLoginOverlay();
+  if(btn){ btn.textContent='Ingresar a mi Gantt'; btn.disabled=false; }
+  iniciarGanttDelUsuario();
+}
+
+async function doLogin(){
   const nombreTxt = (document.getElementById('login-usuario-txt').value||'').trim().toUpperCase();
   const clave   = document.getElementById('login-clave').value.trim();
   const errBox  = document.getElementById('login-error');
@@ -136,51 +204,77 @@ function doLogin(){
 
   if(!nombreTxt){ errBox.textContent='Ingresa tu nombre de usuario.'; errBox.style.display='block'; return; }
   if(!clave){     errBox.textContent='Ingresa tu clave.';              errBox.style.display='block'; return; }
-  if(!usuariosCache.length){
-    errBox.textContent='Aún cargando usuarios, intenta en un momento.';
+  let u = null;
+  try{
+    u = await buscarUsuarioParaLogin(nombreTxt);
+  }catch(e){
+    errBox.textContent='No se pudo consultar el índice de usuarios. Verifica tu conexión.';
     errBox.style.display='block'; return;
   }
-
-  // Buscar por nombre exacto (sin distinción mayúsculas)
-  const u = usuariosCache.find(x=> x.nombre.toUpperCase() === nombreTxt);
   if(!u){ errBox.textContent='Usuario no encontrado. Verifica tu nombre e intenta nuevamente.'; errBox.style.display='block'; return; }
   const userId = u.id;
 
   // Email sintético — el usuario nunca lo ve
-  const syntheticEmail = userId.toLowerCase() + '@maah.app';
+  const syntheticEmail = authEmailFromUserId(userId);
   // Sufijo fijo para cumplir mínimo de Firebase (6 chars) sin que el usuario lo sepa
-  const fbPass = clave + '@@maah';
+  const fbPass = authPasswordFromClave(clave);
 
   btn.textContent='⏳ Verificando...';
   btn.disabled=true;
 
   firebase.auth().signInWithEmailAndPassword(syntheticEmail, fbPass)
-    .then(()=>{ /* onAuthStateChanged maneja el resto */ })
-    .catch(err=>{
-      // Primer login: usuario aún no existe en Firebase Auth → verificar clave en DB y auto-registrar
-      if(err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential'){
-        db.ref('maah_usuarios/'+userId+'/pass').once('value', snap=>{
-          const passDB = String(snap.val()||'').trim();
-          if(passDB && passDB === clave){
-            firebase.auth().createUserWithEmailAndPassword(syntheticEmail, fbPass)
-              .then(()=>{ /* onAuthStateChanged maneja el resto */ })
-              .catch(createErr=>{
-                btn.textContent='Ingresar a mi Gantt'; btn.disabled=false;
-                errBox.textContent='Error al activar cuenta ('+createErr.code+'). Contacta al administrador.';
-                errBox.style.display='block';
-              });
-          } else {
-            btn.textContent='Ingresar a mi Gantt'; btn.disabled=false;
-            document.getElementById('login-clave').value='';
-            document.getElementById('login-clave').focus();
-            errBox.textContent='Clave incorrecta. Verifica y vuelve a intentar.';
-            errBox.style.display='block';
+    .then(cred=>{
+      if(cred && cred.user){
+        db.ref('maah_usuarios/'+userId+'/authUid').set(cred.user.uid).catch(()=>{});
+        db.ref('maah_auth_index/'+cred.user.uid).set(userId).catch(()=>{});
+        db.ref('maah_login_index/'+loginIndexKey(u.nombre||nombreTxt)).set(userId).catch(()=>{});
+        limpiarClaveLegacy(userId);
+      }
+      /* onAuthStateChanged maneja el resto */
+    })
+    .catch(async err=>{
+      // Primer login: usuario aun no existe en Firebase Auth -> verificar clave legacy y auto-registrar
+      if(err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password'){
+        try{
+          const snap = await db.ref('maah_usuarios/'+userId).once('value');
+          const userData = snap.val() || {};
+          const okLegacy = await claveLegacyValida(userId, clave, userData);
+          if(okLegacy){
+            if(!userData.authUid){
+              try{
+                const cred = await firebase.auth().createUserWithEmailAndPassword(syntheticEmail, fbPass);
+                if(cred && cred.user){
+                  await db.ref('maah_usuarios/'+userId+'/authUid').set(cred.user.uid);
+                  await db.ref('maah_auth_index/'+cred.user.uid).set(userId);
+                  await db.ref('maah_login_index/'+loginIndexKey(u.nombre||nombreTxt)).set(userId);
+                  u.authUid = cred.user.uid;
+                  await limpiarClaveLegacy(userId);
+                }
+                return;
+              }catch(createErr){
+                if(createErr.code !== 'auth/email-already-in-use'){
+                  btn.textContent='Ingresar a mi Gantt'; btn.disabled=false;
+                  errBox.textContent='Error al activar cuenta ('+createErr.code+'). Contacta al administrador.';
+                  errBox.style.display='block';
+                  return;
+                }
+              }
+            }
+            // Compatibilidad: permite entrar con clave temporal creada por admin/RegDoc
+            // aunque Firebase Auth no pueda cambiar claves de terceros desde el cliente.
+            iniciarSesionLocalConPerfil(u, btn);
+            return;
           }
-        }, ()=>{
+          btn.textContent='Ingresar a mi Gantt'; btn.disabled=false;
+          document.getElementById('login-clave').value='';
+          document.getElementById('login-clave').focus();
+          errBox.textContent='Clave incorrecta. Verifica y vuelve a intentar.';
+          errBox.style.display='block';
+        }catch(e){
           btn.textContent='Ingresar a mi Gantt'; btn.disabled=false;
           errBox.textContent='Sin conexión. Verifica tu red e intenta nuevamente.';
           errBox.style.display='block';
-        });
+        }
         return;
       }
       btn.textContent='Ingresar a mi Gantt';
@@ -239,46 +333,40 @@ async function guardarNuevaClave(){
   if(nueva.length<4){showMsg('La nueva clave debe tener al menos 4 caracteres.',false);return;}
   if(nueva!==confirma){showMsg('Las claves nuevas no coinciden.',false);return;}
 
-  // Verificar clave actual contra Firebase DB
-  const snap = await db.ref('maah_usuarios/'+currentUser.id+'/pass').once('value');
-  const passDB = String(snap.val()||'').trim();
-  if(passDB !== actual){showMsg('La clave actual es incorrecta.',false);return;}
+  const fbUser = firebase.auth().currentUser;
+  const synEmail = authEmailFromUserId(currentUser.id);
+  const esSesionFirebaseReal = fbUser && !fbUser.isAnonymous && fbUser.email === synEmail;
 
-  // Actualizar en Firebase DB
-  await db.ref('maah_usuarios/'+currentUser.id+'/pass').set(nueva);
-  // Actualizar en Firebase Auth
-  const fbPass = nueva+'@@maah';
-  try{ await firebase.auth().currentUser.updatePassword(fbPass); }catch(e){}
-
+  if(esSesionFirebaseReal){
+    try{
+      const cred = firebase.auth.EmailAuthProvider.credential(synEmail, authPasswordFromClave(actual));
+      await fbUser.reauthenticateWithCredential(cred);
+      await fbUser.updatePassword(authPasswordFromClave(nueva));
+      await limpiarClaveLegacy(currentUser.id);
+    }catch(e){
+      showMsg('La clave actual es incorrecta o la sesión expiró.',false);
+      return;
+    }
+  } else {
+    const snap = await db.ref('maah_usuarios/'+currentUser.id).once('value');
+    const okLegacy = await claveLegacyValida(currentUser.id, actual, snap.val()||{});
+    if(!okLegacy){showMsg('La clave actual es incorrecta.',false);return;}
+    await guardarClaveMigracion(currentUser.id, nueva);
+  }
   showMsg('✅ Clave actualizada correctamente.',true);
   setTimeout(()=>cerrarCambiarClave(),1500);
 }
 
 // ── RESETEAR CLAVE (solo admin, desde panel de usuarios) ──
-async function resetearClaveUsuario(userId, nombre){
+async function resetearClaveUsuario(userId,nombre){
+  if(!currentUser || currentUser.rol!=='admin') return;
   const nuevaClave = prompt('Nueva clave para '+nombre+' (mínimo 4 caracteres):');
-  if(!nuevaClave || nuevaClave.trim().length < 4){
-    if(nuevaClave !== null) alert('Clave demasiado corta. Mínimo 4 caracteres.');
-    return;
-  }
+  if(nuevaClave===null) return;
+  if(nuevaClave.trim().length<4){alert('La clave debe tener al menos 4 caracteres.');return;}
   const claveOk = nuevaClave.trim();
-  await db.ref('maah_usuarios/'+userId+'/pass').set(claveOk);
-  // Intentar actualizar Firebase Auth si el usuario ya activó su cuenta
-  const snap = await db.ref('maah_usuarios/'+userId+'/authUid').once('value');
-  if(snap.val()){
-    // No podemos cambiar la contraseña de otro usuario desde el cliente sin re-autenticación.
-    // En el próximo login, la app detectará auth/wrong-password y verificará contra la DB,
-    // auto-creando una nueva cuenta Auth con la clave nueva.
-    await db.ref('maah_usuarios/'+userId+'/authUid').remove();
-  }
-  alert('✅ Clave de '+nombre+' restablecida. El usuario deberá ingresar con la nueva clave.');
-  renderUserMgmtList();
+  await guardarClaveMigracion(userId, claveOk);
+  alert('Clave temporal guardada como hash. Si el usuario ya tiene Firebase Auth activo, no se borró su authUid ni sus datos.');
 }
-
-
-// ── FIX 5: CLAVE PARA NUEVA ACTIVIDAD ────────────────────────
-let addPwdVerified=false;
-
 function openAddPwdModal(){
   // Si está logueado, saltar el modal de contraseña
   if(currentUser){

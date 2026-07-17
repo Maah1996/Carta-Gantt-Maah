@@ -17,14 +17,14 @@ function renderUserMgmtList(){
       : '<span class="um-user-rol um-rol-user">Usuario</span>';
     const authSt = u.authUid ? '● Activo' : '○ Sin activar';
     const delBtn = u.id!==currentUser.id
-      ? '<button class="um-btn um-btn-del" onclick="deleteUserFromSystem(\''+u.id+'\',\''+u.nombre.replace(/'/g,"\\'")+'\')" >Eliminar</button>'
+      ? '<button class="um-btn um-btn-del" onclick="deleteUserFromSystem('+jsArgAttr(u.id)+','+jsArgAttr(u.nombre)+')" >Eliminar</button>'
       : '';
     html+='<div class="um-user-row">'
-      +'<div class="um-user-name">'+u.nombre+'</div>'
+      +'<div class="um-user-name">'+escapeHtml(u.nombre)+'</div>'
       +rolBadge
       +'<span class="um-user-auth">'+authSt+'</span>'
-      +'<button class="um-btn um-btn-edit" onclick="openEditUserForm(\''+u.id+'\')">Editar</button>'
-      +'<button class="um-btn" style="background:#e8f0fb;color:#1a3f6f;border:1px solid #bee3f8;" onclick="resetearClaveUsuario(\''+u.id+'\',\''+u.nombre.replace(/'/g,"\\'")+'\')" title="Restablecer clave">🔑 Clave</button>'
+      +'<button class="um-btn um-btn-edit" onclick="openEditUserForm('+jsArgAttr(u.id)+')">Editar</button>'
+      +'<button class="um-btn" style="background:#e8f0fb;color:#1a3f6f;border:1px solid #bee3f8;" onclick="resetearClaveUsuario('+jsArgAttr(u.id)+','+jsArgAttr(u.nombre)+')" title="Restablecer clave">🔑 Clave</button>'
       +delBtn
       +'</div>';
   });
@@ -48,11 +48,11 @@ function openEditUserForm(userId){
   document.getElementById('um-title').textContent='Editar: '+u.nombre;
   document.getElementById('um-body').innerHTML=
     '<div class="um-form-title">Editar usuario</div>'
-    +'<div class="um-form-group"><label>Nombre</label><input id="um-nombre" type="text" value="'+u.nombre+'" autocomplete="off"></div>'
+    +'<div class="um-form-group"><label>Nombre</label><input id="um-nombre" type="text" value="'+escapeAttr(u.nombre)+'" autocomplete="off"></div>'
     +'<div class="um-form-group"><label>Nueva clave (vacío = no cambia)</label><input id="um-clave" type="password" placeholder="Nueva clave..." autocomplete="new-password"></div>'
     +'<div class="um-form-group"><label>Rol</label><select id="um-rol"><option value="user"'+(u.rol==='user'?' selected':'')+'>Usuario</option><option value="admin"'+(u.rol==='admin'?' selected':'')+'>Admin</option></select></div>'
     +'<div id="um-msg"></div>'
-    +'<div class="um-actions"><button class="um-save-btn" onclick="saveEditUser(\''+userId+'\')">Guardar</button><button class="um-cancel-btn" onclick="renderUserMgmtList()">Cancelar</button></div>';
+    +'<div class="um-actions"><button class="um-save-btn" onclick="saveEditUser('+jsArgAttr(userId)+')">Guardar</button><button class="um-cancel-btn" onclick="renderUserMgmtList()">Cancelar</button></div>';
 }
 
 async function saveNewUser(){
@@ -79,14 +79,16 @@ async function saveNewUser(){
     const uid=secAuth.currentUser.uid;
     await sec.delete();
 
-    await db.ref('maah_usuarios/'+userId).set({nombre,rol,pass:clave,authUid:uid,permisos:{gantt:true}});
+    await db.ref('maah_usuarios/'+userId).set({nombre,rol,authUid:uid,permisos:{gantt:true}});
+    await db.ref('maah_auth_index/'+uid).set(userId);
+    await db.ref('maah_login_index/'+loginIndexKey(nombre)).set(userId);
     usuariosCache.push({id:userId,nombre,rol,authUid:uid,email:''});
     usuariosCache.sort((a,b)=>a.nombre.localeCompare(b.nombre));
 
-    msg.innerHTML='<div class="um-success">✔ Usuario '+nombre+' creado correctamente.</div>';
+    msg.innerHTML='<div class="um-success">✔ Usuario '+escapeHtml(nombre)+' creado correctamente.</div>';
     setTimeout(()=>renderUserMgmtList(),1200);
   }catch(e){
-    msg.innerHTML='<div class="um-error">Error: '+e.message+'</div>';
+    msg.innerHTML='<div class="um-error">Error: '+escapeHtml(e.message)+'</div>';
   }
 }
 
@@ -104,28 +106,18 @@ async function saveEditUser(userId){
   try{
     const updates={nombre,rol};
     if(clave){
-      updates.pass=clave;
-      if(u.authUid){
-        const snap=await db.ref('maah_usuarios/'+userId+'/pass').once('value');
-        const oldPass=String(snap.val()||'').trim();
-        if(oldPass){
-          const synEmail=userId.toLowerCase()+'@maah.app';
-          try{
-            const sec=firebase.initializeApp(firebase.app().options,'um_edit_'+Date.now());
-            const secAuth=sec.auth();
-            await secAuth.signInWithEmailAndPassword(synEmail,oldPass+'@@maah');
-            await secAuth.currentUser.updatePassword(clave+'@@maah');
-            await sec.delete();
-          }catch(e2){/* si falla auth, igual actualiza DB para próximo login */}
-        }
-      }
+      await guardarClaveMigracion(userId, clave);
+      updates.authUid = null;
+      u.authUid = '';
     }
     await db.ref('maah_usuarios/'+userId).update(updates);
+    await db.ref('maah_login_index/'+loginIndexKey(nombre)).set(userId);
+    if(u.authUid) await db.ref('maah_auth_index/'+u.authUid).set(userId);
     u.nombre=nombre; u.rol=rol;
     msg.innerHTML='<div class="um-success">✔ Cambios guardados.</div>';
     setTimeout(()=>renderUserMgmtList(),1000);
   }catch(e){
-    msg.innerHTML='<div class="um-error">Error: '+e.message+'</div>';
+    msg.innerHTML='<div class="um-error">Error: '+escapeHtml(e.message)+'</div>';
   }
 }
 
