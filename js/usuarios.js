@@ -106,10 +106,7 @@ async function saveEditUser(userId){
   try{
     const updates={nombre,rol};
     if(clave){
-      await guardarClaveMigracion(userId, clave);
-      updates.authUid = null;
-      u.authUid = '';
-    }
+      await guardarClaveMigracion(userId, clave);    }
     await db.ref('maah_usuarios/'+userId).update(updates);
     await db.ref('maah_login_index/'+loginIndexKey(nombre)).set(userId);
     if(u.authUid) await db.ref('maah_auth_index/'+u.authUid).set(userId);

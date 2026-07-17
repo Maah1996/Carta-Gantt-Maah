@@ -49,9 +49,6 @@ async function cargarUsuariosAutenticados(authUid){
     perfil.authUid = authUid;
     db.ref('maah_usuarios/'+userId+'/authUid').set(authUid).catch(()=>{});
   }
-  db.ref('maah_auth_index/'+authUid).set(userId).catch(()=>{});
-  db.ref('maah_login_index/'+loginIndexKey(perfil.nombre)).set(userId).catch(()=>{});
-
   if(perfil.rol === 'admin'){
     const allSnap = await db.ref('maah_usuarios').once('value');
     const data = allSnap.val() || {};
@@ -188,12 +185,6 @@ async function claveLegacyValida(userId, clave, userData){
   return false;
 }
 
-function iniciarSesionLocalConPerfil(u, btn){
-  currentUser = u;
-  hideLoginOverlay();
-  if(btn){ btn.textContent='Ingresar a mi Gantt'; btn.disabled=false; }
-  iniciarGanttDelUsuario();
-}
 
 async function doLogin(){
   const nombreTxt = (document.getElementById('login-usuario-txt').value||'').trim().toUpperCase();
@@ -225,10 +216,7 @@ async function doLogin(){
   firebase.auth().signInWithEmailAndPassword(syntheticEmail, fbPass)
     .then(cred=>{
       if(cred && cred.user){
-        db.ref('maah_usuarios/'+userId+'/authUid').set(cred.user.uid).catch(()=>{});
-        db.ref('maah_auth_index/'+cred.user.uid).set(userId).catch(()=>{});
-        db.ref('maah_login_index/'+loginIndexKey(u.nombre||nombreTxt)).set(userId).catch(()=>{});
-        limpiarClaveLegacy(userId);
+        db.ref('maah_usuarios/'+userId+'/authUid').set(cred.user.uid).catch(()=>{});        limpiarClaveLegacy(userId);
       }
       /* onAuthStateChanged maneja el resto */
     })
@@ -244,10 +232,7 @@ async function doLogin(){
               try{
                 const cred = await firebase.auth().createUserWithEmailAndPassword(syntheticEmail, fbPass);
                 if(cred && cred.user){
-                  await db.ref('maah_usuarios/'+userId+'/authUid').set(cred.user.uid);
-                  await db.ref('maah_auth_index/'+cred.user.uid).set(userId);
-                  await db.ref('maah_login_index/'+loginIndexKey(u.nombre||nombreTxt)).set(userId);
-                  u.authUid = cred.user.uid;
+                  await db.ref('maah_usuarios/'+userId+'/authUid').set(cred.user.uid);                  u.authUid = cred.user.uid;
                   await limpiarClaveLegacy(userId);
                 }
                 return;
@@ -260,9 +245,9 @@ async function doLogin(){
                 }
               }
             }
-            // Compatibilidad: permite entrar con clave temporal creada por admin/RegDoc
-            // aunque Firebase Auth no pueda cambiar claves de terceros desde el cliente.
-            iniciarSesionLocalConPerfil(u, btn);
+            btn.textContent='Ingresar a mi Gantt'; btn.disabled=false;
+            errBox.textContent='La clave temporal no coincide con Firebase Auth. Pide al administrador actualizar la clave Firebase.';
+            errBox.style.display='block';
             return;
           }
           btn.textContent='Ingresar a mi Gantt'; btn.disabled=false;
