@@ -1,4 +1,4 @@
-﻿function buildDaysForMonth(year, month){
+function buildDaysForMonth(year, month){
   const firstOfMonth = new Date(year, month, 1);
   const lastOfMonth  = new Date(year, month+1, 0);
 
@@ -30,13 +30,31 @@ function groupWeeks(days){
   const weeks = [];
   for(let i=0; i<days.length; i+=7){
     const chunk = days.slice(i, i+7);
-    const f = chunk[0].d;
+    const lunes = chunk[0].d;
+    const domingo = chunk[chunk.length-1].d;
     weeks.push({
-      label: 'lun, '+String(f.getDate()).padStart(2,'0')+'-'+MSHORT[f.getMonth()]+'-'+String(f.getFullYear()).slice(2),
+      label: formatWeekRangeLabel(lunes, domingo),
       days: chunk
     });
   }
   return weeks;
+}
+
+function formatWeekRangeLabel(lunes, domingo){
+  const cap = value => String(value||'').charAt(0).toUpperCase() + String(value||'').slice(1);
+  const dia = d => String(d.getDate()).padStart(2,'0');
+  const mes = d => cap(MSHORT[d.getMonth()]);
+  const y = d => String(d.getFullYear()).slice(2);
+  const sameMonth = lunes.getMonth() === domingo.getMonth() && lunes.getFullYear() === domingo.getFullYear();
+  const sameYear = lunes.getFullYear() === domingo.getFullYear();
+
+  if(sameMonth){
+    return 'Semana del Lun '+dia(lunes)+' al Dom '+dia(domingo)+' '+mes(domingo);
+  }
+  if(sameYear){
+    return 'Semana del Lun '+dia(lunes)+' '+mes(lunes)+' al Dom '+dia(domingo)+' '+mes(domingo);
+  }
+  return 'Semana del Lun '+dia(lunes)+' '+mes(lunes)+' '+y(lunes)+' al Dom '+dia(domingo)+' '+mes(domingo)+' '+y(domingo);
 }
 
 function getViewMonthYear(){
