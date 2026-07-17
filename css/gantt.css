@@ -5,7 +5,10 @@ table.gantt{border-collapse:collapse;font-size:9px;white-space:nowrap;table-layo
 table.gantt th,table.gantt td{border:0.5px solid #c8d0e0;padding:0;text-align:center;}
 
 .th-title{background:#1a3f6f;color:#fff;font-size:11px;font-weight:700;padding:6px 10px;text-align:left;letter-spacing:.3px;}
-.th-week{background:#1a3f6f;color:#fff;font-size:7px;font-weight:600;padding:3px 3px;line-height:1.15;white-space:normal;}
+.th-week{background:#1a3f6f;color:#fff;font-size:7px;font-weight:600;padding:2px 3px;line-height:1.12;white-space:normal;text-align:center;vertical-align:middle;}
+.th-week .week-prefix,.th-week .week-range{display:block;text-align:center;}
+.th-week .week-prefix{font-size:7px;font-weight:700;}
+.th-week .week-range{font-size:8px;font-weight:800;text-transform:uppercase;}
 .th-col-act{background:#1a3f6f;color:#fff;font-size:9px;font-weight:600;padding:5px 6px;text-align:left;width:280px;}
 .th-col-obs{background:#1a3f6f;color:#fff;font-size:9px;font-weight:600;padding:5px 4px;width:40px;}
 .th-col-term{background:#1a3f6f;color:#fff;font-size:9px;font-weight:600;padding:5px 4px;width:62px;}
