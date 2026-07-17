@@ -1,4 +1,4 @@
-﻿function loginIndexKey(value){
+function loginIndexKey(value){
   return String(value||'')
     .trim()
     .toUpperCase()
@@ -49,6 +49,7 @@ async function cargarUsuariosAutenticados(authUid){
     perfil.authUid = authUid;
     db.ref('maah_usuarios/'+userId+'/authUid').set(authUid).catch(()=>{});
   }
+  await asegurarIndicesUsuario(userId, perfil.nombre, authUid);
   if(perfil.rol === 'admin'){
     const allSnap = await db.ref('maah_usuarios').once('value');
     const data = allSnap.val() || {};
@@ -58,6 +59,22 @@ async function cargarUsuariosAutenticados(authUid){
     usuariosCache = [perfil];
   }
   usuariosCargados = true;
+}
+
+async function asegurarIndicesUsuario(userId, nombre, authUid){
+  if(!userId || !authUid) return;
+  try{
+    await db.ref('maah_auth_index/'+authUid).set(userId);
+  }catch(e){
+    console.warn('[Auth] No se pudo reparar maah_auth_index:', e);
+  }
+  if(nombre){
+    try{
+      await db.ref('maah_login_index/'+loginIndexKey(nombre)).set(userId);
+    }catch(e){
+      console.warn('[Auth] No se pudo reparar maah_login_index:', e);
+    }
+  }
 }
 
 function cargarUsuariosAgenda(){
@@ -214,9 +231,11 @@ async function doLogin(){
   btn.disabled=true;
 
   firebase.auth().signInWithEmailAndPassword(syntheticEmail, fbPass)
-    .then(cred=>{
+    .then(async cred=>{
       if(cred && cred.user){
-        db.ref('maah_usuarios/'+userId+'/authUid').set(cred.user.uid).catch(()=>{});        limpiarClaveLegacy(userId);
+        await db.ref('maah_usuarios/'+userId+'/authUid').set(cred.user.uid).catch(()=>{});
+        await asegurarIndicesUsuario(userId, u.nombre||nombreTxt, cred.user.uid);
+        limpiarClaveLegacy(userId);
       }
       /* onAuthStateChanged maneja el resto */
     })
@@ -232,7 +251,9 @@ async function doLogin(){
               try{
                 const cred = await firebase.auth().createUserWithEmailAndPassword(syntheticEmail, fbPass);
                 if(cred && cred.user){
-                  await db.ref('maah_usuarios/'+userId+'/authUid').set(cred.user.uid);                  u.authUid = cred.user.uid;
+                  await db.ref('maah_usuarios/'+userId+'/authUid').set(cred.user.uid);
+                  await asegurarIndicesUsuario(userId, u.nombre||nombreTxt, cred.user.uid);
+                  u.authUid = cred.user.uid;
                   await limpiarClaveLegacy(userId);
                 }
                 return;
