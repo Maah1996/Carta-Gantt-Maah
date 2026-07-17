@@ -43,18 +43,18 @@ function groupWeeks(days){
 function formatWeekRangeLabel(lunes, domingo){
   const cap = value => String(value||'').charAt(0).toUpperCase() + String(value||'').slice(1);
   const dia = d => String(d.getDate()).padStart(2,'0');
-  const mes = d => cap(MSHORT[d.getMonth()]);
+  const mes = d => cap(MSHORT[d.getMonth()]).toUpperCase();
   const y = d => String(d.getFullYear()).slice(2);
   const sameMonth = lunes.getMonth() === domingo.getMonth() && lunes.getFullYear() === domingo.getFullYear();
   const sameYear = lunes.getFullYear() === domingo.getFullYear();
 
   if(sameMonth){
-    return 'Semana del Lun '+dia(lunes)+' al Dom '+dia(domingo)+' '+mes(domingo);
+    return '<span class="week-prefix">Semana del:</span><span class="week-range">Lun '+dia(lunes)+' al Dom '+dia(domingo)+' '+mes(domingo)+'</span>';
   }
   if(sameYear){
-    return 'Semana del Lun '+dia(lunes)+' '+mes(lunes)+' al Dom '+dia(domingo)+' '+mes(domingo);
+    return '<span class="week-prefix">Semana del:</span><span class="week-range">Lun '+dia(lunes)+' '+mes(lunes)+' al Dom '+dia(domingo)+' '+mes(domingo)+'</span>';
   }
-  return 'Semana del Lun '+dia(lunes)+' '+mes(lunes)+' '+y(lunes)+' al Dom '+dia(domingo)+' '+mes(domingo)+' '+y(domingo);
+  return '<span class="week-prefix">Semana del:</span><span class="week-range">Lun '+dia(lunes)+' '+mes(lunes)+' '+y(lunes)+' al Dom '+dia(domingo)+' '+mes(domingo)+' '+y(domingo)+'</span>';
 }
 
 function getViewMonthYear(){
