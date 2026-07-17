@@ -243,10 +243,28 @@
     table.gantt th.th-week {
       background: #1a3f6f !important;
       color: #fff !important;
-      font-size: 7pt !important;
+      font-size: 5.8pt !important;
       font-weight: 600 !important;
-      padding: 3px 4px !important;
+      padding: 2px 3px !important;
+      line-height: 1.15 !important;
       text-align: center !important;
+      white-space: normal !important;
+      vertical-align: middle !important;
+    }
+    table.gantt th.th-week .week-prefix,
+    table.gantt th.th-week .week-range {
+      display: block !important;
+      text-align: center !important;
+      white-space: normal !important;
+    }
+    table.gantt th.th-week .week-prefix {
+      font-size: 5.4pt !important;
+      font-weight: 700 !important;
+    }
+    table.gantt th.th-week .week-range {
+      font-size: 6.1pt !important;
+      font-weight: 800 !important;
+      text-transform: uppercase !important;
     }
     .td-del, .th-col-del { display: none !important; }
     .edit-btn { display: none !important; }
@@ -333,7 +351,7 @@
     table.gantt th.th-dayname.wknd { background: #1e3a5f !important; }
 
     /* Headers azules de las columnas fijas */
-    table.gantt th.th-title, table.gantt th.th-week {
+    table.gantt th.th-title {
       background: #1a3f6f !important; color: #fff !important;
       font-size: 6.5pt !important; padding: 2px 4px !important;
     }
@@ -397,4 +415,3 @@
   </body></html>`);
   pw.document.close();
 }
-
