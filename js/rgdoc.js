@@ -186,11 +186,21 @@ async function provisionarUsuarioGantt(nombreCrudo, clave, rolCrudo){
   const nombre = (nombreCrudo||'').toUpperCase().trim();
   if(!nombre) return false;
   const key = loginIndexKey(nombre);
-  const yaExisteSnap = await db.ref('maah_login_index/'+key).once('value');
-  if(yaExisteSnap.exists()){
-    console.log('[RGDOC] Usuario ya provisionado en Gantt:', nombre);
+
+  // Reclamar el "slot" de maah_login_index de forma ATÓMICA (transaction),
+  // no con un once('value') seguido de un set() aparte. Esto evita crear la
+  // misma cuenta dos veces si esta función se llama casi al mismo tiempo
+  // desde dos caminos distintos (ej. la señal en vivo de una pestaña Gantt
+  // ya abierta Y el drenado de la cola de pendientes, para la misma
+  // solicitud). Mientras el slot está "reclamado" pero la cuenta aún no
+  // terminó de crearse, queda con un valor provisorio (no un userId real).
+  const loginRef = db.ref('maah_login_index/'+key);
+  const claim = await loginRef.transaction(actual => actual === null ? '__provisionando__' : undefined);
+  if(!claim.committed){
+    console.log('[RGDOC] Usuario ya provisionado (o en proceso) en Gantt:', nombre);
     return true;
   }
+
   const rol = (rolCrudo === 'admin' || rolCrudo === 'administrador') ? 'admin' : 'user';
   const claveInicial = clave || '1234';
 
@@ -210,11 +220,12 @@ async function provisionarUsuarioGantt(nombreCrudo, clave, rolCrudo){
     await sec.delete();
   }catch(e){
     console.warn('[RGDOC] No se pudo crear Auth para usuario nuevo:', nombre, e);
+    await loginRef.remove().catch(()=>{}); // liberar el slot reclamado, quedó sin usar
     return false;
   }
   await db.ref('maah_usuarios/'+userId).set({ nombre, rol, authUid, permisos:{gantt:true} });
   await db.ref('maah_auth_index/'+authUid).set(userId);
-  await db.ref('maah_login_index/'+key).set(userId);
+  await loginRef.set(userId); // reemplaza el valor provisorio por el userId real
   if(typeof usuariosCache !== 'undefined' && Array.isArray(usuariosCache)){
     usuariosCache.push({ id:userId, nombre, rol, authUid, email:'' });
     usuariosCache.sort((a,b)=>a.nombre.localeCompare(b.nombre));
