@@ -1,4 +1,4 @@
-﻿function iniciarGanttDelUsuario(){
+﻿async function iniciarGanttDelUsuario(){
   // Cargar tipos personalizados del usuario desde Firebase
   loadTiposDesdeFirebase();
 
@@ -31,6 +31,9 @@
     // dejado pendiente (se guardó sin que la pestaña Gantt estuviera
     // abierta en ese mismo navegador en ese momento).
     procesarColaImportsPendientes();
+    // Aplicar cualquier permiso "ver todo" (checkbox en RGDOC) que haya
+    // quedado pendiente de propagar al usuario correspondiente en la Gantt.
+    procesarColaPermisosPendientes();
     const btnUM = document.getElementById('btn-user-mgmt');
     if(btnUM) btnUM.style.display='inline-block';
     // Determinar usuario a mostrar: el guardado en localStorage o CG OCGR por defecto
@@ -60,6 +63,19 @@
     // Usuario normal: modo solo-lectura
     document.body.classList.add('readonly-user');
     dbRef = myDbRef;
+    // Autorizado desde RGDOC (permiso "ver todo") a ver la Carta Gantt OCGR
+    // compartida — la misma que ve el admin — en vez de su Gantt personal.
+    if(currentUser.verOCGR){
+      try{
+        const cgSnap = await db.ref('maah_login_index/cg_ocgr').once('value');
+        const cgId = cgSnap.val();
+        if(cgId){
+          dbRef = db.ref('gantt_maah/actividades_por_usuario/'+cgId);
+          const badge = document.getElementById('user-badge');
+          if(badge) badge.textContent = '👤 '+currentUser.nombre+' — 👁 GANTT OCGR';
+        }
+      }catch(e){ console.warn('[RGDOC] No se pudo conectar a la Gantt OCGR compartida:', e); }
+    }
   }
 
   // "Enviar a Agenda" solo existe en la Gantt propia del admin

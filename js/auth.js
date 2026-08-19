@@ -16,7 +16,10 @@ function perfilUsuarioDesdeFirebase(id,u){
     rol:     (u&&u.rol)||'user',
     email:   (u&&u.email)||'',
     authUid: (u&&u.authUid)||'',
-    permisos:(u&&u.permisos)||{}
+    permisos:(u&&u.permisos)||{},
+    // Autorizado por el admin (desde RGDOC, permiso "ver todo") a ver la
+    // Carta Gantt OCGR compartida en vez de su propia Gantt personal.
+    verOCGR: !!(u && u.verOCGR)
   };
 }
 

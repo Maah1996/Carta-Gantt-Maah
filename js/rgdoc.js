@@ -368,6 +368,41 @@ async function procesarColaImportsPendientes(){
   }catch(e){ console.warn('[RGDOC] Error leyendo cola de importaciones pendientes:', e); }
 }
 
+// Drena la cola de permisos "ver todo" (checkbox del panel de usuarios de
+// RGDOC) pendientes de aplicar. RGDOC no puede escribir
+// maah_usuarios/$userId/verOCGR directo (sesión anónima) — deja la
+// solicitud aquí y el admin la aplica al iniciar sesión en la Gantt.
+async function procesarColaPermisosPendientes(){
+  if(!currentUser || currentUser.rol !== 'admin') return;
+  try{
+    const snap = await db.ref('maah_pending_gantt_permisos').once('value');
+    const pendientes = snap.val();
+    if(!pendientes) return;
+    let procesados = 0;
+    for(const [reqId, req] of Object.entries(pendientes)){
+      try{
+        const nombre = (req.nombre||'').toUpperCase().trim();
+        const key = loginIndexKey(nombre);
+        const idxSnap = await db.ref('maah_login_index/'+key).once('value');
+        const userId = idxSnap.val();
+        if(userId){
+          await db.ref('maah_usuarios/'+userId+'/verOCGR').set(!!req.verOCGR);
+          await db.ref('maah_pending_gantt_permisos/'+reqId).remove();
+          procesados++;
+        }else{
+          // El usuario todavía no existe en la Gantt (ej. su creación
+          // sigue pendiente en maah_pending_gantt_users) — se deja para
+          // reintentar la próxima vez.
+          console.warn('[RGDOC] Usuario no encontrado en la Gantt para aplicar permiso (queda en la cola):', nombre);
+        }
+      }catch(e){
+        console.warn('[RGDOC] Error aplicando permiso pendiente:', req, e);
+      }
+    }
+    if(procesados) console.log('[RGDOC] Permisos "ver todo" aplicados desde RGDOC:', procesados);
+  }catch(e){ console.warn('[RGDOC] Error leyendo cola de permisos pendientes:', e); }
+}
+
 // ─────────────────────────────────────────────────────────────
 
 
