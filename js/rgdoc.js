@@ -176,7 +176,56 @@ window.addEventListener('message', function(e){
   }
 });
 
-// Crear usuario en Gantt cuando RegDoc crea uno nuevo
+// Crea (si no existe todavía) una cuenta de Gantt completa: Firebase Auth
+// real + maah_usuarios + maah_auth_index + maah_login_index. Debe llamarse
+// con una sesión de admin ya autenticada (es la única con permiso para
+// escribir estos nodos). La usan tanto la señal en vivo desde RGDOC
+// (crearUsuarioDesdeRGDOC) como el drenado de la cola de pendientes
+// (procesarColaUsuariosPendientes).
+async function provisionarUsuarioGantt(nombreCrudo, clave, rolCrudo){
+  const nombre = (nombreCrudo||'').toUpperCase().trim();
+  if(!nombre) return false;
+  const key = loginIndexKey(nombre);
+  const yaExisteSnap = await db.ref('maah_login_index/'+key).once('value');
+  if(yaExisteSnap.exists()){
+    console.log('[RGDOC] Usuario ya provisionado en Gantt:', nombre);
+    return true;
+  }
+  const rol = (rolCrudo === 'admin' || rolCrudo === 'administrador') ? 'admin' : 'user';
+  const claveInicial = clave || '1234';
+
+  // Mismo criterio de ID legible que usa el panel "+ Nuevo Usuario" de la Gantt
+  let userId = nombre.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+  let base = userId, suf = 2;
+  while((await db.ref('maah_usuarios/'+userId).once('value')).exists()){ userId = base+'_'+suf; suf++; }
+
+  const synEmail = authEmailFromUserId(userId);
+  const fbPass = authPasswordFromClave(claveInicial);
+  let authUid = null;
+  try{
+    const sec = firebase.initializeApp(firebase.app().options, 'rgdoc_prov_'+Date.now());
+    const secAuth = sec.auth();
+    await secAuth.createUserWithEmailAndPassword(synEmail, fbPass);
+    authUid = secAuth.currentUser.uid;
+    await sec.delete();
+  }catch(e){
+    console.warn('[RGDOC] No se pudo crear Auth para usuario nuevo:', nombre, e);
+    return false;
+  }
+  await db.ref('maah_usuarios/'+userId).set({ nombre, rol, authUid, permisos:{gantt:true} });
+  await db.ref('maah_auth_index/'+authUid).set(userId);
+  await db.ref('maah_login_index/'+key).set(userId);
+  if(typeof usuariosCache !== 'undefined' && Array.isArray(usuariosCache)){
+    usuariosCache.push({ id:userId, nombre, rol, authUid, email:'' });
+    usuariosCache.sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  }
+  console.log('[RGDOC] Usuario provisionado en Gantt:', nombre);
+  return true;
+}
+
+// Crear usuario en Gantt cuando RegDoc crea uno nuevo — vía señal en vivo
+// (localStorage/postMessage), solo funciona si la pestaña Gantt ya estaba
+// abierta con sesión de admin. Ver también procesarColaUsuariosPendientes.
 function crearUsuarioDesdeRGDOC(){
   try{
     const raw = localStorage.getItem('rgdoc_new_user');
@@ -184,36 +233,37 @@ function crearUsuarioDesdeRGDOC(){
     localStorage.removeItem('rgdoc_new_user');
     const data = JSON.parse(raw);
     if(!data || !data.nombre) return;
-    const nombre = data.nombre.toUpperCase().trim();
-    db.ref('maah_usuarios').once('value', async snap=>{
-      const users = snap.val() || {};
-      const yaExiste = Object.values(users).some(u => (u.nombre||'').toUpperCase().trim() === nombre);
-      if(yaExiste){ console.log('[RGDOC] Usuario ya existe en Gantt:', nombre); return; }
-      const ganttRol = (data.rol === 'admin' || data.rol === 'administrador') ? 'admin' : 'user';
-      const claveInicial = data.pass || '1234';
-      const newUserRef = db.ref('maah_usuarios').push();
-      const userId = newUserRef.key;
-      const passHash = await hashClaveUsuario(userId, claveInicial);
-      let authUid = null;
-      try{
-        const sec=firebase.initializeApp(firebase.app().options,'rgdoc_new_'+Date.now());
-        const secAuth=sec.auth();
-        await secAuth.createUserWithEmailAndPassword(authEmailFromUserId(userId), authPasswordFromClave(claveInicial));
-        authUid = secAuth.currentUser.uid;
-        await sec.delete();
-      }catch(e){ console.warn('[RGDOC] No se pudo crear Auth para usuario nuevo:', e); }
-      newUserRef.set({
-        nombre: nombre,
-        passHash: passHash,
-        passVersion: 'sha256-v1',
-        rol: ganttRol,
-        authUid: authUid
-      });
-      db.ref('maah_login_index/'+loginIndexKey(nombre)).set(userId).catch(()=>{});
-      if(authUid) db.ref('maah_auth_index/'+authUid).set(userId).catch(()=>{});
-      console.log('[RGDOC] Usuario creado en Gantt:', nombre);
-    });
+    provisionarUsuarioGantt(data.nombre, data.pass, data.rol);
   }catch(e){ console.error('[RGDOC] Error creando usuario en Gantt:', e); }
+}
+
+// Drena la cola de solicitudes de usuario que RGDOC dejó pendientes (no
+// pudo crearlas directamente porque su sesión es anónima y las reglas de
+// seguridad solo permiten crear cuentas a un admin autenticado de verdad).
+// Se llama automáticamente cada vez que un admin inicia sesión en la Gantt.
+async function procesarColaUsuariosPendientes(){
+  if(!currentUser || currentUser.rol !== 'admin') return;
+  try{
+    const snap = await db.ref('maah_pending_gantt_users').once('value');
+    const pendientes = snap.val();
+    if(!pendientes) return;
+    let procesados = 0;
+    for(const [reqId, req] of Object.entries(pendientes)){
+      try{
+        await provisionarUsuarioGantt(req.nombre, req.pass, req.rol);
+        await db.ref('maah_pending_gantt_users/'+reqId).remove();
+        procesados++;
+      }catch(e){
+        console.warn('[RGDOC] Error procesando solicitud pendiente:', req, e);
+      }
+    }
+    if(procesados){
+      console.log('[RGDOC] Usuarios pendientes provisionados desde RGDOC:', procesados);
+      if(typeof buildAdminUserChips === 'function') buildAdminUserChips();
+      const panel = document.getElementById('user-mgmt-overlay');
+      if(panel && panel.style.display === 'flex' && typeof renderUserMgmtList === 'function') renderUserMgmtList();
+    }
+  }catch(e){ console.warn('[RGDOC] Error leyendo cola de usuarios pendientes:', e); }
 }
 
 // ─────────────────────────────────────────────────────────────
