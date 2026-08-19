@@ -88,7 +88,11 @@ async function saveNewUser(){
     msg.innerHTML='<div class="um-success">✔ Usuario '+escapeHtml(nombre)+' creado correctamente.</div>';
     setTimeout(()=>renderUserMgmtList(),1200);
   }catch(e){
-    msg.innerHTML='<div class="um-error">Error: '+escapeHtml(e.message)+'</div>';
+    if(e.code === 'auth/email-already-in-use'){
+      msg.innerHTML='<div class="um-error">Ya existe un registro de acceso con el nombre "'+escapeHtml(nombre)+'" (de una cuenta eliminada antes, cuyo acceso no se pudo borrar). Entra a Firebase Console → Authentication → busca '+escapeHtml(synEmail)+' → Elimínalo, o usa otro nombre.</div>';
+    }else{
+      msg.innerHTML='<div class="um-error">Error: '+escapeHtml(e.message)+'</div>';
+    }
   }
 }
 
@@ -118,26 +122,55 @@ async function saveEditUser(userId){
   }
 }
 
+// Intenta iniciar sesión (en una app secundaria de Firebase, para no tocar
+// la sesión del admin) como el usuario a eliminar y auto-borrarse — es la
+// única forma de eliminar una cuenta de Firebase Auth desde el cliente (no
+// hay backend/Admin SDK en este proyecto). Solo funciona si conseguimos
+// adivinar la clave real: el esquema legacy en texto plano si existe, o la
+// clave inicial por defecto "1234" para cuentas nuevas que no la cambiaron.
+async function _intentarBorrarAuth(userId, candidatas){
+  const synEmail = userId.toLowerCase()+'@maah.app';
+  for(const candidata of candidatas){
+    if(!candidata) continue;
+    try{
+      const sec=firebase.initializeApp(firebase.app().options,'um_del_'+Date.now()+'_'+Math.random().toString(36).slice(2,6));
+      const secAuth=sec.auth();
+      await secAuth.signInWithEmailAndPassword(synEmail, candidata+'@@maah');
+      await secAuth.currentUser.delete();
+      await sec.delete();
+      return true;
+    }catch(e2){ /* clave incorrecta o cuenta no existe con esa combinación — probar la siguiente */ }
+  }
+  return false;
+}
+
 async function deleteUserFromSystem(userId,userName){
   if(!confirm('¿Eliminar al usuario '+userName+'?\n\nEsta acción eliminará también todas sus actividades Gantt y no se puede deshacer.')) return;
   try{
-    const snap=await db.ref('maah_usuarios/'+userId+'/pass').once('value');
-    const pass=String(snap.val()||'').trim();
-    if(pass){
-      const synEmail=userId.toLowerCase()+'@maah.app';
-      try{
-        const sec=firebase.initializeApp(firebase.app().options,'um_del_'+Date.now());
-        const secAuth=sec.auth();
-        await secAuth.signInWithEmailAndPassword(synEmail,pass+'@@maah');
-        await secAuth.currentUser.delete();
-        await sec.delete();
-      }catch(e2){/* ignorar si falla limpieza de Auth */}
-    }
+    const snap=await db.ref('maah_usuarios/'+userId).once('value');
+    const userData=snap.val()||{};
+    const nombre=String(userData.nombre||userName||'').toUpperCase().trim();
+    const authUid=userData.authUid||null;
+    const passLegacy=String(userData.pass||'').trim();
+
+    const authBorrado = await _intentarBorrarAuth(userId, [passLegacy, '1234']);
+
+    // Limpiar SIEMPRE los índices, haya podido borrarse la cuenta de Auth o
+    // no — sin maah_login_index/maah_auth_index el usuario ya no puede
+    // iniciar sesión de ninguna forma, aunque el registro de Firebase
+    // Authentication en sí quede huérfano.
+    const key = nombre ? loginIndexKey(nombre) : null;
+    if(key) await db.ref('maah_login_index/'+key).remove().catch(()=>{});
+    if(authUid) await db.ref('maah_auth_index/'+authUid).remove().catch(()=>{});
     await db.ref('maah_usuarios/'+userId).remove();
     await db.ref('gantt_maah/actividades_por_usuario/'+userId).remove();
     const idx=usuariosCache.findIndex(x=>x.id===userId);
     if(idx>=0) usuariosCache.splice(idx,1);
     renderUserMgmtList();
+
+    if(!authBorrado){
+      alert('Usuario eliminado — ya no puede iniciar sesión.\n\nNo se pudo determinar su clave para borrar también el registro de acceso (Firebase Authentication), así que quedó un registro huérfano ahí. Es inofensivo, pero si más adelante creas otro usuario con el mismo nombre y da error "email-already-in-use", entra a Firebase Console → Authentication → busca '+userId.toLowerCase()+'@maah.app → Eliminar.');
+    }
   }catch(e){
     alert('Error al eliminar: '+e.message);
   }

@@ -258,13 +258,22 @@ async function procesarColaUsuariosPendientes(){
     const snap = await db.ref('maah_pending_gantt_users').once('value');
     const pendientes = snap.val();
     if(!pendientes) return;
-    let procesados = 0;
+    let procesados = 0, fallidos = 0;
     for(const [reqId, req] of Object.entries(pendientes)){
       try{
-        await provisionarUsuarioGantt(req.nombre, req.pass, req.rol);
-        await db.ref('maah_pending_gantt_users/'+reqId).remove();
-        procesados++;
+        const ok = await provisionarUsuarioGantt(req.nombre, req.pass, req.rol);
+        if(ok){
+          // Solo se borra de la cola si realmente quedó provisionado — si
+          // falló (ej. email-already-in-use por una cuenta huérfana previa)
+          // se deja ahí para que no se pierda en silencio y el admin la vea.
+          await db.ref('maah_pending_gantt_users/'+reqId).remove();
+          procesados++;
+        }else{
+          fallidos++;
+          console.warn('[RGDOC] No se pudo provisionar (queda en la cola para revisar):', req.nombre);
+        }
       }catch(e){
+        fallidos++;
         console.warn('[RGDOC] Error procesando solicitud pendiente:', req, e);
       }
     }
@@ -273,6 +282,9 @@ async function procesarColaUsuariosPendientes(){
       if(typeof buildAdminUserChips === 'function') buildAdminUserChips();
       const panel = document.getElementById('user-mgmt-overlay');
       if(panel && panel.style.display === 'flex' && typeof renderUserMgmtList === 'function') renderUserMgmtList();
+    }
+    if(fallidos){
+      alert('⚠️ '+fallidos+' solicitud(es) de usuario nuevo desde RGDOC no se pudieron crear en la Gantt (revisa la consola del navegador para el detalle). Quedaron en la cola para reintentar.');
     }
   }catch(e){ console.warn('[RGDOC] Error leyendo cola de usuarios pendientes:', e); }
 }
