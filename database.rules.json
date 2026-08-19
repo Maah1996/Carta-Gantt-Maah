@@ -9,8 +9,8 @@
       }
     },
     "maah_pending_gantt_users": {
+      ".read": "auth != null && root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin'",
       "$reqId": {
-        ".read": "auth != null && root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin'",
         ".write": "auth != null && (!data.exists() || root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin')"
       }
     },
