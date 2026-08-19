@@ -14,6 +14,12 @@
         ".write": "auth != null && (!data.exists() || root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin')"
       }
     },
+    "maah_pending_gantt_imports": {
+      ".read": "auth != null && root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin'",
+      "$reqId": {
+        ".write": "auth != null && (!data.exists() || root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin')"
+      }
+    },
     "maah_auth_index": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",

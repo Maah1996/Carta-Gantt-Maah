@@ -27,6 +27,10 @@
     // Provisionar en Firebase cualquier usuario creado desde RGDOC que haya
     // quedado pendiente (RGDOC no tiene permiso para crearlos directamente).
     procesarColaUsuariosPendientes();
+    // Importar cualquier documento con "GANTT" marcado que RGDOC haya
+    // dejado pendiente (se guardó sin que la pestaña Gantt estuviera
+    // abierta en ese mismo navegador en ese momento).
+    procesarColaImportsPendientes();
     const btnUM = document.getElementById('btn-user-mgmt');
     if(btnUM) btnUM.style.display='inline-block';
     // Determinar usuario a mostrar: el guardado en localStorage o CG OCGR por defecto

@@ -42,6 +42,17 @@ function importarDesdeRGDOC(){
   _rgdocPendingPayload = null;
   localStorage.removeItem('rgdoc_to_gantt');
 
+  _procesarActoRGDOC(acto);
+}
+
+// Núcleo compartido: dado un "acto" ya armado por RGDOC, resuelve el usuario
+// destino (targetUserName) y lo escribe en Firebase. Lo usan tanto
+// importarDesdeRGDOC() (señal en vivo vía localStorage/postMessage, solo
+// funciona si la pestaña Gantt ya estaba abierta en ESE mismo navegador)
+// como procesarColaImportsPendientes() (cola durable en Firebase, para
+// cuando RGDOC guardó el documento sin que nadie tuviera la Gantt abierta
+// ahí — ej. otro dispositivo, u otra pestaña que nunca se llegó a abrir).
+function _procesarActoRGDOC(acto){
   // Determinar ref de destino: siempre el usuario indicado en targetUserName
   let targetRef = dbRef;
   let targetUserId = viewingUserId || (currentUser ? currentUser.id : null);
@@ -287,6 +298,39 @@ async function procesarColaUsuariosPendientes(){
       alert('⚠️ '+fallidos+' solicitud(es) de usuario nuevo desde RGDOC no se pudieron crear en la Gantt (revisa la consola del navegador para el detalle). Quedaron en la cola para reintentar.');
     }
   }catch(e){ console.warn('[RGDOC] Error leyendo cola de usuarios pendientes:', e); }
+}
+
+// Drena la cola de actividades que RGDOC dejó pendientes de importar a la
+// Gantt (documento guardado con el checkbox "GANTT" marcado, sin que la
+// pestaña Gantt estuviera abierta en ese mismo navegador en ese momento —
+// el localStorage no viaja entre navegadores ni dispositivos, así que sin
+// esta cola el documento se quedaba esperando para siempre). Se llama
+// automáticamente cada vez que un admin inicia sesión en la Gantt.
+async function procesarColaImportsPendientes(){
+  if(!currentUser || currentUser.rol !== 'admin') return;
+  try{
+    const snap = await db.ref('maah_pending_gantt_imports').once('value');
+    const pendientes = snap.val();
+    if(!pendientes) return;
+    let procesados = 0;
+    Object.entries(pendientes).forEach(([reqId, acto])=>{
+      if(!acto || !acto.fecha) { db.ref('maah_pending_gantt_imports/'+reqId).remove(); return; }
+      // Misma deduplicación por nonce que usa la señal en vivo — evita
+      // procesar dos veces un envío que también llegó por ese otro camino.
+      if(acto.nonce){
+        const done = localStorage.getItem('rgdoc_nonce_done');
+        if(done === String(acto.nonce)){
+          db.ref('maah_pending_gantt_imports/'+reqId).remove();
+          return;
+        }
+        localStorage.setItem('rgdoc_nonce_done', String(acto.nonce));
+      }
+      _procesarActoRGDOC(acto);
+      db.ref('maah_pending_gantt_imports/'+reqId).remove();
+      procesados++;
+    });
+    if(procesados) console.log('[RGDOC] Actividades pendientes importadas desde RGDOC:', procesados);
+  }catch(e){ console.warn('[RGDOC] Error leyendo cola de importaciones pendientes:', e); }
 }
 
 // ─────────────────────────────────────────────────────────────
