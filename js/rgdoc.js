@@ -24,6 +24,27 @@ function eliminarDesdeRGDOC(){
   }catch(e){ console.error('[RGDOC] Error eliminando:', e); }
 }
 
+// ── Deduplicación por nonce ────────────────────────────────────
+// Antes se guardaba solo el ÚLTIMO nonce procesado en una variable simple
+// (rgdoc_nonce_done) — si llegaban dos envíos distintos en la misma sesión,
+// el segundo pisaba el registro del primero, y si ESE primero seguía sin
+// drenarse de la cola de Firebase (porque ya se había procesado por la vía
+// en vivo, que no sabe borrar su entrada de la cola), se volvía a importar
+// más tarde creyendo que era nuevo. Ahora se guarda un conjunto con TODOS
+// los nonces ya procesados (acotado en tamaño).
+function _rgdocNonceYaProcesado(nonce){
+  try{ return (JSON.parse(localStorage.getItem('rgdoc_nonces_done'))||[]).includes(String(nonce)) }
+  catch(e){ return false }
+}
+function _rgdocMarcarNonceProcesado(nonce){
+  try{
+    let arr = JSON.parse(localStorage.getItem('rgdoc_nonces_done'))||[]
+    arr.push(String(nonce))
+    if(arr.length > 300) arr = arr.slice(-300)
+    localStorage.setItem('rgdoc_nonces_done', JSON.stringify(arr))
+  }catch(e){}
+}
+
 // ── Importar actividad desde Registro Documental OCGR ────────
 // Polling cada 3s: detecta payload en localStorage sin importar si la Gantt
 // estaba abierta o cerrada cuando RegDoc guardó el documento.
@@ -33,9 +54,8 @@ function importarDesdeRGDOC(){
 
   // Deduplicación por nonce — solo una pestaña procesa cada envío
   if(acto.nonce){
-    const done = localStorage.getItem('rgdoc_nonce_done');
-    if(done === String(acto.nonce)){ _rgdocPendingPayload = null; return; }
-    localStorage.setItem('rgdoc_nonce_done', String(acto.nonce));
+    if(_rgdocNonceYaProcesado(acto.nonce)){ _rgdocPendingPayload = null; return; }
+    _rgdocMarcarNonceProcesado(acto.nonce);
   }
 
   // Consumir payload de inmediato
@@ -75,11 +95,23 @@ function _procesarActoRGDOC(acto){
   if(isNaN(f.getTime())) return;
   f.setHours(0,0,0,0);
 
+  // Id determinístico: la MISMA solicitud, llegue por el canal que llegue
+  // (señal en vivo y/o cola de Firebase) y llegue una o varias veces,
+  // siempre calcula el mismo id — escribirlo dos veces sobreescribe el
+  // mismo nodo en vez de crear uno nuevo.
+  const uidBase = 'rgdoc_' + (rgdocKey || actNorm.replace(/[^A-Z0-9]/g,'').slice(0,20)) + '_' + acto.fecha;
+
   targetRef.once('value', snap=>{
     const data = snap.val() || {};
     const entries = Object.entries(data);
 
-    // Buscar actividad existente por rgdocNumero
+    // Ya existe por id determinístico (cubre también los documentos sin
+    // Ident. Materia ni Número, donde rgdocKey queda vacío y la búsqueda
+    // por rgdocNumero de más abajo nunca los habría encontrado).
+    const yaExistePorId = !!data[uidBase];
+    // Buscar actividad existente por rgdocNumero (para la actualización
+    // silenciosa, que puede llegar con una fecha/materia distinta y por
+    // eso no calza con el mismo uidBase de antes).
     const existingEntry = entries.find(([,a]) => a.fromRGDOC && rgdocKey && String(a.rgdocNumero) === rgdocKey);
 
     if(acto.update && existingEntry){
@@ -95,10 +127,9 @@ function _procesarActoRGDOC(acto){
       return;
     }
 
-    if(existingEntry){ console.log('[RGDOC] Ya existe en destino, omitiendo.'); return; }
+    if(yaExistePorId || existingEntry){ console.log('[RGDOC] Ya existe en destino, omitiendo.'); return; }
 
     // Actividad nueva
-    const uidBase = 'rgdoc_' + (rgdocKey || actNorm.replace(/[^A-Z0-9]/g,'').slice(0,20)) + '_' + acto.fecha;
     const newAct = {
       id: uidBase, act: actNorm, obs: (acto.obs||'').toUpperCase().trim(),
       fecha: f, type: acto.type || 'plazo', freq: 'puntual',
@@ -106,12 +137,16 @@ function _procesarActoRGDOC(acto){
     };
     targetRef.child(String(uidBase)).set({...newAct, fecha: f.toISOString(), fechaInicio: null});
     if(viewingUserId === targetUserId || (!viewingUserId && currentUser && currentUser.id === targetUserId)){
-      acts.push(newAct);
-      acts.sort((a,b)=>a.fecha-b.fecha);
-      const mesStr = f.getFullYear()+'-'+(f.getMonth()+1);
-      const sel = document.getElementById('month-select');
-      if(sel){ sel.value = mesStr; sel.dispatchEvent(new Event('change')); }
-      rebuildMonthSelect(); rebuildWeekSelect(); render();
+      // No duplicar en memoria si por alguna razón ya estaba (ej. dos
+      // canales de entrega procesando casi al mismo tiempo).
+      if(!acts.some(a => String(a.id) === String(uidBase))){
+        acts.push(newAct);
+        acts.sort((a,b)=>a.fecha-b.fecha);
+        const mesStr = f.getFullYear()+'-'+(f.getMonth()+1);
+        const sel = document.getElementById('month-select');
+        if(sel){ sel.value = mesStr; sel.dispatchEvent(new Event('change')); }
+        rebuildMonthSelect(); rebuildWeekSelect(); render();
+      }
     }
     var t=document.createElement('div');
     t.textContent='📥 Actividad recibida en Gantt CG OCGR';
@@ -316,14 +351,14 @@ async function procesarColaImportsPendientes(){
     Object.entries(pendientes).forEach(([reqId, acto])=>{
       if(!acto || !acto.fecha) { db.ref('maah_pending_gantt_imports/'+reqId).remove(); return; }
       // Misma deduplicación por nonce que usa la señal en vivo — evita
-      // procesar dos veces un envío que también llegó por ese otro camino.
+      // procesar dos veces un envío que también llegó por ese otro camino
+      // (o que ya se procesó en una sesión anterior en este navegador).
       if(acto.nonce){
-        const done = localStorage.getItem('rgdoc_nonce_done');
-        if(done === String(acto.nonce)){
+        if(_rgdocNonceYaProcesado(acto.nonce)){
           db.ref('maah_pending_gantt_imports/'+reqId).remove();
           return;
         }
-        localStorage.setItem('rgdoc_nonce_done', String(acto.nonce));
+        _rgdocMarcarNonceProcesado(acto.nonce);
       }
       _procesarActoRGDOC(acto);
       db.ref('maah_pending_gantt_imports/'+reqId).remove();
