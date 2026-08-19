@@ -60,22 +60,29 @@
       dbRef = myDbRef;
     }
   } else {
-    // Usuario normal: modo solo-lectura
-    document.body.classList.add('readonly-user');
     dbRef = myDbRef;
-    // Autorizado desde RGDOC (permiso "ver todo") a ver la Carta Gantt OCGR
-    // compartida — la misma que ve el admin — en vez de su Gantt personal.
+    // Autorizado desde RGDOC (permiso "ver todo") a ver Y EDITAR la Carta
+    // Gantt OCGR compartida — la misma que ve el admin — en vez de su
+    // Gantt personal. Tiene las mismas atribuciones que el admin sobre
+    // ese tablero (agregar/editar/eliminar actividades, recurrentes,
+    // impresión extendida); lo único que sigue sin ver es la gestión de
+    // usuarios ni la Gantt de otras personas.
+    let vioOCGR = false;
     if(currentUser.verOCGR){
       try{
         const cgSnap = await db.ref('maah_login_index/cg_ocgr').once('value');
         const cgId = cgSnap.val();
         if(cgId){
           dbRef = db.ref('gantt_maah/actividades_por_usuario/'+cgId);
+          vioOCGR = true;
           const badge = document.getElementById('user-badge');
           if(badge) badge.textContent = '👤 '+currentUser.nombre+' — 👁 GANTT OCGR';
         }
       }catch(e){ console.warn('[RGDOC] No se pudo conectar a la Gantt OCGR compartida:', e); }
     }
+    // Gantt personal propia (sin el permiso, o no se pudo resolver CG OCGR):
+    // interfaz simplificada de siempre, sin recurrentes/impresión extendida.
+    if(!vioOCGR) document.body.classList.add('readonly-user');
   }
 
   // "Enviar a Agenda" solo existe en la Gantt propia del admin

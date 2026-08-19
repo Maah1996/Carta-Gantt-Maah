@@ -46,7 +46,7 @@
       "actividades_por_usuario": {
         "$userId": {
           ".read": "auth != null && (root.child('maah_auth_index').child(auth.uid).val() === $userId || root.child('maah_usuarios').child($userId).child('authUid').val() === auth.uid || root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin' || (root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('verOCGR').val() === true && root.child('maah_login_index').child('cg_ocgr').val() === $userId))",
-          ".write": "auth != null && (root.child('maah_auth_index').child(auth.uid).val() === $userId || root.child('maah_usuarios').child($userId).child('authUid').val() === auth.uid || root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin')"
+          ".write": "auth != null && (root.child('maah_auth_index').child(auth.uid).val() === $userId || root.child('maah_usuarios').child($userId).child('authUid').val() === auth.uid || root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('rol').val() === 'admin' || (root.child('maah_usuarios').child(root.child('maah_auth_index').child(auth.uid).val()).child('verOCGR').val() === true && root.child('maah_login_index').child('cg_ocgr').val() === $userId))"
         }
       },
       "tipos_usuario": {
